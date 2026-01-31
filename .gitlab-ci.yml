@@ -32,7 +32,7 @@ build:
 test:
   stage: test
   script:
-    - echo "This is test job"
+    - echo "This is tesdt job"  
     - echo "Running tests..."
     - echo "Tests completed successfully!"
 
