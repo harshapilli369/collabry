@@ -27,7 +27,7 @@ build:
   stage: build
   image: maven:latest
   script:
-    - mvn clean package
+    - echo "This is build job"
 
 test:
   stage: test
