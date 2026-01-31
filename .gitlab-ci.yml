@@ -51,7 +51,7 @@ publish:
   image: docker:latest
   stage: publish
   tags: 
-    - tutorial
+    - group04_Runner
   variables:
     # these values may need to be different if using TLS, k8s, etc.
     # You can alternatively set defaults in your runner config
@@ -75,7 +75,7 @@ deploy:
   image: alpine:latest
   stage: deploy
   tags:
-    - tutorial
+    - group04_Runner
   script:
     # Set correct permissions on the key file (Variable type must be 'File')
     - chmod 400 $ID_RSA
