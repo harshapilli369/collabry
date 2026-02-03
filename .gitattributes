@@ -1,0 +1,37 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Force LF for shell scripts (must run on Unix)
+*.sh text eol=lf
+backend/mvnw text eol=lf
+
+# Force CRLF for Windows scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+backend/mvnw.cmd text eol=crlf
+
+# Treat these as text files
+*.java text
+*.ts text
+*.tsx text
+*.js text
+*.jsx text
+*.css text
+*.md text
+*.xml text
+*.properties text
+*.json text
+*.yml text
+*.yaml text
+
+# Treat these as binary files (don't change line endings)
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.ttf binary
+*.woff binary
+*.woff2 binary

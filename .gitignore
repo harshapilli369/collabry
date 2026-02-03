@@ -1,0 +1,140 @@
+############################
+# OS / Editor
+############################
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+*.sublime-*
+*.code-workspace
+
+############################
+# Logs
+############################
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+############################
+# Environment variables
+############################
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+############################
+# Frontend (Vite / React)
+############################
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/build/
+frontend/.vite/
+frontend/.env
+frontend/.env.*
+frontend/coverage/
+frontend/.nyc_output/
+
+############################
+# Backend (Spring Boot / Maven)
+############################
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/.factorypath
+backend/.springBeans
+backend/.sts4-cache/
+backend/bin/
+backend/out/
+backend/build/
+
+# Maven Wrapper (KEEP these - they help teammates!)
+# Uncomment if you want to ignore them:
+# backend/.mvn/wrapper/maven-wrapper.jar
+# backend/mvnw
+# backend/mvnw.cmd
+
+############################
+# Testing
+############################
+coverage/
+*.coverage
+.nyc_output/
+test-results/
+junit/
+
+############################
+# Docker
+############################
+docker-compose.override.yml
+.dockerignore
+
+############################
+# Database
+############################
+*.sql
+*.sqlite
+*.db
+*.db-journal
+
+############################
+# Build / Cache
+############################
+.cache/
+.tmp/
+temp/
+tmp/
+
+############################
+# Package managers
+############################
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+############################
+# Misc
+############################
+*.swp
+*.swo
+*~
+.eslintcache
+.stylelintcache
+*.bak
+*.orig
+
+############################
+# Secrets / Keys (IMPORTANT!)
+############################
+*.pem
+*.key
+*.cert
+*.crt
+secrets/
+credentials/
+
+############################
+# CI/CD (optional - depends on your setup)
+############################
+# Uncomment if you don't want to track these:
+# .gitlab-ci-local/
+# .github/

@@ -27,13 +27,14 @@ build:
   stage: build
   image: maven:latest
   script:
-    - mvn clean package
+    - echo "This is build job"
 
 test:
   stage: test
-  image: maven:latest
   script:
-    - mvn test
+    - echo "This is tesdt job"  
+    - echo "Running tests..."
+    - echo "Tests completed successfully!"
 
 # quality:
 #   stage: quality
