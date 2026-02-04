@@ -12,6 +12,7 @@
   "dependencies": {
     "antd": "^5.29.3",
     "@ant-design/icons": "^5.4.0",
+    "@react-oauth/google": "^0.12.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

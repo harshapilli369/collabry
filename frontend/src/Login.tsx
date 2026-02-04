@@ -1,17 +1,68 @@
 import { useState } from 'react'
 import { Form, Input, Button, Checkbox, Typography, Divider, ConfigProvider } from 'antd'
 import { MailOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons'
+import { useGoogleLogin } from '@react-oauth/google'
 
 const { Title, Text, Link } = Typography
 
 export const Login = () => {
     const [loading, setLoading] = useState(false)
 
-    const onFinish = (values: any) => {
+    const onFinish = async (values: any) => {
         setLoading(true)
-        console.log('Received values of form: ', values)
-        setTimeout(() => setLoading(false), 2000)
+        try {
+            const response = await fetch('http://localhost:8080/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(values),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Login success:', data);
+                // Store token
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
+
+                // Show success feedback
+                alert("Login Successful! Redirecting...");
+                // In a real router setup: navigate('/dashboard');
+            } else {
+                alert("Login Failed: Invalid credentials");
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert("Network error. Is the backend running?");
+        } finally {
+            setLoading(false)
+        }
     }
+
+    const googleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            console.log('Google Success:', tokenResponse);
+            try {
+                // Send access token to backend to verify and get JWT
+                const res = await fetch('http://localhost:8080/api/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: tokenResponse.access_token }),
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
+                    alert("Google Login Successful! Redirecting...");
+                } else {
+                    alert("Google Login Failed on Backend");
+                }
+            } catch (err) {
+                console.error("Google Backend Error", err);
+            }
+        },
+        onError: () => console.log('Google Login Failed'),
+    });
 
     // Custom Mint/Teal color from the design
     const primaryColor = '#8CCAC1'
@@ -120,6 +171,7 @@ export const Login = () => {
                         block
                         size="large"
                         icon={<GoogleOutlined style={{ color: '#0F9D58' }} />} // Google Color
+                        onClick={() => googleLogin()}
                         style={{
                             height: 50,
                             fontWeight: 500,
