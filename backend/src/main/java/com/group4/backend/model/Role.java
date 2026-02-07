@@ -1,6 +1,7 @@
 package com.group4.backend.model;
 
 public enum Role {
-    USER,
+    INFLUENCER,
+    BRAND,
     ADMIN
 }

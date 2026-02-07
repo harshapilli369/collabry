@@ -2,11 +2,15 @@ package com.group4.backend.service;
 
 import com.group4.backend.dto.AuthResponse;
 import com.group4.backend.dto.LoginRequest;
+import com.group4.backend.dto.SignupRequest;
+import com.group4.backend.model.Role;
+import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,11 +19,41 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(UserRepository userRepository, JwtUtils jwtUtils, AuthenticationManager authenticationManager) {
+    public AuthService(UserRepository userRepository, JwtUtils jwtUtils, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.jwtUtils = jwtUtils;
         this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public AuthResponse register(SignupRequest request) {
+        if (request.getRole() == Role.ADMIN) {
+            throw new IllegalArgumentException("Admin registration is not allowed");
+        }
+        if (request.getRole() == Role.INFLUENCER && (request.getDisplayName() == null || request.getDisplayName().isBlank())) {
+            throw new IllegalArgumentException("Display name is required for influencers");
+        }
+        if (request.getRole() == Role.BRAND && (request.getCompanyName() == null || request.getCompanyName().isBlank())) {
+            throw new IllegalArgumentException("Company name is required for brands");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email already registered");
+        }
+
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        User user = new User(
+                request.getEmail(),
+                encodedPassword,
+                request.getRole(),
+                request.getDisplayName(),
+                request.getCompanyName()
+        );
+        user = userRepository.save(user);
+
+        var jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getDisplayName(), user.getCompanyName());
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -32,8 +66,7 @@ public class AuthService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         var jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name());
-
-        return new AuthResponse(jwtToken, user.getEmail(), user.getRole());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getDisplayName(), user.getCompanyName());
     }
 
     // New Google Login Method
@@ -62,16 +95,13 @@ public class AuthService {
 
         // Check if user exists
         var user = userRepository.findByEmail(email).orElseGet(() -> {
-            // Create new Google user
-            var newUser = new com.group4.backend.model.User(
-                    email,
-                    "GOOGLE_AUTH_PLACEHOLDER", // Dummy password
-                    com.group4.backend.model.Role.USER);
+            // Create new Google user (default to INFLUENCER)
+            var newUser = new User(email, "GOOGLE_AUTH_PLACEHOLDER", Role.INFLUENCER, null, null);
             return userRepository.save(newUser);
         });
 
         var jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name());
-        return new AuthResponse(jwtToken, user.getEmail(), user.getRole());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getDisplayName(), user.getCompanyName());
     }
 
     private String fetchEmailFromGoogle(String accessToken) {

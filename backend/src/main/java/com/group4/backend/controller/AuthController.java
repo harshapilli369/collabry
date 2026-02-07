@@ -2,7 +2,9 @@ package com.group4.backend.controller;
 
 import com.group4.backend.dto.AuthResponse;
 import com.group4.backend.dto.LoginRequest;
+import com.group4.backend.dto.SignupRequest;
 import com.group4.backend.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +19,11 @@ public class AuthController {
 
     public AuthController(AuthService service) {
         this.service = service;
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
+        return ResponseEntity.ok(service.register(request));
     }
 
     @PostMapping("/login")

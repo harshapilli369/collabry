@@ -27,9 +27,33 @@ public class DataInitializer {
                 User admin = new User(
                         "admin@collabry.com",
                         passwordEncoder.encode("password123"),
-                        Role.ADMIN);
+                        Role.ADMIN,
+                        null,
+                        null);
                 userRepository.save(admin);
                 System.out.println("Admin user created: admin@collabry.com / password123");
+            }
+            // Sample Influencer for testing
+            if (!userRepository.existsByEmail("influencer@test.com")) {
+                User influencer = new User(
+                        "influencer@test.com",
+                        passwordEncoder.encode("password123"),
+                        Role.INFLUENCER,
+                        "Test Influencer",
+                        null);
+                userRepository.save(influencer);
+                System.out.println("Sample influencer created: influencer@test.com / password123");
+            }
+            // Sample Brand for testing
+            if (!userRepository.existsByEmail("brand@test.com")) {
+                User brand = new User(
+                        "brand@test.com",
+                        passwordEncoder.encode("password123"),
+                        Role.BRAND,
+                        null,
+                        "Test Brand Co");
+                userRepository.save(brand);
+                System.out.println("Sample brand created: brand@test.com / password123");
             }
         };
     }

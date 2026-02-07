@@ -19,6 +19,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(name = "display_name")
+    private String displayName;
+
+    @Column(name = "company_name")
+    private String companyName;
+
     public User() {
     }
 
@@ -26,6 +32,14 @@ public class User {
         this.email = email;
         this.password = password;
         this.role = role;
+    }
+
+    public User(String email, String password, Role role, String displayName, String companyName) {
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.displayName = displayName;
+        this.companyName = companyName;
     }
 
     public Long getId() {
@@ -58,5 +72,21 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 }
