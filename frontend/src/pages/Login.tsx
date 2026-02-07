@@ -2,8 +2,11 @@ import { useState } from 'react'
 import { Form, Input, Button, Checkbox, Typography, Divider, ConfigProvider } from 'antd'
 import { MailOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons'
 import { useGoogleLogin } from '@react-oauth/google'
+import { loginUser, googleLoginUser } from '../services/authService';
 
 const { Title, Text, Link } = Typography
+
+
 
 export const Login = () => {
     const [loading, setLoading] = useState(false)
@@ -11,28 +14,18 @@ export const Login = () => {
     const onFinish = async (values: any) => {
         setLoading(true)
         try {
-            const response = await fetch('http://localhost:8080/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(values),
-            });
+            const data = await loginUser(values);
+            console.log('Login success:', data);
+            // Store token
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
 
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Login success:', data);
-                // Store token
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
-
-                // Show success feedback
-                alert("Login Successful! Redirecting...");
-                // In a real router setup: navigate('/dashboard');
-            } else {
-                alert("Login Failed: Invalid credentials");
-            }
+            // Show success feedback
+            alert("Login Successful! Redirecting...");
+            // In a real router setup: navigate('/dashboard');
         } catch (error) {
             console.error('Login error:', error);
-            alert("Network error. Is the backend running?");
+            alert("Login Failed: Invalid credentials or Network error");
         } finally {
             setLoading(false)
         }
@@ -43,22 +36,13 @@ export const Login = () => {
             console.log('Google Success:', tokenResponse);
             try {
                 // Send access token to backend to verify and get JWT
-                const res = await fetch('http://localhost:8080/api/auth/google', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: tokenResponse.access_token }),
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
-                    alert("Google Login Successful! Redirecting...");
-                } else {
-                    alert("Google Login Failed on Backend");
-                }
+                const data = await googleLoginUser(tokenResponse.access_token);
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
+                alert("Google Login Successful! Redirecting...");
             } catch (err) {
                 console.error("Google Backend Error", err);
+                alert("Google Login Failed on Backend");
             }
         },
         onError: () => console.log('Google Login Failed'),
