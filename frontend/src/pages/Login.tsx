@@ -48,25 +48,31 @@ export const Login = () => {
         onError: () => console.log('Google Login Failed'),
     });
 
-    // Custom Mint/Teal color from the design
-    const primaryColor = '#8CCAC1'
+    // Colors from User Palette (Synced with index.css)
+    const primaryColor = '#FFFD82'; // Neon Yellow-Green
+    const secondaryColor = '#BD72EB'; // Soft Purple
+    const textColor = '#000000'; // Black (for inside the white card)
+    const pageBackgroundColor = '#1E1E1E'; // Primary BG
+    const cardBackgroundColor = '#FFFFFF'; // Pure White
 
     return (
         <ConfigProvider
             theme={{
                 token: {
                     colorPrimary: primaryColor,
+                    colorText: textColor,
                     borderRadius: 8,
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                 },
                 components: {
                     Button: {
                         colorPrimary: primaryColor,
-                        algorithm: true, // Enable derivative colors
+                        algorithm: true,
                         primaryShadow: 'none',
+                        colorTextLightSolid: textColor, // Ensures text is black on the neon button
                     },
                     Input: {
-                        paddingBlock: 10, // Taller inputs
+                        paddingBlock: 10,
                     }
                 }
             }}
@@ -76,17 +82,24 @@ export const Login = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 minHeight: '100vh',
-                backgroundColor: '#fff'
+                backgroundColor: pageBackgroundColor
             }}>
-                <div style={{ width: '100%', maxWidth: 400, padding: 20 }}>
+                <div style={{
+                    width: '100%',
+                    maxWidth: 400,
+                    padding: 40,
+                    backgroundColor: cardBackgroundColor,
+                    borderRadius: 16,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+                }}>
 
                     {/* Logo Section */}
-                    <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                    <div style={{ textAlign: 'center', marginBottom: 30 }}>
                         <div style={{ marginBottom: 20 }}>
                             <img src="/logo.png" alt="Collabry Logo" style={{ height: 60 }} />
                         </div>
 
-                        <Title level={2} style={{ margin: '0 0 8px' }}>Welcome Back</Title>
+                        <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>Collabry</Title>
                         <Text type="secondary">Log in to your account to continue</Text>
                     </div>
 
@@ -120,10 +133,17 @@ export const Login = () => {
 
                         <Form.Item>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Form.Item name="remember" valuePropName="checked" noStyle>
-                                    <Checkbox style={{ color: 'rgba(0,0,0,0.5)' }}>Remember me</Checkbox>
+                                <Form.Item name="rememberMe" valuePropName="checked" noStyle>
+                                    <Checkbox
+                                        style={{
+                                            color: 'rgba(0,0,0,0.5)',
+                                        }}
+                                        className="custom-checkbox"
+                                    >
+                                        Remember me
+                                    </Checkbox>
                                 </Form.Item>
-                                <Link style={{ color: primaryColor, fontWeight: 500 }}>
+                                <Link style={{ color: secondaryColor, fontWeight: 500 }}>
                                     Forgot password?
                                 </Link>
                             </div>
@@ -137,11 +157,10 @@ export const Login = () => {
                                 loading={loading}
                                 style={{
                                     height: 50,
-                                    fontWeight: 500,
+                                    fontWeight: 600,
                                     fontSize: 16,
-                                    backgroundColor: '#98D0C9', // Slightly lighter/custom shade for the big button
-                                    borderColor: '#98D0C9',
-                                    color: 'white'
+                                    // Let ConfigProvider handle colors, but ensure text is black
+                                    color: textColor
                                 }}
                             >
                                 Log In
@@ -154,14 +173,14 @@ export const Login = () => {
                     <Button
                         block
                         size="large"
-                        icon={<GoogleOutlined style={{ color: '#0F9D58' }} />} // Google Color
+                        icon={<GoogleOutlined style={{ color: '#000' }} />} // Black icon for consistency
                         onClick={() => googleLogin()}
                         style={{
                             height: 50,
                             fontWeight: 500,
-                            color: '#4a4a4a',
+                            color: textColor,
                             borderColor: '#eee',
-                            backgroundColor: '#fafafa'
+                            backgroundColor: '#fff'
                         }}
                     >
                         Continue with Google
@@ -169,7 +188,7 @@ export const Login = () => {
 
                     <div style={{ textAlign: 'center', marginTop: 30 }}>
                         <Text style={{ color: 'rgba(0,0,0,0.5)' }}>Don't have an account? </Text>
-                        <Link style={{ color: '#2EB5A0', fontWeight: 500 }}>Sign up</Link>
+                        <Link style={{ color: secondaryColor, fontWeight: 500 }}>Sign up</Link>
                     </div>
                 </div>
             </div>

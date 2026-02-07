@@ -17,12 +17,13 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(io.jsonwebtoken.io.Decoders.BASE64.decode(SECRET));
     }
 
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, String role, boolean rememberMe) {
+        long expirationTime = rememberMe ? 1000L * 60 * 60 * 24 * 7 : 1000L * 60 * 60 * 24; // 7 days vs 1 day
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 hours
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

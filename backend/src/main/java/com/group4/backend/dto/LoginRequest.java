@@ -27,4 +27,14 @@ public class LoginRequest {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    private boolean rememberMe;
+
+    public boolean isRememberMe() {
+        return rememberMe;
+    }
+
+    public void setRememberMe(boolean rememberMe) {
+        this.rememberMe = rememberMe;
+    }
 }
