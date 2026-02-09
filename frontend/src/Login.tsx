@@ -2,9 +2,8 @@ import { useState } from 'react'
 import { Form, Input, Button, Checkbox, Typography, Divider, ConfigProvider } from 'antd'
 import { MailOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons'
 import { useGoogleLogin } from '@react-oauth/google'
-import { Link } from 'react-router-dom'
 
-const { Title, Text } = Typography
+const { Title, Text, Link } = Typography
 
 export const Login = () => {
     const [loading, setLoading] = useState(false)
@@ -23,11 +22,11 @@ export const Login = () => {
                 console.log('Login success:', data);
                 // Store token
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role, displayName: data.displayName, companyName: data.companyName }));
+                localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
 
                 // Show success feedback
                 alert("Login Successful! Redirecting...");
-                window.location.href = '/dashboard';
+                // In a real router setup: navigate('/dashboard');
             } else {
                 alert("Login Failed: Invalid credentials");
             }
@@ -53,9 +52,8 @@ export const Login = () => {
                 if (res.ok) {
                     const data = await res.json();
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role, displayName: data.displayName, companyName: data.companyName }));
+                    localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
                     alert("Google Login Successful! Redirecting...");
-                    window.location.href = '/dashboard';
                 } else {
                     alert("Google Login Failed on Backend");
                 }
@@ -66,8 +64,8 @@ export const Login = () => {
         onError: () => console.log('Google Login Failed'),
     });
 
-    // Brand colors: dark charcoal + bright yellow accent
-    const primaryColor = '#FFF066'
+    // Custom Mint/Teal color from the design
+    const primaryColor = '#8CCAC1'
 
     return (
         <ConfigProvider
@@ -94,9 +92,9 @@ export const Login = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 minHeight: '100vh',
-                backgroundColor: '#1A1A1A'
+                backgroundColor: '#fff'
             }}>
-                <div style={{ width: '100%', maxWidth: 400, padding: 20, backgroundColor: '#252525', borderRadius: 16, padding: 32 }}>
+                <div style={{ width: '100%', maxWidth: 400, padding: 20 }}>
 
                     {/* Logo Section */}
                     <div style={{ textAlign: 'center', marginBottom: 40 }}>
@@ -104,8 +102,8 @@ export const Login = () => {
                             <img src="/logo.png" alt="Collabry Logo" style={{ height: 60 }} />
                         </div>
 
-                        <Title level={2} style={{ margin: '0 0 8px', color: '#fff' }}>Welcome Back</Title>
-                        <Text style={{ color: 'rgba(255,255,255,0.7)' }}>Log in to your account to continue</Text>
+                        <Title level={2} style={{ margin: '0 0 8px' }}>Welcome Back</Title>
+                        <Text type="secondary">Log in to your account to continue</Text>
                     </div>
 
                     {/* Form Section */}
@@ -139,7 +137,7 @@ export const Login = () => {
                         <Form.Item>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Form.Item name="remember" valuePropName="checked" noStyle>
-                                    <Checkbox style={{ color: 'rgba(255,255,255,0.7)' }}>Remember me</Checkbox>
+                                    <Checkbox style={{ color: 'rgba(0,0,0,0.5)' }}>Remember me</Checkbox>
                                 </Form.Item>
                                 <Link style={{ color: primaryColor, fontWeight: 500 }}>
                                     Forgot password?
@@ -157,9 +155,9 @@ export const Login = () => {
                                     height: 50,
                                     fontWeight: 500,
                                     fontSize: 16,
-                                    backgroundColor: '#FFF066',
-                                    borderColor: '#FFF066',
-                                    color: '#1A1A1A',
+                                    backgroundColor: '#98D0C9', // Slightly lighter/custom shade for the big button
+                                    borderColor: '#98D0C9',
+                                    color: 'white'
                                 }}
                             >
                                 Log In
@@ -167,7 +165,7 @@ export const Login = () => {
                         </Form.Item>
                     </Form>
 
-                    <Divider style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>OR</Divider>
+                    <Divider style={{ color: 'rgba(0,0,0,0.4)', fontSize: 12 }}>OR</Divider>
 
                     <Button
                         block
@@ -177,17 +175,17 @@ export const Login = () => {
                         style={{
                             height: 50,
                             fontWeight: 500,
-                            color: '#1A1A1A',
-                            borderColor: 'rgba(255,255,255,0.3)',
-                            backgroundColor: '#FFF066',
+                            color: '#4a4a4a',
+                            borderColor: '#eee',
+                            backgroundColor: '#fafafa'
                         }}
                     >
                         Continue with Google
                     </Button>
 
                     <div style={{ textAlign: 'center', marginTop: 30 }}>
-                        <Text style={{ color: 'rgba(255,255,255,0.7)' }}>Don't have an account? </Text>
-                        <Link to="/signup" style={{ color: '#FFF066', fontWeight: 500 }}>Sign up</Link>
+                        <Text style={{ color: 'rgba(0,0,0,0.5)' }}>Don't have an account? </Text>
+                        <Link style={{ color: '#2EB5A0', fontWeight: 500 }}>Sign up</Link>
                     </div>
                 </div>
             </div>
