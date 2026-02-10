@@ -1,5 +1,29 @@
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090/api/auth';
 
+export interface RegisterPayload {
+    email: string;
+    password: string;
+    role: 'BRAND' | 'INFLUENCER';
+}
+
+export const registerUser = async (payload: RegisterPayload) => {
+    const response = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    });
+    if (response.status === 409) {
+        const data = await response.json();
+        throw new Error(data.message || 'An account with this email already exists.');
+    }
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        const message = data.message || (response.status === 400 ? 'Invalid input. Check email and password rules.' : 'Registration failed');
+        throw new Error(message);
+    }
+    return response.json();
+};
+
 export const loginUser = async (credentials: any) => {
     const response = await fetch(`${API_URL}/login`, {
         method: 'POST',

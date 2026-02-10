@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Form, Input, Button, Checkbox, Typography, Divider, ConfigProvider } from 'antd'
 import { MailOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons'
+import { Link } from 'react-router-dom'
 import { useGoogleLogin } from '@react-oauth/google'
 import { loginUser, googleLoginUser } from '../services/authService';
 
-const { Title, Text, Link } = Typography
+const { Title, Text } = Typography
 
 
 
@@ -143,7 +144,7 @@ export const Login = () => {
                                         Remember me
                                     </Checkbox>
                                 </Form.Item>
-                                <Link href="/forgot-password" style={{ color: secondaryColor, fontWeight: 500 }}>
+                                <Link to="/forgot-password" style={{ color: secondaryColor, fontWeight: 500 }}>
                                     Forgot password?
                                 </Link>
                             </div>
@@ -188,7 +189,7 @@ export const Login = () => {
 
                     <div style={{ textAlign: 'center', marginTop: 30 }}>
                         <Text style={{ color: 'rgba(0,0,0,0.5)' }}>Don't have an account? </Text>
-                        <Link style={{ color: secondaryColor, fontWeight: 500 }}>Sign up</Link>
+                        <Link to="/signup" style={{ color: secondaryColor, fontWeight: 500 }}>Sign up</Link>
                     </div>
                 </div>
             </div>

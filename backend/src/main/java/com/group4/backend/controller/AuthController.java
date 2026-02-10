@@ -2,12 +2,19 @@ package com.group4.backend.controller;
 
 import com.group4.backend.dto.AuthResponse;
 import com.group4.backend.dto.LoginRequest;
+import com.group4.backend.dto.SignupRequest;
+import com.group4.backend.exception.DuplicateEmailException;
 import com.group4.backend.service.AuthService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -17,6 +24,17 @@ public class AuthController {
 
     public AuthController(AuthService service) {
         this.service = service;
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody SignupRequest request) {
+        AuthResponse response = service.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateEmail(DuplicateEmailException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
     }
 
     @PostMapping("/login")

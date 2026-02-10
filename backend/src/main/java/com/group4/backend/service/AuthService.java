@@ -2,6 +2,10 @@ package com.group4.backend.service;
 
 import com.group4.backend.dto.AuthResponse;
 import com.group4.backend.dto.LoginRequest;
+import com.group4.backend.dto.SignupRequest;
+import com.group4.backend.exception.DuplicateEmailException;
+import com.group4.backend.model.Role;
+import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,15 +22,37 @@ public class AuthService {
 
     private final com.group4.backend.repository.PasswordResetTokenRepository tokenRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public AuthService(UserRepository userRepository, JwtUtils jwtUtils, AuthenticationManager authenticationManager,
             com.group4.backend.repository.PasswordResetTokenRepository tokenRepository,
-            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder,
+            EmailService emailService) {
         this.userRepository = userRepository;
         this.jwtUtils = jwtUtils;
         this.authenticationManager = authenticationManager;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
+
+    public AuthResponse register(SignupRequest request) {
+        if (!SignupRequest.isAllowedRole(request.getRole())) {
+            throw new IllegalArgumentException("Role must be BRAND or INFLUENCER");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEmailException("An account with this email already exists.");
+        }
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        User user = new User(request.getEmail(), encodedPassword, request.getRole());
+        user = userRepository.save(user);
+
+        String confirmationToken = java.util.UUID.randomUUID().toString();
+        String confirmationLink = "http://localhost:5173/confirm-email?token=" + confirmationToken;
+        emailService.sendConfirmationEmail(user.getEmail(), confirmationLink);
+
+        String jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), false);
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole());
     }
 
     public AuthResponse login(LoginRequest request) {

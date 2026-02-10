@@ -140,6 +140,34 @@ Then open the frontend URL (e.g. `http://localhost:5173`) in your browser.
 
 ---
 
+## Sending real emails (signup confirmation)
+
+By default, the backend **logs** confirmation emails to the console (no SMTP). To send real emails to users:
+
+1. In **backend** `src/main/resources/application.properties` (or via environment variables), set:
+   - **spring.mail.host** – e.g. `smtp.gmail.com`, `smtp.sendgrid.net`, or your provider’s SMTP host
+   - **spring.mail.port** – usually `587` (TLS) or `465` (SSL)
+   - **spring.mail.username** – your sending account (e.g. Gmail address)
+   - **spring.mail.password** – app password or SMTP password (never commit this; use env vars in production)
+   - **spring.mail.properties.mail.smtp.auth=true** and **spring.mail.properties.mail.smtp.starttls.enable=true** for TLS
+   - **app.mail.from** (optional) – sender address shown in the email (defaults to `spring.mail.username`)
+
+2. As soon as **spring.mail.host** is set, the app uses **SmtpEmailService** and sends real emails. If **spring.mail.host** is not set, **ConsoleEmailService** is used and messages are only printed to the backend console.
+
+Example for Gmail (use an [App Password](https://support.google.com/accounts/answer/185833), not your normal password):
+
+```properties
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=yourname@gmail.com
+spring.mail.password=your-16-char-app-password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+app.mail.from=yourname@gmail.com
+```
+
+---
+
 ## Troubleshooting
 
 | Issue | What to check |
