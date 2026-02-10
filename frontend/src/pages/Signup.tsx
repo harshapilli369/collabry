@@ -27,9 +27,8 @@ export const Signup = () => {
                 password: values.password,
                 role: values.role,
             })
-            localStorage.setItem('token', data.token)
-            localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }))
-            navigate('/profile-setup')
+            alert(data.message || 'Check your email to confirm your account.')
+            navigate('/login')
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Registration failed'
             alert(message)

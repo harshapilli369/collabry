@@ -3,15 +3,18 @@ package com.group4.backend.controller;
 import com.group4.backend.dto.AuthResponse;
 import com.group4.backend.dto.LoginRequest;
 import com.group4.backend.dto.SignupRequest;
+import com.group4.backend.dto.SignupResponse;
 import com.group4.backend.exception.DuplicateEmailException;
 import com.group4.backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -27,14 +30,28 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody SignupRequest request) {
-        AuthResponse response = service.register(request);
+    public ResponseEntity<SignupResponse> register(@Valid @RequestBody SignupRequest request) {
+        SignupResponse response = service.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/confirm-email")
+    public ResponseEntity<AuthResponse> confirmEmail(@RequestParam String token) {
+        AuthResponse response = service.confirmEmail(token);
+        return ResponseEntity.ok(response);
     }
 
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<Map<String, String>> handleDuplicateEmail(DuplicateEmailException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, String>> handleConfirmationError(RuntimeException e) {
+        if (e instanceof DuplicateEmailException) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
     }
 
     @PostMapping("/login")

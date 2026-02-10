@@ -142,29 +142,26 @@ Then open the frontend URL (e.g. `http://localhost:5173`) in your browser.
 
 ## Sending real emails (signup confirmation)
 
-By default, the backend **logs** confirmation emails to the console (no SMTP). To send real emails to users:
+Signup is **confirm-by-email**: the user is **not** saved in the database until they click the confirmation link in the email. Until then, their signup is stored as a pending record (expires in 24 hours).
 
-1. In **backend** `src/main/resources/application.properties` (or via environment variables), set:
-   - **spring.mail.host** – e.g. `smtp.gmail.com`, `smtp.sendgrid.net`, or your provider’s SMTP host
-   - **spring.mail.port** – usually `587` (TLS) or `465` (SSL)
-   - **spring.mail.username** – your sending account (e.g. Gmail address)
-   - **spring.mail.password** – app password or SMTP password (never commit this; use env vars in production)
-   - **spring.mail.properties.mail.smtp.auth=true** and **spring.mail.properties.mail.smtp.starttls.enable=true** for TLS
-   - **app.mail.from** (optional) – sender address shown in the email (defaults to `spring.mail.username`)
+By default, the backend **logs** the confirmation link to the console (no SMTP). To send **real emails** to users, use a **local config file** (not committed) so your password never goes into Git:
 
-2. As soon as **spring.mail.host** is set, the app uses **SmtpEmailService** and sends real emails. If **spring.mail.host** is not set, **ConsoleEmailService** is used and messages are only printed to the backend console.
+1. In **backend** `src/main/resources/`, copy the example file:
+   - Copy **application-local.properties.example** to **application-local.properties**
+   - `application-local.properties` is in `.gitignore` and will not be committed.
 
-Example for Gmail (use an [App Password](https://support.google.com/accounts/answer/185833), not your normal password):
+2. Edit **application-local.properties** and set your SMTP values (e.g. Gmail address and [App Password](https://support.google.com/accounts/answer/185833)). The example file lists all needed keys.
 
-```properties
-spring.mail.host=smtp.gmail.com
-spring.mail.port=587
-spring.mail.username=yourname@gmail.com
-spring.mail.password=your-16-char-app-password
-spring.mail.properties.mail.smtp.auth=true
-spring.mail.properties.mail.smtp.starttls.enable=true
-app.mail.from=yourname@gmail.com
-```
+3. Run the backend with the **local** profile so Spring loads that file:
+   ```bash
+   cd backend
+   .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
+   ```
+   Or set `SPRING_PROFILES_ACTIVE=local` in your environment or IDE run config.
+
+4. As soon as **spring.mail.host** is set (via the local file), the app uses **SmtpEmailService** and sends real emails. Without it, **ConsoleEmailService** is used and the link is only printed to the console.
+
+In production, use environment variables or a secrets manager for the password; do not commit `application-local.properties`.
 
 ---
 

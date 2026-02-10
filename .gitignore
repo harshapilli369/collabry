@@ -132,6 +132,9 @@ node_modules/
 secrets/
 credentials/
 
+# Backend local config (mail password, etc.) - never commit
+**/application-local.properties
+
 ############################
 # CI/CD (optional - depends on your setup)
 ############################

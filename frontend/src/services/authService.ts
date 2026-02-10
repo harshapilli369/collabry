@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090/api/auth';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/auth';
 
 export interface RegisterPayload {
     email: string;
@@ -6,7 +6,11 @@ export interface RegisterPayload {
     role: 'BRAND' | 'INFLUENCER';
 }
 
-export const registerUser = async (payload: RegisterPayload) => {
+export interface SignupResponse {
+    message: string;
+}
+
+export const registerUser = async (payload: RegisterPayload): Promise<SignupResponse> => {
     const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -20,6 +24,16 @@ export const registerUser = async (payload: RegisterPayload) => {
         const data = await response.json().catch(() => ({}));
         const message = data.message || (response.status === 400 ? 'Invalid input. Check email and password rules.' : 'Registration failed');
         throw new Error(message);
+    }
+    return response.json();
+};
+
+/** Confirm email with token from link; returns JWT and user so you can log in and redirect to profile-setup. */
+export const confirmEmail = async (token: string) => {
+    const response = await fetch(`${API_URL}/confirm-email?token=${encodeURIComponent(token)}`);
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Invalid or expired link. Please sign up again.');
     }
     return response.json();
 };

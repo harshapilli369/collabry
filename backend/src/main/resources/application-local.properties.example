@@ -1,0 +1,16 @@
+# Copy this file to application-local.properties and fill in your values.
+# application-local.properties is gitignored and will not be committed.
+#
+# Run the backend with the "local" profile so this file is loaded:
+#   .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
+# or set: SPRING_PROFILES_ACTIVE=local
+#
+# --- Mail (for real confirmation emails) ---
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=yourname@gmail.com
+spring.mail.password=your-16-char-app-password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+app.mail.from=yourname@gmail.com
+# app.confirmation.base-url=http://localhost:5173

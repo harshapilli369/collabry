@@ -3,20 +3,29 @@ package com.group4.backend.service;
 import com.group4.backend.dto.AuthResponse;
 import com.group4.backend.dto.LoginRequest;
 import com.group4.backend.dto.SignupRequest;
+import com.group4.backend.dto.SignupResponse;
 import com.group4.backend.exception.DuplicateEmailException;
+import com.group4.backend.model.PendingSignup;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
+import com.group4.backend.repository.PendingSignupRepository;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.security.JwtUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 public class AuthService {
 
+    private static final int CONFIRMATION_EXIRY_HOURS = 24;
+
     private final UserRepository userRepository;
+    private final PendingSignupRepository pendingSignupRepository;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
 
@@ -24,11 +33,16 @@ public class AuthService {
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    public AuthService(UserRepository userRepository, JwtUtils jwtUtils, AuthenticationManager authenticationManager,
+    @Value("${app.confirmation.base-url:http://localhost:5173}")
+    private String confirmationBaseUrl;
+
+    public AuthService(UserRepository userRepository, PendingSignupRepository pendingSignupRepository,
+            JwtUtils jwtUtils, AuthenticationManager authenticationManager,
             com.group4.backend.repository.PasswordResetTokenRepository tokenRepository,
             org.springframework.security.crypto.password.PasswordEncoder passwordEncoder,
             EmailService emailService) {
         this.userRepository = userRepository;
+        this.pendingSignupRepository = pendingSignupRepository;
         this.jwtUtils = jwtUtils;
         this.authenticationManager = authenticationManager;
         this.tokenRepository = tokenRepository;
@@ -36,20 +50,53 @@ public class AuthService {
         this.emailService = emailService;
     }
 
-    public AuthResponse register(SignupRequest request) {
+    /**
+     * Register: save as pending only; send confirmation email. User is created only after they confirm.
+     */
+    public SignupResponse register(SignupRequest request) {
         if (!SignupRequest.isAllowedRole(request.getRole())) {
             throw new IllegalArgumentException("Role must be BRAND or INFLUENCER");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEmailException("An account with this email already exists.");
         }
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-        User user = new User(request.getEmail(), encodedPassword, request.getRole());
-        user = userRepository.save(user);
+        // Replace any existing pending signup for this email
+        pendingSignupRepository.deleteByEmail(request.getEmail());
 
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
         String confirmationToken = java.util.UUID.randomUUID().toString();
-        String confirmationLink = "http://localhost:5173/confirm-email?token=" + confirmationToken;
-        emailService.sendConfirmationEmail(user.getEmail(), confirmationLink);
+        Instant expiresAt = Instant.now().plusSeconds(CONFIRMATION_EXIRY_HOURS * 3600L);
+        PendingSignup pending = new PendingSignup(
+                request.getEmail(),
+                encodedPassword,
+                request.getRole(),
+                confirmationToken,
+                expiresAt);
+        pendingSignupRepository.save(pending);
+
+        String confirmationLink = confirmationBaseUrl + "/confirm-email?token=" + confirmationToken;
+        emailService.sendConfirmationEmail(request.getEmail(), confirmationLink);
+
+        return new SignupResponse("Check your email to confirm your account. The link expires in " + CONFIRMATION_EXIRY_HOURS + " hours.");
+    }
+
+    /**
+     * Confirm email: create User from pending signup, then delete pending. Returns JWT so frontend can log in.
+     */
+    public AuthResponse confirmEmail(String token) {
+        PendingSignup pending = pendingSignupRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired confirmation link."));
+        if (pending.isExpired()) {
+            pendingSignupRepository.delete(pending);
+            throw new RuntimeException("Confirmation link has expired. Please sign up again.");
+        }
+        if (userRepository.existsByEmail(pending.getEmail())) {
+            pendingSignupRepository.delete(pending);
+            throw new DuplicateEmailException("An account with this email already exists.");
+        }
+        User user = new User(pending.getEmail(), pending.getEncodedPassword(), pending.getRole());
+        user = userRepository.save(user);
+        pendingSignupRepository.delete(pending);
 
         String jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), false);
         return new AuthResponse(jwtToken, user.getEmail(), user.getRole());
