@@ -16,10 +16,17 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
 
-    public AuthService(UserRepository userRepository, JwtUtils jwtUtils, AuthenticationManager authenticationManager) {
+    private final com.group4.backend.repository.PasswordResetTokenRepository tokenRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    public AuthService(UserRepository userRepository, JwtUtils jwtUtils, AuthenticationManager authenticationManager,
+            com.group4.backend.repository.PasswordResetTokenRepository tokenRepository,
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.jwtUtils = jwtUtils;
         this.authenticationManager = authenticationManager;
+        this.tokenRepository = tokenRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -98,5 +105,43 @@ public class AuthService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // --- Password Reset Logic ---
+
+    public void forgotPassword(String email) {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // Generate token
+        String token = java.util.UUID.randomUUID().toString();
+
+        // Save token
+        com.group4.backend.model.PasswordResetToken myToken = new com.group4.backend.model.PasswordResetToken(token,
+                user);
+        tokenRepository.save(myToken);
+
+        // SIMULATE EMAIL SENDING
+        System.out.println("------------------------------------------------");
+        System.out.println("PASSWORD RESET LINK FOR: " + email);
+        System.out.println("http://localhost:5173/reset-password?token=" + token);
+        System.out.println("------------------------------------------------");
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        var resetToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid Token"));
+
+        if (resetToken.isExpired()) {
+            tokenRepository.delete(resetToken);
+            throw new RuntimeException("Token Expired");
+        }
+
+        var user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        // Invalidate token
+        tokenRepository.delete(resetToken);
     }
 }

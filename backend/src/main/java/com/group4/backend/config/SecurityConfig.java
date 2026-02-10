@@ -32,8 +32,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Public endpoints
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/google",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password",
+                                "/h2-console/**",
+                                "/api/auth/**")
+                        .permitAll()
                         .anyRequest().authenticated())
+                .headers(headers -> headers.frameOptions(frame -> frame.disable())) // Enable frame options for H2
+                                                                                    // console
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

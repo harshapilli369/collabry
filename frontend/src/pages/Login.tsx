@@ -143,7 +143,7 @@ export const Login = () => {
                                         Remember me
                                     </Checkbox>
                                 </Form.Item>
-                                <Link style={{ color: secondaryColor, fontWeight: 500 }}>
+                                <Link href="/forgot-password" style={{ color: secondaryColor, fontWeight: 500 }}>
                                     Forgot password?
                                 </Link>
                             </div>
