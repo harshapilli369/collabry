@@ -45,7 +45,9 @@ export const loginUser = async (credentials: any) => {
         body: JSON.stringify(credentials),
     });
     if (!response.ok) {
-        throw new Error('Login failed');
+        const body = await response.json().catch(() => ({}));
+        const message = (body && typeof body.message === 'string') ? body.message : `Login failed (${response.status})`;
+        throw new Error(message);
     }
     return response.json();
 };

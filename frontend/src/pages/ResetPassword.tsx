@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Form, Input, Button, Typography, ConfigProvider } from 'antd'
 import { LockOutlined } from '@ant-design/icons'
+import { Link } from 'react-router-dom'
 import { resetPassword } from '../services/authService'
 
-const { Title, Text, Link } = Typography
+const { Title, Text } = Typography
 
 export const ResetPassword = () => {
     const [loading, setLoading] = useState(false)
@@ -26,7 +27,8 @@ export const ResetPassword = () => {
             window.location.href = '/login' // simple redirect
         } catch (error) {
             console.error(error)
-            alert("Failed to reset password")
+            const msg = error instanceof Error ? error.message : 'Failed to reset password'
+            alert(msg)
         } finally {
             setLoading(false)
         }
@@ -75,6 +77,19 @@ export const ResetPassword = () => {
                     borderRadius: 16,
                     boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
                 }}>
+                    {!token ? (
+                        <>
+                            <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                                <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>Invalid or missing link</Title>
+                                <Text type="secondary">This reset link is invalid or has expired. Request a new one from the login page.</Text>
+                            </div>
+                            <div style={{ textAlign: 'center', marginTop: 20 }}>
+                                <Link to="/forgot-password" style={{ color: '#BD72EB', fontWeight: 500, marginRight: 12 }}>Request new link</Link>
+                                <Link to="/login" style={{ color: '#BD72EB', fontWeight: 500 }}>Back to Login</Link>
+                            </div>
+                        </>
+                    ) : (
+                        <>
                     <div style={{ textAlign: 'center', marginBottom: 30 }}>
                         <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>Reset Password</Title>
                         <Text type="secondary">Enter your new password</Text>
@@ -138,6 +153,11 @@ export const ResetPassword = () => {
                             </Button>
                         </Form.Item>
                     </Form>
+                    <div style={{ textAlign: 'center', marginTop: 20 }}>
+                        <Link to="/login" style={{ color: '#BD72EB', fontWeight: 500 }}>Back to Login</Link>
+                    </div>
+                        </>
+                    )}
                 </div>
             </div>
         </ConfigProvider>

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Form, Input, Button, Typography, ConfigProvider } from 'antd'
 import { MailOutlined } from '@ant-design/icons'
+import { Link } from 'react-router-dom'
 import { forgotPassword } from '../services/authService'
 
-const { Title, Text, Link } = Typography
+const { Title, Text } = Typography
 
 export const ForgotPassword = () => {
     const [loading, setLoading] = useState(false)
@@ -15,7 +16,8 @@ export const ForgotPassword = () => {
             alert("Reset link sent! Check your backend console/email.")
         } catch (error) {
             console.error(error)
-            alert("Failed to send reset link")
+            const msg = error instanceof Error ? error.message : 'Failed to send reset link'
+            alert(msg)
         } finally {
             setLoading(false)
         }
@@ -104,7 +106,7 @@ export const ForgotPassword = () => {
                     </Form>
 
                     <div style={{ textAlign: 'center', marginTop: 20 }}>
-                        <Link href="/login" style={{ color: '#BD72EB', fontWeight: 500 }}>Back to Login</Link>
+                        <Link to="/login" style={{ color: '#BD72EB', fontWeight: 500 }}>Back to Login</Link>
                     </div>
                 </div>
             </div>

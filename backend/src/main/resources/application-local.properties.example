@@ -1,16 +1,29 @@
 # Copy this file to application-local.properties and fill in your values.
 # application-local.properties is gitignored and will not be committed.
 #
-# Run the backend with the "local" profile so this file is loaded:
-#   .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
-# or set: SPRING_PROFILES_ACTIVE=local
+# Run the backend with the "local" profile so this file is loaded (PowerShell):
+#   .\mvnw.cmd spring-boot:run "-Dspring-boot.run.jvmArguments=-Dspring.profiles.active=local"
+# Or pass as app args:
+#   .\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=local"
+# Or set env before running: $env:SPRING_PROFILES_ACTIVE="local"
 #
 # --- Mail (for real confirmation emails) ---
 spring.mail.host=smtp.gmail.com
-spring.mail.port=587
 spring.mail.username=yourname@gmail.com
 spring.mail.password=your-16-char-app-password
 spring.mail.properties.mail.smtp.auth=true
-spring.mail.properties.mail.smtp.starttls.enable=true
 app.mail.from=yourname@gmail.com
 # app.confirmation.base-url=http://localhost:5173
+
+# --- Option A: Port 465 (SSL) - try this first if you get "PKIX path building failed" ---
+spring.mail.port=465
+spring.mail.properties.mail.smtp.ssl.enable=true
+spring.mail.properties.mail.smtp.ssl.trust=*
+
+# --- Option B: Port 587 (STARTTLS) - use only if Option A works or you prefer STARTTLS ---
+# spring.mail.port=587
+# spring.mail.properties.mail.smtp.starttls.enable=true
+# spring.mail.properties.mail.smtp.ssl.trust=*
+
+# --- Option C: If both fail, enable relaxed SSL (local dev only, skips cert verification) ---
+# app.mail.ssl.relaxed=true

@@ -194,11 +194,8 @@ public class AuthService {
                 user);
         tokenRepository.save(myToken);
 
-        // SIMULATE EMAIL SENDING
-        System.out.println("------------------------------------------------");
-        System.out.println("PASSWORD RESET LINK FOR: " + email);
-        System.out.println("http://localhost:5173/reset-password?token=" + token);
-        System.out.println("------------------------------------------------");
+        String resetLink = confirmationBaseUrl + "/reset-password?token=" + token;
+        emailService.sendPasswordResetEmail(email, resetLink);
     }
 
     public void resetPassword(String token, String newPassword) {

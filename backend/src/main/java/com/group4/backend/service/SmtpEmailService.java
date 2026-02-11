@@ -1,14 +1,20 @@
 package com.group4.backend.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
+@Primary
 @ConditionalOnProperty(prefix = "spring.mail", name = "host")
 public class SmtpEmailService implements EmailService {
+
+    private static final Logger log = LoggerFactory.getLogger(SmtpEmailService.class);
 
     private final JavaMailSender mailSender;
 
@@ -35,6 +41,36 @@ public class SmtpEmailService implements EmailService {
                 "If you did not create an account, you can ignore this email.\n\n" +
                 "— The Collabry Team"
         );
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+            log.info("Confirmation email sent to {}", email);
+        } catch (Exception e) {
+            log.error("Failed to send confirmation email to {}: {}", email, e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    public void sendPasswordResetEmail(String email, String resetLink) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        if (fromAddress != null && !fromAddress.isBlank()) {
+            message.setFrom(fromAddress);
+        }
+        message.setTo(email);
+        message.setSubject("Reset your Collabry password");
+        message.setText(
+                "You requested a password reset for your Collabry account.\n\n" +
+                "Click the link below to set a new password:\n\n" +
+                resetLink + "\n\n" +
+                "This link expires in 1 hour. If you did not request a reset, you can ignore this email.\n\n" +
+                "— The Collabry Team"
+        );
+        try {
+            mailSender.send(message);
+            log.info("Password reset email sent to {}", email);
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to {}: {}", email, e.getMessage());
+            throw e;
+        }
     }
 }

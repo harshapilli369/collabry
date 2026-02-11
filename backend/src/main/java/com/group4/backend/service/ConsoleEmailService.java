@@ -1,5 +1,6 @@
 package com.group4.backend.service;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
  * Set spring.mail.host (and related properties) to send real emails.
  */
 @Service
+@ConditionalOnMissingBean(EmailService.class)
 @ConditionalOnProperty(prefix = "spring.mail", name = "host", havingValue = "", matchIfMissing = true)
 public class ConsoleEmailService implements EmailService {
 
@@ -16,6 +18,14 @@ public class ConsoleEmailService implements EmailService {
         System.out.println("------------------------------------------------");
         System.out.println("CONFIRMATION EMAIL (simulated) FOR: " + email);
         System.out.println("Confirm your account: " + confirmationLinkOrToken);
+        System.out.println("------------------------------------------------");
+    }
+
+    @Override
+    public void sendPasswordResetEmail(String email, String resetLink) {
+        System.out.println("------------------------------------------------");
+        System.out.println("PASSWORD RESET EMAIL (simulated) FOR: " + email);
+        System.out.println("Reset your password: " + resetLink);
         System.out.println("------------------------------------------------");
     }
 }

@@ -152,12 +152,12 @@ By default, the backend **logs** the confirmation link to the console (no SMTP).
 
 2. Edit **application-local.properties** and set your SMTP values (e.g. Gmail address and [App Password](https://support.google.com/accounts/answer/185833)). The example file lists all needed keys.
 
-3. Run the backend with the **local** profile so Spring loads that file:
+3. Run the backend with the **local** profile so Spring loads that file (PowerShell):
    ```bash
    cd backend
-   .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
+   .\mvnw.cmd spring-boot:run "-Dspring-boot.run.jvmArguments=-Dspring.profiles.active=local"
    ```
-   Or set `SPRING_PROFILES_ACTIVE=local` in your environment or IDE run config.
+   Or set `SPRING_PROFILES_ACTIVE=local` in your environment or IDE run config before starting the app.
 
 4. As soon as **spring.mail.host** is set (via the local file), the app uses **SmtpEmailService** and sends real emails. Without it, **ConsoleEmailService** is used and the link is only printed to the console.
 

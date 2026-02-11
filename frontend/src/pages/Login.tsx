@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Form, Input, Button, Checkbox, Typography, Divider, ConfigProvider } from 'antd'
+import { Form, Input, Button, Checkbox, Typography, Divider, ConfigProvider, message } from 'antd'
 import { MailOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useGoogleLogin } from '@react-oauth/google'
 import { loginUser, googleLoginUser } from '../services/authService';
 
@@ -11,25 +11,37 @@ const { Title, Text } = Typography
 
 export const Login = () => {
     const [loading, setLoading] = useState(false)
+    const [form] = Form.useForm()
+    const navigate = useNavigate()
 
-    const onFinish = async (values: any) => {
+    const submitLogin = async (values: { email?: string; password?: string; rememberMe?: boolean }) => {
         setLoading(true)
         try {
-            const data = await loginUser(values);
+            const payload = { email: values.email ?? '', password: values.password ?? '', rememberMe: values.rememberMe ?? false };
+            const data = await loginUser(payload);
+            if (!data?.token) {
+                message.error('Invalid response from server');
+                alert('Invalid response from server');
+                return;
+            }
             console.log('Login success:', data);
-            // Store token
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
-
-            // Show success feedback
-            alert("Login Successful! Redirecting...");
-            // In a real router setup: navigate('/dashboard');
+            message.success('Login successful!');
+            alert('Login successful!');
+            navigate('/dashboard', { replace: true });
         } catch (error) {
             console.error('Login error:', error);
-            alert("Login Failed: Invalid credentials or Network error");
+            const msg = error instanceof Error ? error.message : 'Login failed';
+            message.error(msg);
+            alert(msg);
         } finally {
             setLoading(false)
         }
+    }
+
+    const onFinish = (values: { email?: string; password?: string; rememberMe?: boolean }) => {
+        submitLogin(values)
     }
 
     const googleLogin = useGoogleLogin({
@@ -106,8 +118,9 @@ export const Login = () => {
 
                     {/* Form Section */}
                     <Form
+                        form={form}
                         name="login"
-                        initialValues={{ remember: true }}
+                        initialValues={{ rememberMe: true }}
                         onFinish={onFinish}
                         layout="vertical"
                         size="large"
@@ -160,7 +173,6 @@ export const Login = () => {
                                     height: 50,
                                     fontWeight: 600,
                                     fontSize: 16,
-                                    // Let ConfigProvider handle colors, but ensure text is black
                                     color: textColor
                                 }}
                             >
