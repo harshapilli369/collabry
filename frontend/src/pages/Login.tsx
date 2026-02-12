@@ -29,7 +29,15 @@ export const Login = () => {
             localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
             message.success('Login successful!');
             alert('Login successful!');
-            navigate('/dashboard', { replace: true });
+
+            if (data.role === 'INFLUENCER') {
+                navigate('/influencer/dashboard', { replace: true });
+            } else if (data.role === 'BRAND') {
+                navigate('/brand/dashboard', { replace: true });
+            } else {
+                // Fallback or handle admin/other roles
+                navigate('/', { replace: true });
+            }
         } catch (error) {
             console.error('Login error:', error);
             const msg = error instanceof Error ? error.message : 'Login failed';
@@ -53,6 +61,14 @@ export const Login = () => {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
                 alert("Google Login Successful! Redirecting...");
+
+                if (data.role === 'INFLUENCER') {
+                    navigate('/influencer/dashboard', { replace: true });
+                } else if (data.role === 'BRAND') {
+                    navigate('/brand/dashboard', { replace: true });
+                } else {
+                    navigate('/', { replace: true });
+                }
             } catch (err) {
                 console.error("Google Backend Error", err);
                 alert("Google Login Failed on Backend");

@@ -78,6 +78,7 @@ public class AuthService {
         emailService.sendConfirmationEmail(request.getEmail(), confirmationLink);
 
         return new SignupResponse("Check your email to confirm your account. The link expires in " + CONFIRMATION_EXIRY_HOURS + " hours.");
+
     }
 
     /**

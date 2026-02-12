@@ -5,7 +5,9 @@ import { ConfirmEmail } from './pages/ConfirmEmail'
 import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
 import { ProfileSetup } from './pages/ProfileSetup'
-import { Dashboard } from './pages/Dashboard'
+import { InfluencerDashboard } from './pages/InfluencerDashboard'
+import { BrandDashboard } from './pages/BrandDashboard'
+import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
 
 function App() {
@@ -14,7 +16,16 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute allowedRole="INFLUENCER" />}>
+          <Route path="/influencer/dashboard" element={<InfluencerDashboard />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRole="BRAND" />}>
+          <Route path="/brand/dashboard" element={<BrandDashboard />} />
+        </Route>
+
         <Route path="/signup" element={<Signup />} />
         <Route path="/confirm-email" element={<ConfirmEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
