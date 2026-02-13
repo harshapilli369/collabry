@@ -59,7 +59,50 @@ Developer setup (entire project)
 git clone <repository-url>
 cd group04
 ```
-2. Backend (Spring Boot)
+
+### 2. Docker Setup (Recommended)
+This is the easiest way to run the application. It sets up both backend and frontend with a single command.
+
+1.  **Create the environment file**:
+    Create a file named `.env` in the **root** folder (`group04/.env`) and add your Google Client ID and Email Config:
+    ```env
+    # 1. Google Auth
+    VITE_GOOGLE_CLIENT_ID=your_google_client_id
+
+    # 2. Email Service (Required for Sign Up / Forgot Password)
+    # Use your Gmail + App Password (https://myaccount.google.com/apppasswords)
+    SPRING_MAIL_HOST=smtp.gmail.com
+    SPRING_MAIL_PORT=465
+    SPRING_MAIL_USERNAME=your_email@gmail.com
+    SPRING_MAIL_PASSWORD=your_app_password
+    SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+    SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=false
+    SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE=true
+    SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST=*
+    APP_MAIL_FROM=your_email@gmail.com
+    ```
+    
+    > **Note:** We use `.env` instead of `application-local.properties` because Docker containers are immutable. We inject secrets at runtime for security.
+
+2.  **Run with Docker Compose**:
+    ```bash
+    docker-compose up --build
+    ```
+    *(The `--build` flag is only needed the first time or after pulling new code).*
+
+    - **Backend**: Runs on `http://localhost:9090`
+    - **Frontend**: Runs on `http://localhost:5173`
+
+    *(To stop the app, press `Ctrl+C`)*
+
+---
+
+## Developer setup (Manual)
+
+If you prefer to run services manually (without Docker):
+
+1. Clone the repository...
+
 
 The API runs on **port 8080** by default (see `backend/src/main/resources/application.properties`). The frontend `.env.example` may use **port 9090**; either set the backend port to 9090 or set `VITE_API_BASE_URL` in the frontend to match your backend port.
 

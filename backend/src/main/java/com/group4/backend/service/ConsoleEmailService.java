@@ -1,6 +1,5 @@
 package com.group4.backend.service;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Service;
  * Set spring.mail.host (and related properties) to send real emails.
  */
 @Service
-@ConditionalOnMissingBean(EmailService.class)
 @ConditionalOnProperty(prefix = "spring.mail", name = "host", havingValue = "", matchIfMissing = true)
 public class ConsoleEmailService implements EmailService {
 
