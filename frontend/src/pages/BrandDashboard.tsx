@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, TeamOutlined, AppstoreOutlined } from '@ant-design/icons'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tabs } from 'antd'
+import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile } from '../services/brandService'
+import { getMyCampaigns, CAMPAIGN_STATUS_LABELS, BUDGET_RANGE_OPTIONS, type CampaignResponse, type CampaignStatus } from '../services/campaignService'
 
 const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
+const STATUS_ORDER: CampaignStatus[] = ['DRAFT', 'ACTIVE', 'COMPLETED', 'CANCELLED']
 
 export const BrandDashboard = () => {
     const navigate = useNavigate()
     const [profileCheckDone, setProfileCheckDone] = useState(false)
+    const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
+    const [campaignsLoading, setCampaignsLoading] = useState(false)
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
-    const email = user?.email ?? 'Brand'
 
     useEffect(() => {
         if (user?.role !== 'BRAND') {
@@ -31,6 +34,21 @@ export const BrandDashboard = () => {
                 setProfileCheckDone(true)
             })
     }, [user?.role, navigate])
+
+    useEffect(() => {
+        if (!profileCheckDone || user?.role !== 'BRAND') return
+        setCampaignsLoading(true)
+        getMyCampaigns()
+            .then(setCampaigns)
+            .catch(() => setCampaigns([]))
+            .finally(() => setCampaignsLoading(false))
+    }, [profileCheckDone, user?.role])
+
+    const campaignsByStatus = STATUS_ORDER.map((status) => ({
+        status,
+        label: CAMPAIGN_STATUS_LABELS[status],
+        list: campaigns.filter((c) => c.status === status),
+    }))
 
     const handleLogout = () => {
         localStorage.removeItem('token')
@@ -77,27 +95,40 @@ export const BrandDashboard = () => {
                     <Menu
                         theme="dark"
                         mode="inline"
-                        defaultSelectedKeys={['1']}
+                        defaultSelectedKeys={['dashboard']}
+                        defaultOpenKeys={['campaign']}
                         items={[
                             {
-                                key: '1',
+                                key: 'dashboard',
                                 icon: <AppstoreOutlined />,
                                 label: 'Dashboard',
                             },
                             {
-                                key: '2',
-                                icon: <PlusCircleOutlined />,
-                                label: 'Create Campaign',
-                                onClick: () => navigate('/brand/campaigns/create'),
+                                key: 'campaign',
+                                icon: <FundProjectionScreenOutlined />,
+                                label: 'Campaign',
+                                children: [
+                                    {
+                                        key: 'campaign-create',
+                                        icon: <PlusCircleOutlined />,
+                                        label: 'Create campaign',
+                                        onClick: () => navigate('/brand/campaigns/create'),
+                                    },
+                                    {
+                                        key: 'campaign-view',
+                                        icon: <UnorderedListOutlined />,
+                                        label: 'View my campaigns',
+                                    },
+                                ],
                             },
                             {
-                                key: '3',
+                                key: 'profile',
                                 icon: <UserOutlined />,
                                 label: 'Profile',
                                 onClick: () => navigate('/brand/profile'),
                             },
                             {
-                                key: '4',
+                                key: 'logout',
                                 icon: <LogoutOutlined />,
                                 label: 'Logout',
                                 onClick: handleLogout,
@@ -120,91 +151,101 @@ export const BrandDashboard = () => {
                         </div>
 
                         <Row gutter={[24, 24]}>
-                            {/* Stats Row */}
+                            {/* Stats Row - real campaign counts */}
                             <Col span={6}>
                                 <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>
-                                    <Text type="secondary">Active Campaigns</Text>
-                                    <Title level={2} style={{ margin: '10px 0 0' }}>3</Title>
+                                    <Text type="secondary">Draft</Text>
+                                    <Title level={2} style={{ margin: '10px 0 0' }}>{campaigns.filter((c) => c.status === 'DRAFT').length}</Title>
                                 </Card>
                             </Col>
                             <Col span={6}>
                                 <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>
-                                    <Text type="secondary">Total Reach</Text>
-                                    <Title level={2} style={{ margin: '10px 0 0' }}>1.2M</Title>
-                                    <Text type="success">+5% this month</Text>
+                                    <Text type="secondary">Active</Text>
+                                    <Title level={2} style={{ margin: '10px 0 0' }}>{campaigns.filter((c) => c.status === 'ACTIVE').length}</Title>
                                 </Card>
                             </Col>
                             <Col span={6}>
                                 <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>
-                                    <Text type="secondary">Budget Spent</Text>
-                                    <Title level={2} style={{ margin: '10px 0 0' }}>$15k</Title>
-                                    <Text type="secondary">of $50k</Text>
+                                    <Text type="secondary">Completed</Text>
+                                    <Title level={2} style={{ margin: '10px 0 0' }}>{campaigns.filter((c) => c.status === 'COMPLETED').length}</Title>
                                 </Card>
                             </Col>
                             <Col span={6}>
                                 <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>
-                                    <Text type="secondary">ROI</Text>
-                                    <Title level={2} style={{ margin: '10px 0 0' }}>3.4x</Title>
-                                    <Text type="success">Excellent</Text>
+                                    <Text type="secondary">Total campaigns</Text>
+                                    <Title level={2} style={{ margin: '10px 0 0' }}>{campaigns.length}</Title>
+                                </Card>
+                            </Col>
+
+                            {/* Campaign section: Create campaign + View my campaigns by status */}
+                            <Col span={24}>
+                                <Card
+                                    title={
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <FundProjectionScreenOutlined />
+                                            Campaign
+                                        </span>
+                                    }
+                                    bordered={false}
+                                    style={{ borderRadius: 12 }}
+                                    extra={
+                                        <Button type="primary" icon={<PlusCircleOutlined />} onClick={() => navigate('/brand/campaigns/create')} style={{ color: textColor }}>
+                                            Create campaign
+                                        </Button>
+                                    }
+                                >
+                                    <Title level={5} style={{ color: '#888', marginBottom: 16 }}>View my campaigns</Title>
+                                    {campaignsLoading ? (
+                                        <Text type="secondary">Loading campaigns…</Text>
+                                    ) : campaigns.length === 0 ? (
+                                        <Text type="secondary">No campaigns yet. Create one to get started.</Text>
+                                    ) : (
+                                        <Tabs
+                                            defaultActiveKey={STATUS_ORDER.find((s) => campaigns.some((c) => c.status === s)) ?? 'DRAFT'}
+                                            items={campaignsByStatus.map(({ status, label, list }) => ({
+                                                key: status,
+                                                label: `${label} (${list.length})`,
+                                                children: (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                                        {list.length === 0 ? (
+                                                            <Text type="secondary">No {label.toLowerCase()} campaigns.</Text>
+                                                        ) : (
+                                                            list.map((campaign) => (
+                                                                <Card key={campaign.id} size="small" style={{ background: '#fafafa', borderRadius: 8 }}>
+                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                                        <div>
+                                                                            <Text strong>{campaign.name}</Text>
+                                                                            {campaign.description && (
+                                                                                <div><Text type="secondary" style={{ fontSize: 12 }}>{campaign.description.slice(0, 100)}{campaign.description.length > 100 ? '…' : ''}</Text></div>
+                                                                            )}
+                                                                            <div style={{ marginTop: 4 }}>
+                                                                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                                                                    Budget: {BUDGET_RANGE_OPTIONS.find((o) => o.value === campaign.budgetRange)?.label ?? campaign.budgetRange}
+                                                                                    {campaign.numberOfInfluencers != null && ` · ${campaign.numberOfInfluencers} influencer(s)`}
+                                                                                    {campaign.startDate && ` · ${campaign.startDate}`}
+                                                                                </Text>
+                                                                            </div>
+                                                                        </div>
+                                                                        <Text style={{ fontSize: 12, fontWeight: 600, color: '#666' }}>{CAMPAIGN_STATUS_LABELS[campaign.status]}</Text>
+                                                                    </div>
+                                                                </Card>
+                                                            ))
+                                                        )}
+                                                    </div>
+                                                ),
+                                            }))}
+                                        />
+                                    )}
                                 </Card>
                             </Col>
 
                             <Col span={12}>
-                                <Card title="Active Campaigns" bordered={false} style={{ borderRadius: 12, height: '100%' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                                        <Text>Total Running: 2</Text>
-                                        <Button type="link">View All</Button>
-                                    </div>
-                                    <div style={{ padding: 15, background: '#f5f5f5', borderRadius: 8, marginBottom: 10 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Text strong>Spring Collection Launch</Text>
-                                            <Text type="success" strong>Active</Text>
-                                        </div>
-                                        <Text type="secondary">Budget: $5,000 | Influencers: 3</Text>
-                                        <div style={{ marginTop: 8, width: '100%', height: 6, background: '#ddd', borderRadius: 3 }}>
-                                            <div style={{ width: '60%', height: '100%', background: '#52c41a', borderRadius: 3 }}></div>
-                                        </div>
-                                    </div>
-                                    <div style={{ padding: 15, background: '#f5f5f5', borderRadius: 8 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Text strong>Holiday Special</Text>
-                                            <Text type="warning" strong>Ending Soon</Text>
-                                        </div>
-                                        <Text type="secondary">Budget: $10,000 | Influencers: 8</Text>
-                                        <div style={{ marginTop: 8, width: '100%', height: 6, background: '#ddd', borderRadius: 3 }}>
-                                            <div style={{ width: '90%', height: '100%', background: '#faad14', borderRadius: 3 }}></div>
-                                        </div>
-                                    </div>
-                                </Card>
-                            </Col>
-                            <Col span={12}>
                                 <Card title="Invited Influencers" bordered={false} style={{ borderRadius: 12, height: '100%' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                                        <Text>Pending Responses: 5</Text>
+                                        <Text>Pending Responses: 0</Text>
                                         <Button type="link">Manage</Button>
                                     </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                        <div style={{ padding: 15, background: '#f5f5f5', borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                                                <Avatar icon={<TeamOutlined />} style={{ backgroundColor: '#87d068' }} />
-                                                <div>
-                                                    <Text strong>Jane Doe</Text><br />
-                                                    <Text type="secondary" style={{ fontSize: 12 }}>Fashion & Lifestyle</Text>
-                                                </div>
-                                            </div>
-                                            <Button size="small">Remind</Button>
-                                        </div>
-                                        <div style={{ padding: 15, background: '#f5f5f5', borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                                                <Avatar icon={<TeamOutlined />} style={{ backgroundColor: '#1890ff' }} />
-                                                <div>
-                                                    <Text strong>Tech Reviewer X</Text><br />
-                                                    <Text type="secondary" style={{ fontSize: 12 }}>Technology</Text>
-                                                </div>
-                                            </div>
-                                            <Button size="small">Remind</Button>
-                                        </div>
-                                    </div>
+                                    <Text type="secondary">Invite influencers from your campaigns.</Text>
                                 </Card>
                             </Col>
                         </Row>
