@@ -9,15 +9,15 @@ services:
       # For now, it's just the API running inside
 
       # SMTP Settings (Passed from .env)
-      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST}
-      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
-      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
-      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
-      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH}
-      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE}
-      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE=${SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE}
-      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST=${SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST}
-      - APP_MAIL_FROM=${APP_MAIL_FROM}
+      - SPRING_MAIL_HOST=smtp.gmail.com
+      - SPRING_MAIL_PORT=465
+      - SPRING_MAIL_USERNAME=collabry1@gmail.com
+      - SPRING_MAIL_PASSWORD=pvhinjfgpjgjoiae
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST=*
+      - APP_MAIL_FROM=collabry1@gmail.com
 
     networks:
       - app-network
@@ -33,7 +33,7 @@ services:
       # But for Vite dev server, the browser is on the host.
       - VITE_API_BASE_URL=http://localhost:9090/api/auth
       # Pass the Google Client ID from the host's .env file
-      - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+      - VITE_GOOGLE_CLIENT_ID=337303186898-c8jdr70o76m93ask0j4nfip2hmh10m3p.apps.googleusercontent.com
     depends_on:
       - backend
     networks:
