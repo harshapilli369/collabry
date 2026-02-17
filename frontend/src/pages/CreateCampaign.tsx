@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
-import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message } from 'antd'
+import { useState } from 'react'
+import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, InputNumber } from 'antd'
 import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
-    getMyBrandProfile,
-    updateMyBrandProfile,
+    createCampaign,
     BUDGET_RANGE_OPTIONS,
-    type BrandProfileRequest,
-    type BrandProfileResponse,
-} from '../services/brandService'
+    CAMPAIGN_GOAL_OPTIONS,
+    PREFERRED_CONTENT_OPTIONS,
+    type CampaignRequest,
+} from '../services/campaignService'
 
 const { Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -18,45 +18,33 @@ const primaryColor = '#FFFD82'
 const textColor = '#000000'
 const cardBackgroundColor = '#FFFFFF'
 
-export const BrandProfile = () => {
-    const [form] = Form.useForm<BrandProfileRequest>()
+export const CreateCampaign = () => {
+    const [form] = Form.useForm<CampaignRequest & { preferredContentTypesList?: string[] }>()
     const [loading, setLoading] = useState(false)
-    const [fetching, setFetching] = useState(true)
     const navigate = useNavigate()
 
-    useEffect(() => {
-        getMyBrandProfile()
-            .then((profile: BrandProfileResponse | null) => {
-                if (profile) {
-                    form.setFieldsValue({
-                        name: profile.name,
-                        industry: profile.industry,
-                        website: profile.website,
-                        email: profile.email,
-                        logoUrl: profile.logoUrl ?? undefined,
-                        description: profile.description ?? undefined,
-                        instagramUrl: profile.instagramUrl ?? undefined,
-                        linkedInUrl: profile.linkedInUrl ?? undefined,
-                        twitterUrl: profile.twitterUrl ?? undefined,
-                        budgetRange: profile.budgetRange ?? undefined,
-                    })
-                }
-            })
-            .catch(() => message.error('Failed to load profile'))
-            .finally(() => setFetching(false))
-    }, [form])
-
-    const onFinish = async (values: BrandProfileRequest) => {
+    const onFinish = async (values: CampaignRequest & { preferredContentTypesList?: string[] }) => {
         setLoading(true)
         try {
-            await updateMyBrandProfile(values)
-            message.success('Profile saved successfully')
-            // Short delay so success message is visible and backend commit is ready before dashboard loads
+            const payload: CampaignRequest = {
+                name: values.name,
+                description: values.description,
+                budgetRange: values.budgetRange,
+                campaignGoal: values.campaignGoal,
+                preferredContentTypes: values.preferredContentTypesList?.length
+                    ? values.preferredContentTypesList.join(',')
+                    : undefined,
+                startDate: values.startDate || undefined,
+                endDate: values.endDate || undefined,
+                numberOfInfluencers: values.numberOfInfluencers,
+            }
+            await createCampaign(payload)
+            message.success('Campaign created successfully')
             setTimeout(() => {
                 navigate('/brand/dashboard', { replace: true })
             }, 300)
         } catch (e) {
-            const msg = e instanceof Error ? e.message : 'Failed to save profile'
+            const msg = e instanceof Error ? e.message : 'Failed to create campaign'
             message.error(msg)
             setLoading(false)
         }
@@ -98,7 +86,7 @@ export const BrandProfile = () => {
                     <Menu
                         theme="dark"
                         mode="inline"
-                        selectedKeys={['profile']}
+                        selectedKeys={['campaign']}
                         items={[
                             {
                                 key: 'dashboard',
@@ -107,15 +95,15 @@ export const BrandProfile = () => {
                                 onClick: () => navigate('/brand/dashboard'),
                             },
                             {
-                                key: 'profile',
-                                icon: <UserOutlined />,
-                                label: 'Profile',
-                            },
-                            {
                                 key: 'campaign',
                                 icon: <PlusCircleOutlined />,
                                 label: 'Create Campaign',
-                                onClick: () => navigate('/brand/campaigns/create'),
+                            },
+                            {
+                                key: 'profile',
+                                icon: <UserOutlined />,
+                                label: 'Profile',
+                                onClick: () => navigate('/brand/profile'),
                             },
                             {
                                 key: 'logout',
@@ -139,10 +127,10 @@ export const BrandProfile = () => {
                                 Back to Dashboard
                             </Button>
                             <Title level={1} style={{ color: primaryColor, margin: '0 0 8px', fontSize: '2rem' }}>
-                                Company Profile
+                                Create Campaign
                             </Title>
                             <Text style={{ color: '#aaa' }}>
-                                Manage your brand profile. This is visible to influencers you contact.
+                                Set up a new influencer campaign with budget, goals, and content preferences.
                             </Text>
                         </div>
 
@@ -151,67 +139,59 @@ export const BrandProfile = () => {
                             layout="vertical"
                             onFinish={onFinish}
                             style={{ maxWidth: 640 }}
-                            disabled={fetching}
                         >
-                            <Title level={5} style={{ color: '#ccc', marginTop: 24 }}>Required</Title>
+                            <Title level={5} style={{ color: '#ccc', marginTop: 0 }}>Required</Title>
                             <Form.Item
                                 name="name"
-                                label="Company name"
-                                rules={[{ required: true, message: 'Company name is required' }]}
+                                label="Campaign name"
+                                rules={[{ required: true, message: 'Campaign name is required' }]}
                             >
-                                <Input placeholder="Your company or brand name" />
+                                <Input placeholder="e.g. Spring Collection Launch 2025" />
                             </Form.Item>
                             <Form.Item
-                                name="industry"
-                                label="Industry"
-                                rules={[{ required: true, message: 'Industry is required' }]}
+                                name="budgetRange"
+                                label="Budget range"
+                                rules={[{ required: true, message: 'Budget range is required' }]}
                             >
-                                <Input placeholder="e.g. Fashion, Technology, Food & Beverage" />
-                            </Form.Item>
-                            <Form.Item
-                                name="website"
-                                label="Website"
-                                rules={[
-                                    { required: true, message: 'Website is required' },
-                                    { type: 'url', message: 'Enter a valid URL (e.g. https://example.com)' },
-                                ]}
-                            >
-                                <Input placeholder="https://www.example.com" />
-                            </Form.Item>
-                            <Form.Item
-                                name="email"
-                                label="Email"
-                                rules={[
-                                    { required: true, message: 'Email is required' },
-                                    { type: 'email', message: 'Enter a valid email' },
-                                ]}
-                            >
-                                <Input placeholder="contact@company.com" />
+                                <Select
+                                    placeholder="Select campaign budget range"
+                                    options={BUDGET_RANGE_OPTIONS}
+                                />
                             </Form.Item>
 
                             <Title level={5} style={{ color: '#ccc', marginTop: 24 }}>Optional</Title>
-                            <Form.Item name="logoUrl" label="Logo URL">
-                                <Input placeholder="https://example.com/logo.png" />
-                            </Form.Item>
                             <Form.Item name="description" label="Description">
-                                <TextArea rows={4} placeholder="Tell influencers about your brand and campaigns" />
+                                <TextArea rows={4} placeholder="Describe the campaign, deliverables, and key messages" />
                             </Form.Item>
-                            <Form.Item name="instagramUrl" label="Instagram">
-                                <Input placeholder="https://instagram.com/yourbrand" />
-                            </Form.Item>
-                            <Form.Item name="linkedInUrl" label="LinkedIn">
-                                <Input placeholder="https://linkedin.com/company/yourbrand" />
-                            </Form.Item>
-                            <Form.Item name="twitterUrl" label="Twitter / X">
-                                <Input placeholder="https://twitter.com/yourbrand" />
-                            </Form.Item>
-
-                            <Form.Item name="budgetRange" label="Budget range">
+                            <Form.Item name="campaignGoal" label="Campaign goal">
                                 <Select
-                                    placeholder="Select your typical campaign budget range"
+                                    placeholder="Select primary goal"
                                     allowClear
-                                    options={BUDGET_RANGE_OPTIONS}
+                                    options={CAMPAIGN_GOAL_OPTIONS}
                                 />
+                            </Form.Item>
+                            <Form.Item
+                                name="preferredContentTypesList"
+                                label="Preferred content types"
+                            >
+                                <Select
+                                    mode="multiple"
+                                    placeholder="Select content types (e.g. Reels, YouTube)"
+                                    allowClear
+                                    options={PREFERRED_CONTENT_OPTIONS}
+                                />
+                            </Form.Item>
+                            <Form.Item name="startDate" label="Start date">
+                                <Input type="date" />
+                            </Form.Item>
+                            <Form.Item name="endDate" label="End date">
+                                <Input type="date" />
+                            </Form.Item>
+                            <Form.Item
+                                name="numberOfInfluencers"
+                                label="Number of influencers"
+                            >
+                                <InputNumber min={1} placeholder="e.g. 5" style={{ width: '100%' }} />
                             </Form.Item>
 
                             <Form.Item style={{ marginTop: 32 }}>
@@ -219,9 +199,9 @@ export const BrandProfile = () => {
                                     type="primary"
                                     htmlType="submit"
                                     loading={loading}
-                                    style={{ minWidth: 140, fontWeight: 600, color: textColor }}
+                                    style={{ minWidth: 160, fontWeight: 600, color: textColor }}
                                 >
-                                    Save profile
+                                    Create campaign
                                 </Button>
                             </Form.Item>
                         </Form>

@@ -88,6 +88,7 @@ export const BrandDashboard = () => {
                                 key: '2',
                                 icon: <PlusCircleOutlined />,
                                 label: 'Create Campaign',
+                                onClick: () => navigate('/brand/campaigns/create'),
                             },
                             {
                                 key: '3',
