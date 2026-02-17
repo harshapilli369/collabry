@@ -1,15 +1,34 @@
+import { useState, useEffect } from 'react'
 import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar } from 'antd'
 import { UserOutlined, LogoutOutlined, PlusCircleOutlined, TeamOutlined, AppstoreOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+import { getMyBrandProfile } from '../services/brandService'
 
 const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
 
 export const BrandDashboard = () => {
     const navigate = useNavigate()
+    const [profileCheckDone, setProfileCheckDone] = useState(false)
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
     const email = user?.email ?? 'Brand'
+
+    useEffect(() => {
+        if (user?.role !== 'BRAND') {
+            setProfileCheckDone(true)
+            return
+        }
+        getMyBrandProfile()
+            .then((profile) => {
+                if (profile == null) {
+                    navigate('/brand/profile', { replace: true })
+                    return
+                }
+                setProfileCheckDone(true)
+            })
+            .catch(() => setProfileCheckDone(true))
+    }, [user?.role, navigate])
 
     const handleLogout = () => {
         localStorage.removeItem('token')
@@ -21,6 +40,10 @@ export const BrandDashboard = () => {
     const textColor = '#000000';
     const pageBackgroundColor = '#1E1E1E';
 
+
+    if (!profileCheckDone && user?.role === 'BRAND') {
+        return null
+    }
 
     return (
         <ConfigProvider
@@ -68,6 +91,7 @@ export const BrandDashboard = () => {
                                 key: '3',
                                 icon: <UserOutlined />,
                                 label: 'Profile',
+                                onClick: () => navigate('/brand/profile'),
                             },
                             {
                                 key: '4',

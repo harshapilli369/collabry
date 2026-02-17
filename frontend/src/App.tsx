@@ -7,6 +7,7 @@ import { ResetPassword } from './pages/ResetPassword'
 import { ProfileSetup } from './pages/ProfileSetup'
 import { InfluencerDashboard } from './pages/InfluencerDashboard'
 import { BrandDashboard } from './pages/BrandDashboard'
+import { BrandProfile } from './pages/BrandProfile'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
 
@@ -24,6 +25,7 @@ function App() {
 
         <Route element={<ProtectedRoute allowedRole="BRAND" />}>
           <Route path="/brand/dashboard" element={<BrandDashboard />} />
+          <Route path="/brand/profile" element={<BrandProfile />} />
         </Route>
 
         <Route path="/signup" element={<Signup />} />
