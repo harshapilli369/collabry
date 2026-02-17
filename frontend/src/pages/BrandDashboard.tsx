@@ -27,7 +27,9 @@ export const BrandDashboard = () => {
                 }
                 setProfileCheckDone(true)
             })
-            .catch(() => setProfileCheckDone(true))
+            .catch(() => {
+                setProfileCheckDone(true)
+            })
     }, [user?.role, navigate])
 
     const handleLogout = () => {

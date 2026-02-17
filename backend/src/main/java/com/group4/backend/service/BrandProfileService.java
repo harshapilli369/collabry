@@ -40,15 +40,15 @@ public class BrandProfileService {
                 .orElseGet(BrandProfile::new);
 
         profile.setUserId(userId);
-        profile.setName(request.getName());
-        profile.setIndustry(request.getIndustry());
-        profile.setWebsite(request.getWebsite());
-        profile.setEmail(request.getEmail());
-        profile.setLogoUrl(request.getLogoUrl());
-        profile.setDescription(request.getDescription());
-        profile.setInstagramUrl(request.getInstagramUrl());
-        profile.setLinkedInUrl(request.getLinkedInUrl());
-        profile.setTwitterUrl(request.getTwitterUrl());
+        profile.setName(request.getName().trim());
+        profile.setIndustry(request.getIndustry().trim());
+        profile.setWebsite(normalizeWebsite(request.getWebsite()));
+        profile.setEmail(request.getEmail().trim());
+        profile.setLogoUrl(emptyToNull(request.getLogoUrl()));
+        profile.setDescription(emptyToNull(request.getDescription()));
+        profile.setInstagramUrl(emptyToNull(request.getInstagramUrl()));
+        profile.setLinkedInUrl(emptyToNull(request.getLinkedInUrl()));
+        profile.setTwitterUrl(emptyToNull(request.getTwitterUrl()));
         profile.setBudgetRange(request.getBudgetRange());
 
         profile = brandProfileRepository.save(profile);
@@ -58,6 +58,23 @@ public class BrandProfileService {
     public Optional<BrandProfileResponse> getPublicProfile(Long brandUserId) {
         return brandProfileRepository.findByUserId(brandUserId)
                 .map(this::toResponse);
+    }
+
+    private static String normalizeWebsite(String website) {
+        if (website == null) return null;
+        String s = website.trim();
+        if (s.isEmpty()) return s;
+        String lower = s.toLowerCase();
+        if (lower.startsWith("http://") || lower.startsWith("https://") || lower.startsWith("ftp://")) {
+            return s;
+        }
+        return "https://" + s;
+    }
+
+    private static String emptyToNull(String value) {
+        if (value == null) return null;
+        String s = value.trim();
+        return s.isEmpty() ? null : s;
     }
 
     private BrandProfileResponse toResponse(BrandProfile profile) {

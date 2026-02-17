@@ -16,7 +16,6 @@ const { TextArea } = Input
 
 const primaryColor = '#FFFD82'
 const textColor = '#000000'
-const pageBackgroundColor = '#1E1E1E'
 const cardBackgroundColor = '#FFFFFF'
 
 export const BrandProfile = () => {
@@ -52,10 +51,13 @@ export const BrandProfile = () => {
         try {
             await updateMyBrandProfile(values)
             message.success('Profile saved successfully')
-            navigate('/brand/dashboard', { replace: true })
+            // Short delay so success message is visible and backend commit is ready before dashboard loads
+            setTimeout(() => {
+                navigate('/brand/dashboard', { replace: true })
+            }, 300)
         } catch (e) {
-            message.error(e instanceof Error ? e.message : 'Failed to save profile')
-        } finally {
+            const msg = e instanceof Error ? e.message : 'Failed to save profile'
+            message.error(msg)
             setLoading(false)
         }
     }
