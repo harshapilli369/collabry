@@ -6,6 +6,7 @@ import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
 import { ProfileSetup } from './pages/ProfileSetup'
 import { InfluencerDashboard } from './pages/InfluencerDashboard'
+import { InfluencerProfileForm } from './pages/InfluencerProfileForm'
 import { BrandDashboard } from './pages/BrandDashboard'
 import { BrandProfile } from './pages/BrandProfile'
 import { CreateCampaign } from './pages/CreateCampaign'
@@ -22,6 +23,7 @@ function App() {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute allowedRole="INFLUENCER" />}>
           <Route path="/influencer/dashboard" element={<InfluencerDashboard />} />
+          <Route path="/influencer/profile" element={<InfluencerProfileForm />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRole="BRAND" />}>
