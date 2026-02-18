@@ -1,34 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Login } from './pages/Login'
+import { Signup } from './pages/Signup'
+import { ConfirmEmail } from './pages/ConfirmEmail'
+import { ForgotPassword } from './pages/ForgotPassword'
+import { ResetPassword } from './pages/ResetPassword'
+import { ProfileSetup } from './pages/ProfileSetup'
+import { InfluencerDashboard } from './pages/InfluencerDashboard'
+import { BrandDashboard } from './pages/BrandDashboard'
+import { BrandProfile } from './pages/BrandProfile'
+import { CreateCampaign } from './pages/CreateCampaign'
+import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute allowedRole="INFLUENCER" />}>
+          <Route path="/influencer/dashboard" element={<InfluencerDashboard />} />
+          <Route path="/influencer/profile-setup" element={<ProfileSetup />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRole="BRAND" />}>
+          <Route path="/brand/dashboard" element={<BrandDashboard />} />
+          <Route path="/brand/profile" element={<BrandProfile />} />
+          <Route path="/brand/campaigns/create" element={<CreateCampaign />} />
+        </Route>
+
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/confirm-email" element={<ConfirmEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+      </Routes>
+    </Router>
   )
 }
 
