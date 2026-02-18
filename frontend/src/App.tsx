@@ -11,7 +11,7 @@ import { BrandProfile } from './pages/BrandProfile'
 import { CreateCampaign } from './pages/CreateCampaign'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
-
+// This is the main App component that renders the routes for the application.
 function App() {
   return (
     <Router>

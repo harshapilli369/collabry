@@ -29,25 +29,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .securityMatcher("/api/**", "/h2-console/**")
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/login",
-                                "/signup",
-                                "/forgot-password",
-                                "/reset-password",
-                                "/confirm-email",
-                                "/influencer/**",
-                                "/brand/**",
-                                "/assets/**",
-                                "/*.js",
-                                "/*.css",
-                                "/*.ico",
-                                "/*.png",
-                                "/logo.png",
                                 "/api/auth/login",
                                 "/api/auth/google",
                                 "/api/auth/forgot-password",
@@ -76,6 +62,7 @@ public class SecurityConfig {
                 "http://localhost:5174",
                 "http://csci5308-vm2.research.cs.dal.ca:8073",
                 "http://csci5308-vm2.research.cs.dal.ca:8074",
+                "http://csci5308-vm5.research.cs.dal.ca:8073",
                 "http://localhost:8073",
                 "http://localhost:8074"
         ));
