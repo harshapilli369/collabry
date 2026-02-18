@@ -100,7 +100,7 @@ deploy-dev:
         echo \"$DOCKERHUB_PASSWORD\" | docker login -u \"${DOCKERHUB_USER:-hpilli369}\" --password-stdin &&
         docker pull docker.io/hpilli369/group04:dev-$CI_COMMIT_SHORT_SHA &&
         docker container rm -f my-app-dev my-app 2>/dev/null || true &&
-        docker run -d -p 8073:8073 -e APP_CONFIRMATION_BASE_URL=http://csci5308-vm2.research.cs.dal.ca:8073 --name my-app-dev --restart unless-stopped docker.io/hpilli369/group04:dev-$CI_COMMIT_SHORT_SHA
+        docker run -d -p 8073:8073 -e APP_CONFIRMATION_BASE_URL=http://$SERVER_IP:8073 --name my-app-dev --restart unless-stopped docker.io/hpilli369/group04:dev-$CI_COMMIT_SHORT_SHA
       "
   environment:
     name: develop
