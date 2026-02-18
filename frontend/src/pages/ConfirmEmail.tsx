@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Typography, Button, ConfigProvider, Spin } from 'antd'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { confirmEmail } from '../services/authService'
 
 const { Title, Text } = Typography
@@ -36,7 +36,6 @@ export const ConfirmEmail = () => {
     }, [token])
 
     const primaryColor = '#FFFD82'
-    const secondaryColor = '#BD72EB'
     const textColor = '#000000'
     const pageBackgroundColor = '#1E1E1E'
     const cardBackgroundColor = '#FFFFFF'

@@ -7,9 +7,6 @@ const { Title, Text } = Typography
 
 export const InfluencerDashboard = () => {
     const navigate = useNavigate()
-    const userStr = localStorage.getItem('user')
-    const user = userStr ? JSON.parse(userStr) : null
-    const email = user?.email ?? 'Influencer'
 
     const handleLogout = () => {
         localStorage.removeItem('token')
