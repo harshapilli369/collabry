@@ -68,7 +68,9 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://localhost:5174",
                 "http://csci5308-vm2.research.cs.dal.ca:8073",
-                "http://localhost:8073"
+                "http://csci5308-vm2.research.cs.dal.ca:8074",
+                "http://localhost:8073",
+                "http://localhost:8074"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));

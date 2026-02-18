@@ -1,8 +1,23 @@
-# Deployment Guide – Production from main
+# Deployment Guide – Development and Production
 
-This guide covers deploying Collabry to production from the `main` branch and consolidating work for demo.
+- **`develop` branch**: Full CI/CD (build, test, publish, deploy) → dev server at **port 8074** (container `my-app-dev`, image tag `dev-latest` / `dev-<SHA>`).
+- **`main` branch**: Full CI/CD → production at **port 8073** (container `my-app`, image tag `latest` / `<SHA>`).
 
-## 1. Consolidate work into main (for demo)
+## 1. Working with the develop branch
+
+Push or merge to `develop` to run the pipeline and deploy to the dev environment:
+
+```bash
+git checkout develop
+git pull origin develop
+# merge your feature branch or push commits
+git push origin develop
+```
+
+- **Dev URL**: http://csci5308-vm2.research.cs.dal.ca:8074  
+- **Prod URL**: http://csci5308-vm2.research.cs.dal.ca:8073  
+
+## 2. Consolidate work into main (for demo)
 
 Merge your feature branch into `main`:
 
@@ -28,7 +43,7 @@ git commit -m "feat: influencer profile setup and onboarding flow"
 git push origin main
 ```
 
-## 2. GitLab CI/CD variables
+## 3. GitLab CI/CD variables
 
 Configure these in **Settings → CI/CD → Variables** (mask sensitive ones):
 
@@ -41,25 +56,23 @@ Configure these in **Settings → CI/CD → Variables** (mask sensitive ones):
 | `ID_RSA` | File | No | SSH private key file for server access |
 | `VITE_API_BASE_URL` | Variable | No | Optional. e.g. `http://csci5308-vm2.research.cs.dal.ca:8073/api/auth` |
 | `VITE_GOOGLE_CLIENT_ID` | Variable | No | Optional. Google OAuth client ID for production |
+| `VITE_API_BASE_URL_DEV` | Variable | No | Optional. Dev API base (default: `http://csci5308-vm2.research.cs.dal.ca:8074/api/auth`) |
 
-## 3. CI/CD pipeline (main branch)
+## 4. CI/CD pipeline
 
-On push to `main`, the pipeline runs:
+- **`develop`**: Build → Test → Publish (image tag `dev-latest`) → Deploy to port **8074** (container `my-app-dev`).
+- **`main`**: Build → Test → Publish (image tag `latest`) → Deploy to port **8073** (container `my-app`).
 
-1. **Build** – Compile backend (Maven) and frontend (npm build)
-2. **Test** – Backend unit tests
-3. **Publish** – Build Docker image, push to Docker Hub
-4. **Deploy** – SSH to production, pull image, run container on port 8073
+Merge requests targeting either branch run build and test only.
 
-## 4. Production URL
+## 5. URLs after deploy
 
-After deploy, the app is at:
+- **Development**: http://csci5308-vm2.research.cs.dal.ca:8074  
+- **Production**: http://csci5308-vm2.research.cs.dal.ca:8073  
 
-- **Frontend & API**: http://csci5308-vm2.research.cs.dal.ca:8073
+The container serves both the React frontend and Spring Boot API from the same URL.
 
-The container serves both the React frontend and Spring Boot API from this single URL.
-
-## 5. Local production build (optional)
+## 6. Local production build (optional)
 
 ```bash
 # Build the production image locally
@@ -73,8 +86,8 @@ docker build \
 docker run -p 8073:8073 group04:local
 ```
 
-## 6. Troubleshooting
+## 7. Troubleshooting
 
 - **Build fails**: Check backend Maven logs and frontend npm build logs in the GitLab job output.
 - **Deploy fails**: Confirm `ID_RSA` has correct permissions and the key is added to the server’s `authorized_keys`.
-- **502 / app not loading**: Check `docker ps` on the server and logs via `docker logs my-app`.
+- **502 / app not loading**: Check `docker ps` on the server; production: `docker logs my-app`, dev: `docker logs my-app-dev`.
