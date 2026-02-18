@@ -22,6 +22,7 @@ function App() {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute allowedRole="INFLUENCER" />}>
           <Route path="/influencer/dashboard" element={<InfluencerDashboard />} />
+          <Route path="/influencer/profile-setup" element={<ProfileSetup />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRole="BRAND" />}>
@@ -34,7 +35,6 @@ function App() {
         <Route path="/confirm-email" element={<ConfirmEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/profile-setup" element={<ProfileSetup />} />
       </Routes>
     </Router>
   )

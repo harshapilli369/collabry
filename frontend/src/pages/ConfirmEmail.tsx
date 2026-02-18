@@ -23,7 +23,11 @@ export const ConfirmEmail = () => {
                 localStorage.setItem('token', data.token)
                 localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }))
                 setStatus('success')
-                navigate('/profile-setup', { replace: true })
+                if (data.role === 'INFLUENCER') {
+                    navigate('/influencer/profile-setup', { replace: true })
+                } else {
+                    navigate('/brand/dashboard', { replace: true })
+                }
             })
             .catch((err) => {
                 setStatus('error')
@@ -85,7 +89,7 @@ export const ConfirmEmail = () => {
                     {status === 'success' && (
                         <>
                             <Title level={4} style={{ color: textColor }}>Email confirmed</Title>
-                            <Text type="secondary">Redirecting to profile setup...</Text>
+                            <Text type="secondary">Redirecting...</Text>
                         </>
                     )}
                     {status === 'error' && (

@@ -3,7 +3,8 @@ import { Form, Input, Button, Checkbox, Typography, Divider, ConfigProvider, mes
 import { MailOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons'
 import { Link, useNavigate } from 'react-router-dom'
 import { useGoogleLogin } from '@react-oauth/google'
-import { loginUser, googleLoginUser } from '../services/authService';
+import { loginUser, googleLoginUser } from '../services/authService'
+import { getMyInfluencerProfile } from '../services/influencerProfileService'
 
 const { Title, Text } = Typography
 
@@ -31,11 +32,15 @@ export const Login = () => {
             alert('Login successful!');
 
             if (data.role === 'INFLUENCER') {
-                navigate('/influencer/dashboard', { replace: true });
+                const profile = await getMyInfluencerProfile();
+                if (!profile?.isComplete) {
+                    navigate('/influencer/profile-setup', { replace: true });
+                } else {
+                    navigate('/influencer/dashboard', { replace: true });
+                }
             } else if (data.role === 'BRAND') {
                 navigate('/brand/dashboard', { replace: true });
             } else {
-                // Fallback or handle admin/other roles
                 navigate('/', { replace: true });
             }
         } catch (error) {
@@ -63,7 +68,12 @@ export const Login = () => {
                 alert("Google Login Successful! Redirecting...");
 
                 if (data.role === 'INFLUENCER') {
-                    navigate('/influencer/dashboard', { replace: true });
+                    const profile = await getMyInfluencerProfile();
+                    if (!profile?.isComplete) {
+                        navigate('/influencer/profile-setup', { replace: true });
+                    } else {
+                        navigate('/influencer/dashboard', { replace: true });
+                    }
                 } else if (data.role === 'BRAND') {
                     navigate('/brand/dashboard', { replace: true });
                 } else {

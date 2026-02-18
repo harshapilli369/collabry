@@ -66,6 +66,7 @@ export const InfluencerDashboard = () => {
                                 key: '2',
                                 icon: <UserOutlined />,
                                 label: 'Profile',
+                                onClick: () => navigate('/influencer/profile-setup'),
                             },
                             {
                                 key: '3',
