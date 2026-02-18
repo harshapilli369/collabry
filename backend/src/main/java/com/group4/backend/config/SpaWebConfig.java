@@ -25,13 +25,18 @@ public class SpaWebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        registry.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+        registry.addResourceHandler("/index.html", "/assets/**", "/*.js", "/*.css", "/*.ico", "/*.png", "/logo.png")
+                .addResourceLocations("classpath:/static/");
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/")
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver() {
                     @Override
                     protected Resource getResource(String resourcePath, Resource location) throws IOException {
+                        if (resourcePath.isEmpty() || "/".equals(resourcePath) || resourcePath.endsWith("/")) {
+                            return new ClassPathResource("/static/index.html");
+                        }
                         Resource requested = location.createRelative(resourcePath);
                         if (requested.exists() && requested.isReadable()) {
                             return requested;
