@@ -35,6 +35,13 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/index.html",
+                                "/login",
+                                "/signup",
+                                "/forgot-password",
+                                "/reset-password",
+                                "/confirm-email",
+                                "/influencer/**",
+                                "/brand/**",
                                 "/assets/**",
                                 "/*.js",
                                 "/*.css",
