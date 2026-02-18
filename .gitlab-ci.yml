@@ -84,8 +84,31 @@ deploy-dev:
   tags:
     - group04_Runner
   script:
-    - chmod 400 "$ID_RSA"
     - apk add --no-cache openssh-client
+    # #region agent log - deploy debug diagnostics
+    - |
+      echo "=== Deploy diagnostics (hypothesis A: missing vars) ==="
+      echo "ID_RSA set: $([ -n \"${ID_RSA:-}\" ] && echo 'yes' || echo 'MISSING')"
+      echo "SERVER_USER set: $([ -n \"${SERVER_USER:-}\" ] && echo 'yes' || echo 'MISSING')"
+      echo "SERVER_IP set: $([ -n \"${SERVER_IP:-}\" ] && echo 'yes' || echo 'MISSING')"
+      echo "=== Hypothesis B: ID_RSA file type ==="
+      if [ -n "${ID_RSA:-}" ]; then
+        echo "ID_RSA path exists as file: $([ -f \"$ID_RSA\" ] && echo 'yes' || echo 'no - may be Variable not File type')"
+      fi
+      echo "=== Hypothesis C/D: SSH destination (masked) ==="
+      DEST="${SERVER_USER:-EMPTY}@${SERVER_IP:-EMPTY}"
+      echo "Destination format: ${DEST}"
+      if [ -z "${ID_RSA:-}" ] || [ -z "${SERVER_USER:-}" ] || [ -z "${SERVER_IP:-}" ]; then
+        echo "ERROR: Required CI/CD variables missing. Add ID_RSA (File), SERVER_USER, SERVER_IP in Settings → CI/CD → Variables."
+        echo "If variables are Protected, ensure 'develop' is a protected branch or add unprotected copies."
+        exit 1
+      fi
+      if [ ! -f "$ID_RSA" ]; then
+        echo "ERROR: ID_RSA must be a File-type variable (path to key), not Variable (key content). Change in Settings → CI/CD → Variables."
+        exit 1
+      fi
+    # #endregion
+    - chmod 400 "$ID_RSA"
     - |
       ssh -i "$ID_RSA" -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_IP" "
         echo \"$DOCKERHUB_PASSWORD\" | docker login -u \"${DOCKERHUB_USER:-hpilli369}\" --password-stdin &&
