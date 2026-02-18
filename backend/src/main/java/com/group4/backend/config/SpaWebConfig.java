@@ -26,7 +26,9 @@ public class SpaWebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
-        registry.addResourceHandler("/index.html", "/assets/**", "/*.js", "/*.css", "/*.ico", "/*.png", "/logo.png")
+        registry.addResourceHandler("/assets/**")
+                .addResourceLocations("classpath:/static/assets/");
+        registry.addResourceHandler("/index.html", "/*.js", "/*.css", "/*.ico", "/*.png", "/logo.png")
                 .addResourceLocations("classpath:/static/");
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/")
