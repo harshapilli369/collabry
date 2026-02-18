@@ -1,6 +1,7 @@
 import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar } from 'antd'
 import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+import { clearProfileSubmittedFlag } from '../services/influencerProfileService'
 
 const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -11,6 +12,7 @@ export const InfluencerDashboard = () => {
     const handleLogout = () => {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
+        clearProfileSubmittedFlag()
         navigate('/login', { replace: true })
     }
 
