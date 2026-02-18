@@ -1,6 +1,6 @@
 # Deployment Guide – Development and Production
 
-- **`develop` branch**: Full CI/CD (build, test, publish, deploy) → dev server at **port 8074** (container `my-app-dev`, image tag `dev-latest` / `dev-<SHA>`).
+- **`develop` branch**: Full CI/CD (build, test, publish, deploy) → dev server at **port 8073** (container `my-app-dev`, image tag `dev-latest` / `dev-<SHA>`). Uses same port as prod for firewall compatibility.
 - **`main` branch**: Full CI/CD → production at **port 8073** (container `my-app`, image tag `latest` / `<SHA>`).
 
 ## 1. Working with the develop branch
@@ -14,7 +14,7 @@ git pull origin develop
 git push origin develop
 ```
 
-- **Dev URL**: http://csci5308-vm2.research.cs.dal.ca:8074  
+- **Dev URL**: http://csci5308-vm2.research.cs.dal.ca:8073  
 - **Prod URL**: http://csci5308-vm2.research.cs.dal.ca:8073  
 
 ## 2. Consolidate work into main (for demo)
@@ -56,18 +56,18 @@ Configure these in **Settings → CI/CD → Variables** (mask sensitive ones):
 | `ID_RSA` | File | No | SSH private key file for server access |
 | `VITE_API_BASE_URL` | Variable | No | Optional. e.g. `http://csci5308-vm2.research.cs.dal.ca:8073/api/auth` |
 | `VITE_GOOGLE_CLIENT_ID` | Variable | No | Optional. Google OAuth client ID for production |
-| `VITE_API_BASE_URL_DEV` | Variable | No | Optional. Dev API base (default: `http://csci5308-vm2.research.cs.dal.ca:8074/api/auth`) |
+| `VITE_API_BASE_URL_DEV` | Variable | No | Optional. Dev API base (default: `http://csci5308-vm2.research.cs.dal.ca:8073/api/auth`) |
 
 ## 4. CI/CD pipeline
 
-- **`develop`**: Build → Test → Publish (image tag `dev-latest`) → Deploy to port **8074** (container `my-app-dev`).
+- **`develop`**: Build → Test → Publish (image tag `dev-latest`) → Deploy to port **8073** (container `my-app-dev`).
 - **`main`**: Build → Test → Publish (image tag `latest`) → Deploy to port **8073** (container `my-app`).
 
 Merge requests targeting either branch run build and test only.
 
 ## 5. URLs after deploy
 
-- **Development**: http://csci5308-vm2.research.cs.dal.ca:8074  
+- **Development**: http://csci5308-vm2.research.cs.dal.ca:8073  
 - **Production**: http://csci5308-vm2.research.cs.dal.ca:8073  
 
 The container serves both the React frontend and Spring Boot API from the same URL.
