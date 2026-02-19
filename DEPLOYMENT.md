@@ -57,6 +57,11 @@ Configure these in **Settings → CI/CD → Variables** (mask sensitive ones):
 | `VITE_API_BASE_URL` | Variable | No | Optional. e.g. `http://csci5308-vm2.research.cs.dal.ca:8073/api/auth` |
 | `VITE_GOOGLE_CLIENT_ID` | Variable | No | Optional. Google OAuth client ID for production |
 | `VITE_API_BASE_URL_DEV` | Variable | No | Optional. Dev API base (default: `http://csci5308-vm2.research.cs.dal.ca:8073/api/auth`) |
+| `SPRING_MAIL_HOST` | Variable | No | **Required for real emails.** SMTP host (e.g. `smtp.gmail.com`) |
+| `SPRING_MAIL_PORT` | Variable | No | SMTP port (default: 587 for STARTTLS; use 465 for SSL) |
+| `SPRING_MAIL_USERNAME` | Variable | Yes | SMTP username (e.g. your Gmail address) |
+| `SPRING_MAIL_PASSWORD` | Variable | Yes | SMTP password (for Gmail: use an [App Password](https://support.google.com/accounts/answer/185833), not your regular password) |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE` | Variable | No | Set to `true` if using Gmail port 465 (SSL). Omit for port 587 (STARTTLS). |
 
 ## 4. CI/CD pipeline
 
@@ -91,3 +96,4 @@ docker run -p 8073:8073 group04:local
 - **Build fails**: Check backend Maven logs and frontend npm build logs in the GitLab job output.
 - **Deploy fails**: Confirm `ID_RSA` has correct permissions and the key is added to the server’s `authorized_keys`.
 - **502 / app not loading**: Check `docker ps` on the server; production: `docker logs my-app`, dev: `docker logs my-app-dev`.
+- **No confirmation emails received**: Add `SPRING_MAIL_HOST`, `SPRING_MAIL_USERNAME`, and `SPRING_MAIL_PASSWORD` (Gmail App Password) in CI/CD Variables. Without these, emails are only logged to the container console. For Gmail: enable 2-Step Verification, then create an App Password at https://myaccount.google.com/apppasswords.
