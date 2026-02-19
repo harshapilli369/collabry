@@ -2,14 +2,9 @@ package com.group4.backend.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.resource.PathResourceResolver;
-
-import java.io.IOException;
 
 /**
  * Serves the React SPA: static assets from /static, and index.html for client-side routes.
@@ -25,26 +20,12 @@ public class SpaWebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+        registry.setOrder(Ordered.LOWEST_PRECEDENCE);
         registry.addResourceHandler("/assets/**")
                 .addResourceLocations("classpath:/static/assets/");
         registry.addResourceHandler("/index.html", "/*.js", "/*.css", "/*.ico", "/*.png", "/logo.png")
                 .addResourceLocations("classpath:/static/");
-        registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/")
-                .resourceChain(true)
-                .addResolver(new PathResourceResolver() {
-                    @Override
-                    protected Resource getResource(String resourcePath, Resource location) throws IOException {
-                        if (resourcePath.isEmpty() || "/".equals(resourcePath) || resourcePath.endsWith("/")) {
-                            return new ClassPathResource("/static/index.html");
-                        }
-                        Resource requested = location.createRelative(resourcePath);
-                        if (requested.exists() && requested.isReadable()) {
-                            return requested;
-                        }
-                        return new ClassPathResource("/static/index.html");
-                    }
-                });
+        // No /** catch-all: SpaController handles SPA routes; /api/** goes to controllers.
+        // This avoids 405 on POST /api/auth/register (resource handlers only support GET/HEAD).
     }
 }
