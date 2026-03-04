@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, InputNumber } from 'antd'
+import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, InputNumber, theme } from 'antd'
 import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -14,9 +14,9 @@ const { Content, Sider } = Layout
 const { Title, Text } = Typography
 const { TextArea } = Input
 
-const primaryColor = '#FFFD82'
-const textColor = '#000000'
-const cardBackgroundColor = '#FFFFFF'
+const primaryColor = '#fffd82ff'
+const textColor = '#ffffff'
+const cardBackgroundColor = '#141414'
 
 export const CreateCampaign = () => {
     const [form] = Form.useForm<CampaignRequest & { preferredContentTypesList?: string[] }>()
@@ -59,6 +59,7 @@ export const CreateCampaign = () => {
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorTextBase: textColor,
@@ -66,8 +67,8 @@ export const CreateCampaign = () => {
                 },
                 components: {
                     Layout: {
-                        bodyBg: cardBackgroundColor,
-                        headerBg: cardBackgroundColor,
+                        bodyBg: '#000000',
+                        headerBg: '#000000',
                         siderBg: '#000000',
                     },
                     Menu: {
@@ -115,7 +116,7 @@ export const CreateCampaign = () => {
                         ]}
                     />
                 </Sider>
-                <Layout style={{ backgroundColor: cardBackgroundColor }}>
+                <Layout style={{ backgroundColor: '#000000' }}>
                     <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280, backgroundColor: cardBackgroundColor }}>
                         <div style={{ marginBottom: 24 }}>
                             <Button
@@ -199,7 +200,7 @@ export const CreateCampaign = () => {
                                     type="primary"
                                     htmlType="submit"
                                     loading={loading}
-                                    style={{ minWidth: 160, fontWeight: 600, color: textColor }}
+                                    style={{ minWidth: 160, fontWeight: 600, color: '#000000' }}
                                 >
                                     Create campaign
                                 </Button>

@@ -1,4 +1,4 @@
-import { Typography, Button, ConfigProvider } from 'antd'
+import { Typography, Button, ConfigProvider, theme } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
 const { Title, Text } = Typography
@@ -16,13 +16,14 @@ export const Dashboard = () => {
     }
 
     const primaryColor = '#FFFD82'
-    const textColor = '#000000'
-    const pageBackgroundColor = '#1E1E1E'
-    const cardBackgroundColor = '#FFFFFF'
+    const textColor = '#ffffff'
+    const pageBackgroundColor = '#000000'
+    const cardBackgroundColor = '#141414'
 
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorText: textColor,

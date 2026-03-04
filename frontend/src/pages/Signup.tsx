@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Form, Input, Button, Radio, Typography, ConfigProvider } from 'antd'
+import { Form, Input, Button, Radio, Typography, ConfigProvider, theme } from 'antd'
 import { MailOutlined, LockOutlined } from '@ant-design/icons'
 import { Link, useNavigate } from 'react-router-dom'
 import { registerUser } from '../services/authService'
@@ -39,13 +39,14 @@ export const Signup = () => {
 
     const primaryColor = '#FFFD82'
     const secondaryColor = '#BD72EB'
-    const textColor = '#000000'
-    const pageBackgroundColor = '#1E1E1E'
-    const cardBackgroundColor = '#FFFFFF'
+    const textColor = '#ffffff'
+    const pageBackgroundColor = '#000000'
+    const cardBackgroundColor = '#141414'
 
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorText: textColor,
@@ -53,12 +54,7 @@ export const Signup = () => {
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                 },
                 components: {
-                    Button: {
-                        colorPrimary: primaryColor,
-                        algorithm: true,
-                        primaryShadow: 'none',
-                        colorTextLightSolid: textColor,
-                    },
+                    Button: {},
                     Input: {
                         paddingBlock: 10,
                     },
@@ -82,7 +78,7 @@ export const Signup = () => {
                 }}>
                     <div style={{ textAlign: 'center', marginBottom: 30 }}>
                         <div style={{ marginBottom: 20 }}>
-                            <img src="/logo.png" alt="Collabry Logo" style={{ height: 60 }} />
+                            <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, borderRadius: 8 }} />
                         </div>
                         <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>Collabry</Title>
                         <Text type="secondary">Create your account</Text>
@@ -159,7 +155,7 @@ export const Signup = () => {
                                 htmlType="submit"
                                 block
                                 loading={loading}
-                                style={{ height: 50, fontWeight: 600, fontSize: 16, color: textColor }}
+                                style={{ height: 50, fontWeight: 600, fontSize: 16, color: '#000000' }}
                             >
                                 Sign up
                             </Button>

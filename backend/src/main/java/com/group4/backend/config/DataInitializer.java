@@ -31,6 +31,26 @@ public class DataInitializer {
                 userRepository.save(admin);
                 System.out.println("Admin user created: admin@collabry.com / password123");
             }
+
+            // Create test Brand user for payment testing
+            if (!userRepository.existsByEmail("brand@collabry.com")) {
+                User brand = new User(
+                        "brand@collabry.com",
+                        passwordEncoder.encode("password123"),
+                        Role.BRAND);
+                userRepository.save(brand);
+                System.out.println("Brand test user created: brand@collabry.com / password123");
+            }
+
+            // Create test Influencer user for payment testing
+            if (!userRepository.existsByEmail("influencer@collabry.com")) {
+                User influencer = new User(
+                        "influencer@collabry.com",
+                        passwordEncoder.encode("password123"),
+                        Role.INFLUENCER);
+                userRepository.save(influencer);
+                System.out.println("Influencer test user created: influencer@collabry.com / password123");
+            }
         };
     }
 }

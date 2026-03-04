@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Typography, Button, ConfigProvider, Spin } from 'antd'
+import { Typography, Button, ConfigProvider, Spin, theme } from 'antd'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { confirmEmail } from '../services/authService'
 
@@ -36,13 +36,14 @@ export const ConfirmEmail = () => {
     }, [token])
 
     const primaryColor = '#FFFD82'
-    const textColor = '#000000'
-    const pageBackgroundColor = '#1E1E1E'
-    const cardBackgroundColor = '#FFFFFF'
+    const textColor = '#ffffff'
+    const pageBackgroundColor = '#000000'
+    const cardBackgroundColor = '#141414'
 
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorText: textColor,
@@ -50,12 +51,7 @@ export const ConfirmEmail = () => {
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                 },
                 components: {
-                    Button: {
-                        colorPrimary: primaryColor,
-                        algorithm: true,
-                        primaryShadow: 'none',
-                        colorTextLightSolid: textColor,
-                    },
+                    Button: {},
                 },
             }}
         >
@@ -76,7 +72,7 @@ export const ConfirmEmail = () => {
                     textAlign: 'center',
                 }}>
                     <div style={{ marginBottom: 24 }}>
-                        <img src="/logo.png" alt="Collabry Logo" style={{ height: 60 }} />
+                        <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, borderRadius: 8 }} />
                     </div>
                     {status === 'loading' && (
                         <>
@@ -97,7 +93,7 @@ export const ConfirmEmail = () => {
                             <Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
                                 {errorMessage}
                             </Text>
-                            <Button type="primary" size="large" style={{ color: textColor }} onClick={() => navigate('/signup')}>
+                            <Button type="primary" size="large" style={{ color: '#000000' }} onClick={() => navigate('/signup')}>
                                 Sign up again
                             </Button>
                         </>

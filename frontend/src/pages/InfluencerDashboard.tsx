@@ -1,5 +1,5 @@
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar } from 'antd'
-import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined } from '@ant-design/icons'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, theme } from 'antd'
+import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 
 const { Header, Content, Sider } = Layout
@@ -16,23 +16,22 @@ export const InfluencerDashboard = () => {
 
     const primaryColor = '#EFEE96'; // Neon Yellow-Green
     const secondaryColor = '#BD72EB'; // Soft Purple
-    const textColor = '#000000';
-    const pageBackgroundColor = '#1E1E1E';
+    const textColor = '#ffffff';
+    const pageBackgroundColor = '#000000';
 
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorTextBase: textColor,
                     fontFamily: 'Inter, sans-serif',
                 },
                 components: {
-                    Button: {
-                        colorTextLightSolid: textColor,
-                    },
+                    Button: {},
                     Layout: {
-                        bodyBg: pageBackgroundColor,
+                        bodyBg: '#000000',
                         headerBg: '#000000',
                         siderBg: '#000000',
                     },
@@ -69,6 +68,12 @@ export const InfluencerDashboard = () => {
                                 key: '3',
                                 icon: <MailOutlined />,
                                 label: 'Invitations',
+                            },
+                            {
+                                key: 'payments',
+                                icon: <DollarOutlined />,
+                                label: 'Payments',
+                                onClick: () => navigate('/influencer/payments'),
                             },
                             {
                                 key: '4',
@@ -120,16 +125,16 @@ export const InfluencerDashboard = () => {
                             {/* Main Content */}
                             <Col span={16}>
                                 <Card title="Active Campaigns" bordered={false} style={{ borderRadius: 12, height: '100%' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, padding: 20, background: '#f9f9f9', borderRadius: 8 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, padding: 20, background: '#1c1c1c', borderRadius: 8, border: '1px solid #333' }}>
                                         <div>
-                                            <Title level={5} style={{ margin: 0 }}>Summer Fashion 2026</Title>
+                                            <Title level={5} style={{ margin: 0, color: '#fff' }}>Summer Fashion 2026</Title>
                                             <Text type="secondary">Nike • Due in 2 days</Text>
                                         </div>
-                                        <Button type="primary" size="small">Submit Content</Button>
+                                        <Button type="primary" size="small" style={{ color: '#000000' }}>Submit Content</Button>
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 20, background: '#f9f9f9', borderRadius: 8 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 20, background: '#1c1c1c', borderRadius: 8, border: '1px solid #333' }}>
                                         <div>
-                                            <Title level={5} style={{ margin: 0 }}>Eco-Friendly Water Bottle</Title>
+                                            <Title level={5} style={{ margin: 0, color: '#fff' }}>Eco-Friendly Water Bottle</Title>
                                             <Text type="secondary">HydroFlask • In Review</Text>
                                         </div>
                                         <Button size="small">View Feedback</Button>
@@ -139,20 +144,20 @@ export const InfluencerDashboard = () => {
                             <Col span={8}>
                                 <Card title="Pending Invitations" bordered={false} style={{ borderRadius: 12, height: '100%' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
-                                        <div style={{ padding: 15, background: '#f9f9f9', borderRadius: 8 }}>
+                                        <div style={{ padding: 15, background: '#1c1c1c', borderRadius: 8, border: '1px solid #333' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                                                <Text strong>TechGadgets Inc.</Text>
+                                                <Text strong style={{ color: '#fff' }}>TechGadgets Inc.</Text>
                                                 <Text type="secondary" style={{ fontSize: 12 }}>Today</Text>
                                             </div>
                                             <Text type="secondary" style={{ display: 'block', marginBottom: 10 }}>Review new noise-cancelling headphones.</Text>
                                             <div style={{ display: 'flex', gap: 10 }}>
-                                                <Button type="primary" size="small" block>Accept</Button>
+                                                <Button type="primary" size="small" block style={{ color: '#000000' }}>Accept</Button>
                                                 <Button size="small" block>Decline</Button>
                                             </div>
                                         </div>
-                                        <div style={{ padding: 15, background: '#f9f9f9', borderRadius: 8 }}>
+                                        <div style={{ padding: 15, background: '#1c1c1c', borderRadius: 8, border: '1px solid #333' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                                                <Text strong>BeautyBox</Text>
+                                                <Text strong style={{ color: '#fff' }}>BeautyBox</Text>
                                                 <Text type="secondary" style={{ fontSize: 12 }}>Yesterday</Text>
                                             </div>
                                             <Text type="secondary" style={{ display: 'block', marginBottom: 10 }}>Monthly subscription unboxing.</Text>

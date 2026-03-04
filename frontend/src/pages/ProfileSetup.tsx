@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message } from 'antd'
+import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message, theme } from 'antd'
 import { UserOutlined, LinkOutlined, DollarOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -125,15 +125,16 @@ export const ProfileSetup = () => {
     }
 
     const primaryColor = '#FFFD82'
-    const textColor = '#000000'
-    const pageBackgroundColor = '#1E1E1E'
-    const cardBackgroundColor = '#FFFFFF'
+    const textColor = '#ffffff'
+    const pageBackgroundColor = '#000000'
+    const cardBackgroundColor = '#141414'
 
     if (!isInfluencer && !fetching) return null
 
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorText: textColor,
@@ -141,12 +142,7 @@ export const ProfileSetup = () => {
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                 },
                 components: {
-                    Button: {
-                        colorPrimary: primaryColor,
-                        algorithm: true,
-                        primaryShadow: 'none',
-                        colorTextLightSolid: textColor,
-                    },
+                    Button: {},
                     Input: { paddingBlock: 10 },
                 },
             }}
@@ -172,7 +168,7 @@ export const ProfileSetup = () => {
                     }}
                 >
                     <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                        <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, marginBottom: 16 }} />
+                        <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, marginBottom: 16, borderRadius: 8 }} />
                         <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>
                             Complete your profile
                         </Title>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tabs } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined } from '@ant-design/icons'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tabs, theme } from 'antd'
+import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile } from '../services/brandService'
 import { getMyCampaigns, CAMPAIGN_STATUS_LABELS, BUDGET_RANGE_OPTIONS, type CampaignResponse, type CampaignStatus } from '../services/campaignService'
@@ -57,8 +57,8 @@ export const BrandDashboard = () => {
     }
 
     const primaryColor = '#FFFD82'; // Neon Yellow-Green
-    const textColor = '#000000';
-    const pageBackgroundColor = '#1E1E1E';
+    const textColor = '#ffffff';
+    const pageBackgroundColor = '#000000';
 
 
     if (!profileCheckDone && user?.role === 'BRAND') {
@@ -68,6 +68,7 @@ export const BrandDashboard = () => {
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorTextBase: textColor,
@@ -75,7 +76,7 @@ export const BrandDashboard = () => {
                 },
                 components: {
                     Layout: {
-                        bodyBg: pageBackgroundColor,
+                        bodyBg: '#000000',
                         headerBg: '#000000',
                         siderBg: '#000000',
                     },
@@ -120,6 +121,12 @@ export const BrandDashboard = () => {
                                         label: 'View my campaigns',
                                     },
                                 ],
+                            },
+                            {
+                                key: 'payments',
+                                icon: <DollarOutlined />,
+                                label: 'Payments',
+                                onClick: () => navigate('/brand/payments'),
                             },
                             {
                                 key: 'profile',
@@ -189,7 +196,7 @@ export const BrandDashboard = () => {
                                     bordered={false}
                                     style={{ borderRadius: 12 }}
                                     extra={
-                                        <Button type="primary" icon={<PlusCircleOutlined />} onClick={() => navigate('/brand/campaigns/create')} style={{ color: textColor }}>
+                                        <Button type="primary" icon={<PlusCircleOutlined />} onClick={() => navigate('/brand/campaigns/create')} style={{ color: '#000000' }}>
                                             Create campaign
                                         </Button>
                                     }
@@ -211,14 +218,14 @@ export const BrandDashboard = () => {
                                                             <Text type="secondary">No {label.toLowerCase()} campaigns.</Text>
                                                         ) : (
                                                             list.map((campaign) => (
-                                                                <Card key={campaign.id} size="small" style={{ background: '#fafafa', borderRadius: 8 }}>
+                                                                <Card key={campaign.id} size="small" style={{ background: '#1c1c1c', borderRadius: 8, borderColor: '#333' }}>
                                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                                                         <div>
-                                                                            <Text strong>{campaign.name}</Text>
+                                                                            <Text strong style={{ color: '#fff', fontSize: 16 }}>{campaign.name}</Text>
                                                                             {campaign.description && (
-                                                                                <div><Text type="secondary" style={{ fontSize: 12 }}>{campaign.description.slice(0, 100)}{campaign.description.length > 100 ? '…' : ''}</Text></div>
+                                                                                <div><Text type="secondary" style={{ fontSize: 13 }}>{campaign.description.slice(0, 100)}{campaign.description.length > 100 ? '…' : ''}</Text></div>
                                                                             )}
-                                                                            <div style={{ marginTop: 4 }}>
+                                                                            <div style={{ marginTop: 6 }}>
                                                                                 <Text type="secondary" style={{ fontSize: 12 }}>
                                                                                     Budget: {BUDGET_RANGE_OPTIONS.find((o) => o.value === campaign.budgetRange)?.label ?? campaign.budgetRange}
                                                                                     {campaign.numberOfInfluencers != null && ` · ${campaign.numberOfInfluencers} influencer(s)`}
@@ -226,7 +233,7 @@ export const BrandDashboard = () => {
                                                                                 </Text>
                                                                             </div>
                                                                         </div>
-                                                                        <Text style={{ fontSize: 12, fontWeight: 600, color: '#666' }}>{CAMPAIGN_STATUS_LABELS[campaign.status]}</Text>
+                                                                        <Text style={{ fontSize: 12, fontWeight: 600, color: primaryColor }}>{CAMPAIGN_STATUS_LABELS[campaign.status]}</Text>
                                                                     </div>
                                                                 </Card>
                                                             ))
