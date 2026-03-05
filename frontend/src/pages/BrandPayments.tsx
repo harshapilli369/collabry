@@ -127,9 +127,9 @@ export const BrandPayments = () => {
         {
             title: 'Actions', key: 'actions', render: (_: unknown, record: PaymentResponse) => (
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                    {record.status === 'PENDING' && <Button size="small" type="primary" onClick={() => handleStatusUpdate(record.id, 'PROCESSING')}>Processing</Button>}
-                    {record.status === 'PROCESSING' && <Button size="small" type="primary" style={{ background: '#52c41a', borderColor: '#52c41a' }} onClick={() => handleStatusUpdate(record.id, 'PAID')}>Mark Paid</Button>}
-                    {record.status === 'DELAYED' && <Button size="small" type="primary" onClick={() => handleStatusUpdate(record.id, 'PROCESSING')}>Resume</Button>}
+                    {record.status === 'PENDING' && <Button size="small" type="primary" style={{ color: '#000000' }} onClick={() => handleStatusUpdate(record.id, 'PROCESSING')}>Processing</Button>}
+                    {record.status === 'PROCESSING' && <Button size="small" type="primary" style={{ background: '#52c41a', borderColor: '#52c41a', color: '#000000' }} onClick={() => handleStatusUpdate(record.id, 'PAID')}>Mark Paid</Button>}
+                    {record.status === 'DELAYED' && <Button size="small" type="primary" style={{ color: '#000000' }} onClick={() => handleStatusUpdate(record.id, 'PROCESSING')}>Resume</Button>}
                     <Button size="small" icon={<DownloadOutlined />} onClick={() => handleDownloadInvoice(record.id)} />
                 </div>
             ),

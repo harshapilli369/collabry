@@ -8,6 +8,9 @@ const { Title, Text } = Typography
 export const InfluencerDashboard = () => {
     const navigate = useNavigate()
 
+    const userStr = localStorage.getItem('user')
+    const user = userStr ? JSON.parse(userStr) : null
+
     const handleLogout = () => {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
@@ -89,7 +92,10 @@ export const InfluencerDashboard = () => {
                     <Header style={{ padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', background: pageBackgroundColor }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             {/*<Text style={{ color: '#fff' }}>Welcome!</Text>*/}
-                            <Avatar size="large" icon={<UserOutlined />} style={{ backgroundColor: secondaryColor }} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <Text style={{ color: '#aaa', fontSize: '0.9rem' }}>ID: {user?.id}</Text>
+                                <Avatar size="large" icon={<UserOutlined />} style={{ backgroundColor: secondaryColor }} />
+                            </div>
                         </div>
                     </Header>
                     <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>

@@ -89,15 +89,21 @@ public class PaymentService {
         return toResponse(payment);
     }
 
+    @Transactional
     public List<PaymentResponse> getDelayedPayments(Long brandId) {
-        return paymentRepository.findByStatusAndDueDateBefore(PaymentStatus.PENDING, LocalDate.now())
+        // 1. Find and update any newly delayed payments
+        paymentRepository.findByStatusAndDueDateBefore(PaymentStatus.PENDING, LocalDate.now())
                 .stream()
                 .filter(p -> p.getBrandId().equals(brandId))
-                .map(p -> {
+                .forEach(p -> {
                     p.setStatus(PaymentStatus.DELAYED);
                     paymentRepository.save(p);
-                    return toResponse(p);
-                })
+                });
+
+        // 2. Return all currently delayed payments for this brand
+        return paymentRepository.findByBrandIdAndStatus(brandId, PaymentStatus.DELAYED)
+                .stream()
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 

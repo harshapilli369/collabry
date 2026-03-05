@@ -27,7 +27,7 @@ export const Login = () => {
             }
             console.log('Login success:', data);
             localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
+            localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role }));
             message.success('Login successful!');
             alert('Login successful!');
 

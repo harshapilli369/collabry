@@ -6,14 +6,16 @@ public class AuthResponse {
     private String token;
     private String email;
     private Role role;
+    private Long id;
 
     public AuthResponse() {
     }
 
-    public AuthResponse(String token, String email, Role role) {
+    public AuthResponse(String token, String email, Role role, Long id) {
         this.token = token;
         this.email = email;
         this.role = role;
+        this.id = id;
     }
 
     public String getToken() {
@@ -38,5 +40,13 @@ public class AuthResponse {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

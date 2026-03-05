@@ -19,9 +19,9 @@ export const ConfirmEmail = () => {
             return
         }
         confirmEmail(token)
-            .then((data: { token: string; email: string; role: string }) => {
+            .then((data: { token: string; email: string; role: string; id: number }) => {
                 localStorage.setItem('token', data.token)
-                localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }))
+                localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role }))
                 setStatus('success')
                 if (data.role === 'INFLUENCER') {
                     navigate('/influencer/profile-setup', { replace: true })
