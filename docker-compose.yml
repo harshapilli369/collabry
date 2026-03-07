@@ -12,7 +12,7 @@ services:
       - SPRING_MAIL_HOST=smtp.gmail.com
       - SPRING_MAIL_PORT=465
       - SPRING_MAIL_USERNAME=collabry1@gmail.com
-      - SPRING_MAIL_PASSWORD=pvhinjfgpjgjoiae
+      - SPRING_MAIL_PASSWORD=fuydmrjqhwlybrqn
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE=true
@@ -27,6 +27,7 @@ services:
   frontend:
     build: ./frontend
     ports:
+
       - "5173:5173"
     environment:
       # The backend URL. Since this is read by the BROWSER (client-side),
