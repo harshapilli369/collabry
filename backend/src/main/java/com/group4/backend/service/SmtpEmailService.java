@@ -9,6 +9,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
+
 @Service
 @Primary
 @ConditionalOnProperty(prefix = "spring.mail", name = "host")
@@ -18,12 +20,20 @@ public class SmtpEmailService implements EmailService {
 
     private final JavaMailSender mailSender;
 
+    @Value("${spring.mail.host:}")
+    private String mailHost;
+
     /** Sender address (set app.mail.from or spring.mail.username). */
     @Value("${app.mail.from:${spring.mail.username:}}")
     private String fromAddress;
 
     public SmtpEmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
+    }
+
+    @PostConstruct
+    public void logActive() {
+        log.info("Email: using SMTP (host={}). Confirmation and password-reset emails will be sent.", mailHost);
     }
 
     @Override

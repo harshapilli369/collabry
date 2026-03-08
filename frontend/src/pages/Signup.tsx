@@ -31,7 +31,11 @@ export const Signup = () => {
             navigate('/login')
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Registration failed'
-            alert(message)
+            const isEmailError = /confirmation email|SMTP|mail/i.test(message)
+            const displayMessage = isEmailError
+                ? "We couldn't send the confirmation email. Check that SMTP is configured in the backend (.env) and check backend logs. If using Gmail, use an App Password."
+                : message
+            alert(displayMessage)
         } finally {
             setLoading(false)
         }

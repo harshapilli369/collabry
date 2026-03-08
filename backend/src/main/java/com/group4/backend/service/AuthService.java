@@ -79,9 +79,8 @@ public class AuthService {
         try {
             emailService.sendConfirmationEmail(request.getEmail(), confirmationLink);
         } catch (Exception e) {
-            System.err.println(
-                    "Email send failed (registration still succeeded). Confirmation link: " + confirmationLink);
-            e.printStackTrace();
+            // Rethrow so the API returns an error and the user is not told to "check email" when none was sent
+            throw new RuntimeException("Could not send confirmation email. Please check SMTP settings or try again later. " + e.getMessage(), e);
         }
 
         return new SignupResponse("Check your email to confirm your account. The link expires in "
