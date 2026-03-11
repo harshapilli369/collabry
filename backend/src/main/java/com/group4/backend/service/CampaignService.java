@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,6 +55,10 @@ public class CampaignService {
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public Optional<CampaignResponse> findById(Long id) {
+        return campaignRepository.findById(id).map(this::toResponse);
     }
 
     private static String emptyToNull(String value) {
