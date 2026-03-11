@@ -1,3 +1,5 @@
+package com.group4.backend.service;
+
 import com.group4.backend.dto.*;
 import com.group4.backend.model.*;
 import com.group4.backend.repository.CampaignRepository;
@@ -181,3 +183,4 @@ public class InvitationService {
         r.setRespondedAt(inv.getRespondedAt());
         return r;
     }
+}
