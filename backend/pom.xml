@@ -31,8 +31,6 @@
 		<!-- JaCoCo: set to e.g. 0.80 to enforce 80% minimum; 0 = no enforcement -->
 		<jacoco.line.minimum>0</jacoco.line.minimum>
 		<jacoco.branch.minimum>0</jacoco.branch.minimum>
-		<!-- Set by jacoco:prepare-agent; default empty so Surefire works if agent not used -->
-		<jacoco.argLine></jacoco.argLine>
 	</properties>
 	<dependencies>
 		<dependency>
