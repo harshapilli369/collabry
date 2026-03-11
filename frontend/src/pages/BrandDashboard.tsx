@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tabs, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined } from '@ant-design/icons'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tabs, Modal, Form, Input, InputNumber, message, theme } from 'antd'
+import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile } from '../services/brandService'
 import { getMyCampaigns, CAMPAIGN_STATUS_LABELS, BUDGET_RANGE_OPTIONS, type CampaignResponse, type CampaignStatus } from '../services/campaignService'
+import { createInvitation } from '../services/invitationService'
 
 const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -14,6 +15,10 @@ export const BrandDashboard = () => {
     const [profileCheckDone, setProfileCheckDone] = useState(false)
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
     const [campaignsLoading, setCampaignsLoading] = useState(false)
+    const [inviteModalOpen, setInviteModalOpen] = useState(false)
+    const [inviteCampaignId, setInviteCampaignId] = useState<number | null>(null)
+    const [inviteSubmitting, setInviteSubmitting] = useState(false)
+    const [inviteForm] = Form.useForm()
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
 
@@ -54,6 +59,29 @@ export const BrandDashboard = () => {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
         navigate('/login', { replace: true })
+    }
+
+    const openInviteModal = (campaignId: number) => {
+        setInviteCampaignId(campaignId)
+        inviteForm.resetFields()
+        setInviteModalOpen(true)
+    }
+    const closeInviteModal = () => {
+        setInviteModalOpen(false)
+        setInviteCampaignId(null)
+    }
+    const onInviteSubmit = async (values: { influencerId: number; message?: string }) => {
+        if (inviteCampaignId == null) return
+        setInviteSubmitting(true)
+        try {
+            await createInvitation(inviteCampaignId, { influencerId: values.influencerId, message: values.message?.trim() || undefined })
+            message.success('Invitation sent')
+            closeInviteModal()
+        } catch (e) {
+            message.error(e instanceof Error ? e.message : 'Failed to send invitation')
+        } finally {
+            setInviteSubmitting(false)
+        }
     }
 
     const primaryColor = '#FFFD82'; // Neon Yellow-Green
@@ -219,7 +247,7 @@ export const BrandDashboard = () => {
                                                         ) : (
                                                             list.map((campaign) => (
                                                                 <Card key={campaign.id} size="small" style={{ background: '#1c1c1c', borderRadius: 8, borderColor: '#333' }}>
-                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
                                                                         <div>
                                                                             <Text strong style={{ color: '#fff', fontSize: 16 }}>{campaign.name}</Text>
                                                                             {campaign.description && (
@@ -233,7 +261,10 @@ export const BrandDashboard = () => {
                                                                                 </Text>
                                                                             </div>
                                                                         </div>
-                                                                        <Text style={{ fontSize: 12, fontWeight: 600, color: primaryColor }}>{CAMPAIGN_STATUS_LABELS[campaign.status]}</Text>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                            <Text style={{ fontSize: 12, fontWeight: 600, color: primaryColor }}>{CAMPAIGN_STATUS_LABELS[campaign.status]}</Text>
+                                                                            <Button type="default" size="small" icon={<MailOutlined />} onClick={() => openInviteModal(campaign.id)}>Invite</Button>
+                                                                        </div>
                                                                     </div>
                                                                 </Card>
                                                             ))
@@ -248,17 +279,34 @@ export const BrandDashboard = () => {
 
                             <Col span={12}>
                                 <Card title="Invited Influencers" bordered={false} style={{ borderRadius: 12, height: '100%' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                                        <Text>Pending Responses: 0</Text>
-                                        <Button type="link">Manage</Button>
-                                    </div>
-                                    <Text type="secondary">Invite influencers from your campaigns.</Text>
+                                    <Text type="secondary">Invite influencers to a campaign using the &quot;Invite&quot; button on each campaign card above. Enter the influencer’s user ID when sending an invite.</Text>
                                 </Card>
                             </Col>
                         </Row>
                     </Content>
                 </Layout>
             </Layout>
+
+            <Modal
+                title="Invite influencer"
+                open={inviteModalOpen}
+                onCancel={closeInviteModal}
+                footer={null}
+                destroyOnClose
+            >
+                <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>
+                    <Form.Item name="influencerId" label="Influencer user ID" rules={[{ required: true, message: 'Enter the influencer’s user ID' }]}>
+                        <InputNumber min={1} step={1} style={{ width: '100%' }} placeholder="e.g. 2" />
+                    </Form.Item>
+                    <Form.Item name="message" label="Message (optional)">
+                        <Input.TextArea rows={3} placeholder="Personal message to the influencer" />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" loading={inviteSubmitting} style={{ color: '#000000' }}>Send invitation</Button>
+                        <Button style={{ marginLeft: 8 }} onClick={closeInviteModal}>Cancel</Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
         </ConfigProvider>
     )
 }

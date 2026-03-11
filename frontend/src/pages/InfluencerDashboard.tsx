@@ -1,15 +1,24 @@
+import { useState, useEffect } from 'react'
 import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined } from '@ant-design/icons'
+import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+import { getMyInvitations } from '../services/invitationService'
 
 const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
 
 export const InfluencerDashboard = () => {
     const navigate = useNavigate()
+    const [invitations, setInvitations] = useState<Awaited<ReturnType<typeof getMyInvitations>>>([])
 
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
+
+    useEffect(() => {
+        getMyInvitations()
+            .then(setInvitations)
+            .catch(() => setInvitations([]))
+    }, [])
 
     const handleLogout = () => {
         localStorage.removeItem('token')
@@ -71,6 +80,13 @@ export const InfluencerDashboard = () => {
                                 key: '3',
                                 icon: <MailOutlined />,
                                 label: 'Invitations',
+                                onClick: () => navigate('/influencer/invitations'),
+                            },
+                            {
+                                key: 'collaborations',
+                                icon: <TeamOutlined />,
+                                label: 'Collaborations',
+                                onClick: () => navigate('/influencer/collaborations'),
                             },
                             {
                                 key: 'payments',
@@ -148,28 +164,32 @@ export const InfluencerDashboard = () => {
                                 </Card>
                             </Col>
                             <Col span={8}>
-                                <Card title="Pending Invitations" bordered={false} style={{ borderRadius: 12, height: '100%' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
-                                        <div style={{ padding: 15, background: '#1c1c1c', borderRadius: 8, border: '1px solid #333' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                                                <Text strong style={{ color: '#fff' }}>TechGadgets Inc.</Text>
-                                                <Text type="secondary" style={{ fontSize: 12 }}>Today</Text>
-                                            </div>
-                                            <Text type="secondary" style={{ display: 'block', marginBottom: 10 }}>Review new noise-cancelling headphones.</Text>
-                                            <div style={{ display: 'flex', gap: 10 }}>
-                                                <Button type="primary" size="small" block style={{ color: '#000000' }}>Accept</Button>
-                                                <Button size="small" block>Decline</Button>
-                                            </div>
+                                <Card
+                                    title="Pending Invitations"
+                                    bordered={false}
+                                    style={{ borderRadius: 12, height: '100%' }}
+                                    extra={invitations.length > 0 ? <Button type="link" size="small" onClick={() => navigate('/influencer/invitations')}>View all</Button> : null}
+                                >
+                                    {invitations.length === 0 ? (
+                                        <Text type="secondary">No pending invitations.</Text>
+                                    ) : (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+                                            {invitations.filter((i) => i.status === 'PENDING' || i.status === 'NEGOTIATING').slice(0, 3).map((inv) => (
+                                                <div key={inv.id} style={{ padding: 15, background: '#1c1c1c', borderRadius: 8, border: '1px solid #333' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                                                        <Text strong style={{ color: '#fff' }}>Campaign #{inv.campaignId}</Text>
+                                                    </div>
+                                                    <Text type="secondary" style={{ display: 'block', marginBottom: 10 }}>
+                                                        {inv.brandMessage ? inv.brandMessage.slice(0, 60) + (inv.brandMessage.length > 60 ? '…' : '') : 'No message'}
+                                                    </Text>
+                                                    <Button type="primary" size="small" block onClick={() => navigate(`/influencer/invitations/${inv.id}`)} style={{ color: '#000000' }}>View & respond</Button>
+                                                </div>
+                                            ))}
+                                            {invitations.filter((i) => i.status === 'PENDING' || i.status === 'NEGOTIATING').length > 3 && (
+                                                <Button size="small" block onClick={() => navigate('/influencer/invitations')}>View all invitations</Button>
+                                            )}
                                         </div>
-                                        <div style={{ padding: 15, background: '#1c1c1c', borderRadius: 8, border: '1px solid #333' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                                                <Text strong style={{ color: '#fff' }}>BeautyBox</Text>
-                                                <Text type="secondary" style={{ fontSize: 12 }}>Yesterday</Text>
-                                            </div>
-                                            <Text type="secondary" style={{ display: 'block', marginBottom: 10 }}>Monthly subscription unboxing.</Text>
-                                            <Button size="small" block>View Details</Button>
-                                        </div>
-                                    </div>
+                                    )}
                                 </Card>
                             </Col>
                         </Row>

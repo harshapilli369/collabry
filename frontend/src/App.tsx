@@ -6,6 +6,9 @@ import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
 import { ProfileSetup } from './pages/ProfileSetup'
 import { InfluencerDashboard } from './pages/InfluencerDashboard'
+import { Invitations } from './pages/Invitations'
+import { InvitationDetail } from './pages/InvitationDetail'
+import { Collaborations } from './pages/Collaborations'
 import { PaymentsDashboard } from './pages/PaymentsDashboard'
 import { BrandDashboard } from './pages/BrandDashboard'
 import { BrandProfile } from './pages/BrandProfile'
@@ -25,6 +28,9 @@ function App() {
         <Route element={<ProtectedRoute allowedRole="INFLUENCER" />}>
           <Route path="/influencer/dashboard" element={<InfluencerDashboard />} />
           <Route path="/influencer/profile-setup" element={<ProfileSetup />} />
+          <Route path="/influencer/invitations" element={<Invitations />} />
+          <Route path="/influencer/invitations/:id" element={<InvitationDetail />} />
+          <Route path="/influencer/collaborations" element={<Collaborations />} />
           <Route path="/influencer/payments" element={<PaymentsDashboard />} />
         </Route>
 
