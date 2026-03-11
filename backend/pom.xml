@@ -28,7 +28,9 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
-		<!-- JaCoCo: set to e.g. 0.80 to enforce 80% minimum; 0 = no enforcement -->
+		<!-- JaCoCo: report at target/site/jacoco/index.html after mvn verify.
+		     Enforce gates: set jacoco.line.minimum / jacoco.branch.minimum (e.g. 0.80 = 80%); 0 = no enforcement.
+		     In CI, pass -Djacoco.line.minimum=0.80 -Djacoco.branch.minimum=0.70 to fail if below threshold. -->
 		<jacoco.line.minimum>0</jacoco.line.minimum>
 		<jacoco.branch.minimum>0</jacoco.branch.minimum>
 	</properties>
@@ -125,6 +127,13 @@
 						<goals>
 							<goal>report</goal>
 						</goals>
+						<configuration>
+							<outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+							<formats>
+								<format>HTML</format>
+								<format>XML</format>
+							</formats>
+						</configuration>
 					</execution>
 					<execution>
 						<id>check</id>
