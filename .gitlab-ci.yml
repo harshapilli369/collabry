@@ -33,14 +33,28 @@ build-frontend:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "develop"
 
-# --- Test: run backend tests ---
+# --- Test: run backend tests and coverage (mvn verify = test + JaCoCo report + optional coverage gate) ---
 test:
   stage: test
   image: eclipse-temurin:17
   script:
     - cd backend
     - chmod +x mvnw
-    - ./mvnw test -B -q
+    # Optional: set COVERAGE_MIN_LINE / COVERAGE_MIN_BRANCH in CI/CD variables (e.g. 0.80) to fail if coverage drops below threshold
+    - |
+      if [ -n "${COVERAGE_MIN_LINE:-}" ] || [ -n "${COVERAGE_MIN_BRANCH:-}" ]; then
+        ./mvnw verify -B -q -Djacoco.line.minimum="${COVERAGE_MIN_LINE:-0}" -Djacoco.branch.minimum="${COVERAGE_MIN_BRANCH:-0}"
+      else
+        ./mvnw verify -B -q
+      fi
+  artifacts:
+    when: always
+    paths:
+      - backend/target/site/jacoco/
+    reports:
+      coverage_report:
+        coverage_format: jacoco
+        path: backend/target/site/jacoco/jacoco.xml
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
