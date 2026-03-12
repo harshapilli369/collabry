@@ -56,6 +56,7 @@ class CampaignControllerTest {
     void setUp() {
         brandUser = new User("brand@test.com", "pass", Role.BRAND);
         brandUser.setId(10L);
+        brandUser.setVerified(true);
         influencerUser = new User("influencer@test.com", "pass", Role.INFLUENCER);
         influencerUser.setId(20L);
     }
