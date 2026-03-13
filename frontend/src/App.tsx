@@ -14,6 +14,7 @@ import { BrandDashboard } from './pages/BrandDashboard'
 import { BrandProfile } from './pages/BrandProfile'
 import { BrandPayments } from './pages/BrandPayments'
 import { CreateCampaign } from './pages/CreateCampaign'
+import { InfluencerSearch } from './pages/InfluencerSearch'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
 // This is the main App component that renders the routes for the application.
@@ -38,6 +39,7 @@ function App() {
           <Route path="/brand/dashboard" element={<BrandDashboard />} />
           <Route path="/brand/profile" element={<BrandProfile />} />
           <Route path="/brand/campaigns/create" element={<CreateCampaign />} />
+          <Route path="/brand/influencers" element={<InfluencerSearch />} />
           <Route path="/brand/payments" element={<BrandPayments />} />
         </Route>
 

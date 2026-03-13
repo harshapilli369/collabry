@@ -46,6 +46,12 @@ public class InfluencerProfile {
     @Column(precision = 12, scale = 2)
     private BigDecimal rate;
 
+    @Column(name = "follower_count")
+    private Long followerCount;
+
+    @Column(name = "engagement_rate", precision = 5, scale = 2)
+    private BigDecimal engagementRate;
+
     @Column(name = "audience_info", columnDefinition = "TEXT")
     private String audienceInfo;
 
@@ -168,6 +174,22 @@ public class InfluencerProfile {
 
     public void setRate(BigDecimal rate) {
         this.rate = rate;
+    }
+
+    public Long getFollowerCount() {
+        return followerCount;
+    }
+
+    public void setFollowerCount(Long followerCount) {
+        this.followerCount = followerCount;
+    }
+
+    public BigDecimal getEngagementRate() {
+        return engagementRate;
+    }
+
+    public void setEngagementRate(BigDecimal engagementRate) {
+        this.engagementRate = engagementRate;
     }
 
     public String getAudienceInfo() {

@@ -11,6 +11,8 @@ public interface InvitationRepository extends JpaRepository<CollaborationInvitat
 
     List<CollaborationInvitation> findByInfluencerIdOrderByCreatedAtDesc(Long influencerId);
 
+    List<CollaborationInvitation> findByBrandIdOrderByCreatedAtDesc(Long brandId);
+
     Optional<CollaborationInvitation> findByCampaignIdAndInfluencerId(Long campaignId, Long influencerId);
 
     List<CollaborationInvitation> findByInfluencerIdAndStatusIn(Long influencerId, List<InvitationStatus> statuses);

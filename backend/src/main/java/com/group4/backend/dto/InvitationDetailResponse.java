@@ -16,6 +16,8 @@ public class InvitationDetailResponse {
     private BigDecimal proposedAmount;
     private String proposedTimeline;
     private String proposedDeliverables;
+    private String platform;
+    private Instant expiresAt;
     private Instant createdAt;
     private Instant updatedAt;
     private Instant respondedAt;
@@ -42,6 +44,10 @@ public class InvitationDetailResponse {
     public void setProposedTimeline(String proposedTimeline) { this.proposedTimeline = proposedTimeline; }
     public String getProposedDeliverables() { return proposedDeliverables; }
     public void setProposedDeliverables(String proposedDeliverables) { this.proposedDeliverables = proposedDeliverables; }
+    public String getPlatform() { return platform; }
+    public void setPlatform(String platform) { this.platform = platform; }
+    public Instant getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(Instant expiresAt) { this.expiresAt = expiresAt; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

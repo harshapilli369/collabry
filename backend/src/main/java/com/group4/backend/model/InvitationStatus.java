@@ -1,9 +1,11 @@
 package com.group4.backend.model;
 
 public enum InvitationStatus {
-    PENDING,
+    PENDING,   // sent, awaiting response
     ACCEPTED,
     REJECTED,
     NEGOTIATING,
-    CONFIRMED
+    CONFIRMED,
+    EXPIRED,
+    WITHDRAWN
 }

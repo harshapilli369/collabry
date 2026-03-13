@@ -21,6 +21,8 @@ export interface InfluencerProfileRequest {
     youtubeHandle?: string;
     tiktokHandle?: string;
     rate?: number;
+    followerCount?: number;
+    engagementRate?: number;
     audienceInfo?: string;
     saveAsDraft?: boolean;
 }
@@ -38,10 +40,20 @@ export interface InfluencerProfileResponse {
     youtubeHandle?: string;
     tiktokHandle?: string;
     rate?: number;
+    followerCount?: number;
+    engagementRate?: number;
     audienceInfo?: string;
     isComplete: boolean;
     createdAt?: string;
     updatedAt?: string;
+}
+
+export interface InfluencerSearchParams {
+    niche?: string;
+    location?: string;
+    minFollowers?: number;
+    maxFollowers?: number;
+    minEngagementRate?: number;
 }
 
 export async function getMyInfluencerProfile(): Promise<InfluencerProfileResponse | null> {
@@ -69,6 +81,24 @@ export async function updateMyInfluencerProfile(
     if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.message || 'Failed to save influencer profile');
+    }
+    return response.json();
+}
+
+/** Search influencers by niche, location, followers, engagement. Brands only. */
+export async function searchInfluencers(params: InfluencerSearchParams): Promise<InfluencerProfileResponse[]> {
+    const sp = new URLSearchParams();
+    if (params.niche != null && params.niche.trim() !== '') sp.set('niche', params.niche.trim());
+    if (params.location != null && params.location.trim() !== '') sp.set('location', params.location.trim());
+    if (params.minFollowers != null) sp.set('minFollowers', String(params.minFollowers));
+    if (params.maxFollowers != null) sp.set('maxFollowers', String(params.maxFollowers));
+    if (params.minEngagementRate != null) sp.set('minEngagementRate', String(params.minEngagementRate));
+    const qs = sp.toString();
+    const url = `${INFLUENCERS_URL}/search${qs ? `?${qs}` : ''}`;
+    const response = await fetch(url, { method: 'GET', headers: getAuthHeaders() });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to search influencers');
     }
     return response.json();
 }

@@ -17,6 +17,8 @@ public class InfluencerProfileResponse {
     private String youtubeHandle;
     private String tiktokHandle;
     private BigDecimal rate;
+    private Long followerCount;
+    private BigDecimal engagementRate;
     private String audienceInfo;
     private boolean isComplete;
     private Instant createdAt;
@@ -60,6 +62,12 @@ public class InfluencerProfileResponse {
 
     public BigDecimal getRate() { return rate; }
     public void setRate(BigDecimal rate) { this.rate = rate; }
+
+    public Long getFollowerCount() { return followerCount; }
+    public void setFollowerCount(Long followerCount) { this.followerCount = followerCount; }
+
+    public BigDecimal getEngagementRate() { return engagementRate; }
+    public void setEngagementRate(BigDecimal engagementRate) { this.engagementRate = engagementRate; }
 
     public String getAudienceInfo() { return audienceInfo; }
     public void setAudienceInfo(String audienceInfo) { this.audienceInfo = audienceInfo; }

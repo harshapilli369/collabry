@@ -17,14 +17,18 @@ export type InvitationStatus =
     | 'NEGOTIATING'
     | 'ACCEPTED'
     | 'REJECTED'
-    | 'CONFIRMED';
+    | 'CONFIRMED'
+    | 'EXPIRED'
+    | 'WITHDRAWN';
 
 export const INVITATION_STATUS_LABELS: Record<InvitationStatus, string> = {
-    PENDING: 'Pending',
+    PENDING: 'Sent',
     NEGOTIATING: 'Negotiating',
     ACCEPTED: 'Accepted',
     REJECTED: 'Rejected',
     CONFIRMED: 'Confirmed',
+    EXPIRED: 'Expired',
+    WITHDRAWN: 'Withdrawn',
 };
 
 export interface InvitationResponse {
@@ -37,6 +41,8 @@ export interface InvitationResponse {
     proposedAmount?: number;
     proposedTimeline?: string;
     proposedDeliverables?: string;
+    platform?: string;
+    expiresAt?: string;
     createdAt?: string;
     updatedAt?: string;
     respondedAt?: string;
@@ -65,6 +71,11 @@ export interface InvitationDetailResponse extends InvitationResponse {
 export interface InvitationRequest {
     influencerId: number;
     message?: string;
+    proposedAmount?: number;
+    proposedTimeline?: string;
+    proposedDeliverables?: string;
+    platform?: string;
+    expiresInDays?: number;
 }
 
 export interface RespondRequest {
@@ -147,6 +158,50 @@ export async function getMyCollaborations(): Promise<InvitationResponse[]> {
     if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.message || 'Failed to load collaborations');
+    }
+    return response.json();
+}
+
+export async function getSentInvitations(): Promise<InvitationResponse[]> {
+    const response = await fetch(`${INVITATIONS_URL}/sent`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to load sent invitations');
+    }
+    return response.json();
+}
+
+export interface UpdateInvitationRequest {
+    message?: string;
+    proposedAmount?: number;
+    proposedTimeline?: string;
+    proposedDeliverables?: string;
+    platform?: string;
+}
+
+export async function withdrawInvitation(id: number): Promise<void> {
+    const response = await fetch(`${INVITATIONS_URL}/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to withdraw invitation');
+    }
+}
+
+export async function updateInvitation(id: number, request: UpdateInvitationRequest): Promise<InvitationResponse> {
+    const response = await fetch(`${INVITATIONS_URL}/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(request),
+    });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to update invitation');
     }
     return response.json();
 }

@@ -174,4 +174,158 @@ class InvitationServiceTest {
         assertThat(list).hasSize(1);
         assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.ACCEPTED);
     }
+
+    // --- TDD: Brand sent invitations, withdraw, edit, campaign details, expired ---
+
+    @Test
+    void getInvitationsForBrand_returnsListOrderedByCreatedDesc() {
+        when(invitationRepository.findByBrandIdOrderByCreatedAtDesc(10L)).thenReturn(List.of(invitation));
+
+        List<InvitationResponse> list = invitationService.getInvitationsForBrand(10L);
+
+        assertThat(list).hasSize(1);
+        assertThat(list.get(0).getId()).isEqualTo(100L);
+        assertThat(list.get(0).getBrandId()).isEqualTo(10L);
+    }
+
+    @Test
+    void createInvitation_withCampaignDetails_savesDeliverablesTimelineAmountPlatformExpiresAt() {
+        InvitationRequest request = new InvitationRequest();
+        request.setInfluencerId(20L);
+        request.setMessage("Join us");
+        request.setProposedAmount(new BigDecimal("1000.00"));
+        request.setProposedTimeline("2 weeks");
+        request.setProposedDeliverables("2 Reels, 3 Stories");
+        request.setPlatform("INSTAGRAM_REEL");
+        request.setExpiresInDays(7);
+
+        when(campaignRepository.findById(1L)).thenReturn(Optional.of(campaign));
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(invitationRepository.findByCampaignIdAndInfluencerId(1L, 20L)).thenReturn(Optional.empty());
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> {
+            CollaborationInvitation inv = i.getArgument(0);
+            inv.setId(100L);
+            inv.setCreatedAt(Instant.now());
+            inv.setExpiresAt(Instant.now().plusSeconds(7 * 86400L));
+            return inv;
+        });
+
+        InvitationResponse response = invitationService.createInvitation(10L, 1L, request);
+
+        assertThat(response.getProposedAmount()).isEqualByComparingTo("1000.00");
+        assertThat(response.getProposedTimeline()).isEqualTo("2 weeks");
+        assertThat(response.getProposedDeliverables()).isEqualTo("2 Reels, 3 Stories");
+        assertThat(response.getPlatform()).isEqualTo("INSTAGRAM_REEL");
+        assertThat(response.getExpiresAt()).isNotNull();
+    }
+
+    @Test
+    void withdraw_asBrand_pending_setsStatusToWithdrawn() {
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> i.getArgument(0));
+
+        invitationService.withdraw(100L, 10L);
+
+        verify(invitationRepository).save(any(CollaborationInvitation.class));
+        assertThat(invitation.getStatus()).isEqualTo(InvitationStatus.WITHDRAWN);
+    }
+
+    @Test
+    void withdraw_wrongBrand_throws() {
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+
+        assertThatThrownBy(() -> invitationService.withdraw(100L, 99L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Only the brand that sent");
+        verify(invitationRepository, never()).save(any());
+    }
+
+    @Test
+    void withdraw_whenAlreadyAccepted_throws() {
+        invitation.setStatus(InvitationStatus.ACCEPTED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+
+        assertThatThrownBy(() -> invitationService.withdraw(100L, 10L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("You can only withdraw PENDING or NEGOTIATING");
+        verify(invitationRepository, never()).save(any());
+    }
+
+    @Test
+    void updateInvitation_asBrand_pending_updatesFieldsAndReturnsResponse() {
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> i.getArgument(0));
+
+        UpdateInvitationRequest request = new UpdateInvitationRequest();
+        request.setMessage("Updated message");
+        request.setProposedAmount(new BigDecimal("750"));
+        request.setProposedTimeline("3 weeks");
+        request.setPlatform("YOUTUBE_VIDEO");
+
+        InvitationResponse response = invitationService.updateInvitation(100L, 10L, request);
+
+        assertThat(response.getBrandMessage()).isEqualTo("Updated message");
+        assertThat(response.getProposedAmount()).isEqualByComparingTo("750");
+        verify(invitationRepository).save(invitation);
+    }
+
+    @Test
+    void updateInvitation_wrongBrand_throws() {
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        UpdateInvitationRequest request = new UpdateInvitationRequest();
+
+        assertThatThrownBy(() -> invitationService.updateInvitation(100L, 99L, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Only the brand that sent");
+        verify(invitationRepository, never()).save(any());
+    }
+
+    @Test
+    void getInvitationsForBrand_whenInvitationPendingButExpired_returnsEffectiveStatusExpired() {
+        invitation.setStatus(InvitationStatus.PENDING);
+        invitation.setExpiresAt(Instant.now().minusSeconds(3600)); // 1 hour ago
+        when(invitationRepository.findByBrandIdOrderByCreatedAtDesc(10L)).thenReturn(List.of(invitation));
+
+        List<InvitationResponse> list = invitationService.getInvitationsForBrand(10L);
+
+        assertThat(list).hasSize(1);
+        assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.EXPIRED);
+    }
+
+    @Test
+    void updateInvitation_whenAlreadyAccepted_throws() {
+        invitation.setStatus(InvitationStatus.ACCEPTED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        UpdateInvitationRequest request = new UpdateInvitationRequest();
+        request.setMessage("Updated");
+
+        assertThatThrownBy(() -> invitationService.updateInvitation(100L, 10L, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("You can only edit PENDING or NEGOTIATING invitations");
+        verify(invitationRepository, never()).save(any());
+    }
+
+    @Test
+    void updateInvitation_whenRejected_throws() {
+        invitation.setStatus(InvitationStatus.REJECTED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        UpdateInvitationRequest request = new UpdateInvitationRequest();
+
+        assertThatThrownBy(() -> invitationService.updateInvitation(100L, 10L, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("You can only edit PENDING or NEGOTIATING invitations");
+        verify(invitationRepository, never()).save(any());
+    }
+
+    @Test
+    void updateInvitation_whenConfirmed_throws() {
+        invitation.setStatus(InvitationStatus.CONFIRMED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        UpdateInvitationRequest request = new UpdateInvitationRequest();
+
+        assertThatThrownBy(() -> invitationService.updateInvitation(100L, 10L, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("You can only edit PENDING or NEGOTIATING invitations");
+        verify(invitationRepository, never()).save(any());
+    }
 }

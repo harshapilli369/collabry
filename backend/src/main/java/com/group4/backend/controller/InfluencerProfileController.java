@@ -14,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -47,6 +49,24 @@ public class InfluencerProfileController {
         }
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(user.getId(), request);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Search influencers by niche, followers, engagement rate, location. Brands only.
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<InfluencerProfileResponse>> search(
+            @RequestParam(required = false) String niche,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) Long minFollowers,
+            @RequestParam(required = false) Long maxFollowers,
+            @RequestParam(required = false) BigDecimal minEngagementRate) {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        List<InfluencerProfileResponse> list = influencerProfileService.search(niche, location, minFollowers, maxFollowers, minEngagementRate);
+        return ResponseEntity.ok(list);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
