@@ -1,6 +1,10 @@
 # GitLab CI/CD - Collabry
-# develop branch: build, test, publish (dev tag), deploy to dev (port 8074).
+# develop branch: build, test, publish (dev tag), deploy to dev (port 8073).
 # main branch: build, test, publish (latest), deploy to production (port 8073).
+#
+# Docker Hub rate limits: build/test jobs use group04_Runner and node:20-alpine to avoid
+# "toomanyrequests" errors. If limits persist, enable GitLab Dependency Proxy (group settings)
+# and use: image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker.io/library/node:20-alpine
 
 stages:
   - build
@@ -9,9 +13,12 @@ stages:
   - deploy
 
 # --- Build: compile backend and frontend ---
+# Use group04_Runner to avoid Docker Hub rate limits on shared autoscaler (runner may have cached images or auth)
 build-backend:
   stage: build
   image: eclipse-temurin:17
+  tags:
+    - group04_Runner
   script:
     - cd backend
     - chmod +x mvnw
@@ -23,7 +30,10 @@ build-backend:
 
 build-frontend:
   stage: build
-  image: node:22-alpine
+  # node:20-alpine (LTS) - more likely cached; node:22-alpine can hit Docker Hub rate limits on shared runners
+  image: node:20-alpine
+  tags:
+    - group04_Runner
   script:
     - cd frontend
     - npm ci
@@ -37,6 +47,8 @@ build-frontend:
 test:
   stage: test
   image: eclipse-temurin:17
+  tags:
+    - group04_Runner
   script:
     - cd backend
     - chmod +x mvnw
