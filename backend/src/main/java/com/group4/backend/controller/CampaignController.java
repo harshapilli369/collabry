@@ -40,6 +40,9 @@ public class CampaignController {
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+        if (!user.isVerified()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         CampaignResponse response = campaignService.create(user.getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -57,6 +60,9 @@ public class CampaignController {
     public ResponseEntity<InvitationResponse> createInvitation(@PathVariable Long campaignId, @Valid @RequestBody InvitationRequest request) {
         User user = getCurrentUser();
         if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (!user.isVerified()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         InvitationResponse response = invitationService.createInvitation(user.getId(), campaignId, request);

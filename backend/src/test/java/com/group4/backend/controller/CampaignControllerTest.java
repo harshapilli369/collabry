@@ -1,8 +1,12 @@
 package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group4.backend.dto.CampaignRequest;
+import com.group4.backend.dto.CampaignResponse;
 import com.group4.backend.dto.InvitationRequest;
 import com.group4.backend.dto.InvitationResponse;
+import com.group4.backend.model.BudgetRange;
+import com.group4.backend.model.CampaignGoal;
 import com.group4.backend.model.InvitationStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
@@ -19,11 +23,13 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -50,8 +56,67 @@ class CampaignControllerTest {
     void setUp() {
         brandUser = new User("brand@test.com", "pass", Role.BRAND);
         brandUser.setId(10L);
+        brandUser.setVerified(true);
         influencerUser = new User("influencer@test.com", "pass", Role.INFLUENCER);
         influencerUser.setId(20L);
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void createCampaign_asBrand_returns201() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        CampaignRequest request = new CampaignRequest();
+        request.setName("Summer Promo");
+        request.setBudgetRange(BudgetRange.ONE_K_5K);
+
+        CampaignResponse resp = new CampaignResponse();
+        resp.setId(1L);
+        resp.setName("Summer Promo");
+        when(campaignService.create(eq(10L), any(CampaignRequest.class))).thenReturn(resp);
+
+        mockMvc.perform(post("/api/campaigns").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Summer Promo"));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void createCampaign_asInfluencer_returns403() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        CampaignRequest request = new CampaignRequest();
+        request.setName("Summer Promo");
+        request.setBudgetRange(BudgetRange.ONE_K_5K);
+
+        mockMvc.perform(post("/api/campaigns").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void getMyCampaigns_asBrand_returns200() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        CampaignResponse resp = new CampaignResponse();
+        resp.setId(1L);
+        resp.setName("My Campaign");
+        when(campaignService.findByUserId(10L)).thenReturn(List.of(resp));
+
+        mockMvc.perform(get("/api/campaigns/me"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void getMyCampaigns_asInfluencer_returns403() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+
+        mockMvc.perform(get("/api/campaigns/me"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -85,5 +150,19 @@ class CampaignControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void createCampaign_invalidRequest_returns400() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        CampaignRequest request = new CampaignRequest();
+        // Missing name and budgetRange, which are required
+
+        mockMvc.perform(post("/api/campaigns").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").exists());
     }
 }

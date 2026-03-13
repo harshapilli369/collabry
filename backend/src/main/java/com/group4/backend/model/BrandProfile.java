@@ -46,9 +46,6 @@ public class BrandProfile {
     @Column(name = "budget_range")
     private BudgetRange budgetRange;
 
-    @Column(name = "is_verified", nullable = false)
-    private boolean isVerified = false;
-
     @Column(name = "created_at")
     private Instant createdAt;
 
@@ -165,14 +162,6 @@ public class BrandProfile {
 
     public void setBudgetRange(BudgetRange budgetRange) {
         this.budgetRange = budgetRange;
-    }
-
-    public boolean isVerified() {
-        return isVerified;
-    }
-
-    public void setVerified(boolean verified) {
-        isVerified = verified;
     }
 
     public Instant getCreatedAt() {
