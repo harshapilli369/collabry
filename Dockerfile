@@ -1,7 +1,8 @@
 # ===========================================
 # Stage 1: Build frontend
 # ===========================================
-FROM node:22-alpine AS frontend-build
+# node:20-alpine (LTS) - avoids Docker Hub rate limits; node:22-alpine can hit toomanyrequests
+FROM node:20-alpine AS frontend-build
 
 WORKDIR /app/frontend
 

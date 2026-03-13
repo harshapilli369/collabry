@@ -1,5 +1,5 @@
-# Use Node.js 22
-FROM node:22-alpine
+# Use Node.js 20 LTS - avoids Docker Hub rate limits; node:22 can hit toomanyrequests
+FROM node:20-alpine
 
 WORKDIR /app
 
