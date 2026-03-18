@@ -1,15 +1,20 @@
 package com.group4.backend.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group4.backend.dto.InfluencerRecommendationDTO;
+import com.group4.backend.model.Campaign;
+import com.group4.backend.model.InfluencerProfile;
+import com.group4.backend.repository.CampaignRepository;
+import com.group4.backend.repository.InfluencerProfileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.MockitoAnnotations;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -19,6 +24,12 @@ class AiRecommendationServiceTest {
 
     @Mock
     private GroqApiClient groqApiClient;
+
+    @Mock
+    private CampaignRepository campaignRepository;
+
+    @Mock
+    private InfluencerProfileRepository influencerProfileRepository;
 
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -35,8 +46,18 @@ class AiRecommendationServiceTest {
     void getRecommendations_ShouldReturnParsedInfluencers() {
         // Arrange
         Long campaignId = 1L;
-        String mockGroqResponse = "[{\"influencerId\": 10, \"matchScore\": 95, \"reason\": \"Perfect match.\"}]";
         
+        Campaign dummyCampaign = new Campaign();
+        dummyCampaign.setId(campaignId);
+        dummyCampaign.setName("Test Campaign");
+        when(campaignRepository.findById(campaignId)).thenReturn(Optional.of(dummyCampaign));
+        
+        InfluencerProfile dummyInfluencer = new InfluencerProfile();
+        dummyInfluencer.setId(10L);
+        dummyInfluencer.setName("Alex");
+        when(influencerProfileRepository.findAll()).thenReturn(List.of(dummyInfluencer));
+        
+        String mockGroqResponse = "{\"recommendations\": [{\"influencerId\": 10, \"matchScore\": 95, \"reason\": \"Perfect match.\"}]}";
         when(groqApiClient.getChatCompletion(anyString())).thenReturn(mockGroqResponse);
 
         // Act
