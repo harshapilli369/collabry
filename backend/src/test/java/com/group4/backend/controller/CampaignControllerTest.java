@@ -14,6 +14,12 @@ import com.group4.backend.repository.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.CampaignService;
 import com.group4.backend.service.InvitationService;
+import com.group4.backend.service.AiRecommendationService;
+import com.group4.backend.dto.InfluencerRecommendationDTO;
+import com.group4.backend.service.InvitationService;
+import com.group4.backend.service.AiRecommendationService;
+import com.group4.backend.dto.InfluencerRecommendationDTO;
+import com.group4.backend.dto.InfluencerRecommendationDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +48,8 @@ class CampaignControllerTest {
     private ObjectMapper objectMapper;
     @MockBean
     private CampaignService campaignService;
+    @MockBean
+    private AiRecommendationService aiRecommendationService;
     @MockBean
     private InvitationService invitationService;
     @MockBean
@@ -164,5 +172,23 @@ class CampaignControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void getRecommendations_asBrand_returns200() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        
+        InfluencerRecommendationDTO rec = new InfluencerRecommendationDTO();
+        rec.setInfluencerId(20L);
+        rec.setMatchScore(98);
+        rec.setReason("Great alignment.");
+        
+        when(aiRecommendationService.getRecommendations(1L)).thenReturn(List.of(rec));
+
+        mockMvc.perform(get("/api/campaigns/1/recommendations"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].influencerId").value(20))
+                .andExpect(jsonPath("$[0].matchScore").value(98));
     }
 }
