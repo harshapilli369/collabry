@@ -9,6 +9,8 @@ import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.service.CampaignService;
 import com.group4.backend.service.InvitationService;
+import com.group4.backend.service.AiRecommendationService;
+import com.group4.backend.dto.InfluencerRecommendationDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,11 +29,13 @@ public class CampaignController {
     private final CampaignService campaignService;
     private final InvitationService invitationService;
     private final UserRepository userRepository;
+    private final AiRecommendationService aiRecommendationService;
 
-    public CampaignController(CampaignService campaignService, InvitationService invitationService, UserRepository userRepository) {
+    public CampaignController(CampaignService campaignService, InvitationService invitationService, UserRepository userRepository, AiRecommendationService aiRecommendationService) {
         this.campaignService = campaignService;
         this.invitationService = invitationService;
         this.userRepository = userRepository;
+        this.aiRecommendationService = aiRecommendationService;
     }
 
     @PostMapping
@@ -67,6 +71,19 @@ public class CampaignController {
         }
         InvitationResponse response = invitationService.createInvitation(user.getId(), campaignId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{campaignId}/recommendations")
+    public ResponseEntity<List<InfluencerRecommendationDTO>> getRecommendations(@PathVariable Long campaignId) {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (!user.isVerified()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        List<InfluencerRecommendationDTO> recommendations = aiRecommendationService.getRecommendations(campaignId);
+        return ResponseEntity.ok(recommendations);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
