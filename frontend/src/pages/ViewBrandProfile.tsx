@@ -38,6 +38,18 @@ export const ViewBrandProfile = () => {
     const pageBackgroundColor = '#000000'
     const cardBackgroundColor = '#141414'
 
+    const formatSocialHandle = (url: string | undefined) => {
+        if (!url) return '';
+        try {
+            const cleanUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+            const segments = cleanUrl.split('/');
+            const handle = segments[segments.length - 1];
+            return handle.startsWith('@') ? handle : `@${handle}`;
+        } catch {
+            return url;
+        }
+    }
+
     if (loading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: pageBackgroundColor }}>
@@ -193,18 +205,24 @@ export const ViewBrandProfile = () => {
 
                                 <div>
                                     <Title level={5} style={{ color: primaryColor, marginBottom: 16 }}>Links & Socials</Title>
-                                    <Space size="large">
+                                    <Space size="middle" wrap>
                                         {profile?.website && (
                                             <Button type="default" icon={<GlobalOutlined />} href={profile.website} target="_blank">Website</Button>
                                         )}
                                         {profile?.instagramUrl && (
-                                            <Button type="default" icon={<InstagramOutlined />} href={profile.instagramUrl} target="_blank">Instagram</Button>
+                                            <Button type="default" icon={<InstagramOutlined />} href={profile.instagramUrl} target="_blank" style={{ color: '#E1306C', borderColor: '#E1306C' }}>
+                                                {formatSocialHandle(profile.instagramUrl)}
+                                            </Button>
                                         )}
                                         {profile?.linkedInUrl && (
-                                            <Button type="default" icon={<LinkedinOutlined />} href={profile.linkedInUrl} target="_blank">LinkedIn</Button>
+                                            <Button type="default" icon={<LinkedinOutlined />} href={profile.linkedInUrl} target="_blank" style={{ color: '#0077B5', borderColor: '#0077B5' }}>
+                                                {formatSocialHandle(profile.linkedInUrl)}
+                                            </Button>
                                         )}
                                         {profile?.twitterUrl && (
-                                            <Button type="default" icon={<TwitterOutlined />} href={profile.twitterUrl} target="_blank">Twitter / X</Button>
+                                            <Button type="default" icon={<TwitterOutlined />} href={profile.twitterUrl} target="_blank" style={{ color: '#1DA1F2', borderColor: '#1DA1F2' }}>
+                                                {formatSocialHandle(profile.twitterUrl)}
+                                            </Button>
                                         )}
                                     </Space>
                                     {(!profile?.website && !profile?.instagramUrl && !profile?.linkedInUrl && !profile?.twitterUrl) && (
