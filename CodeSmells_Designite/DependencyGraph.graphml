@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?><graphml xmlns="http://graphml.graphdrawing.org/xmlns" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <key id="key0" for="node" attr.name="loc" attr.type="int"/>
+    <key id="key1" for="node" attr.name="sd" attr.type="float"/>
+    <graph edgedefault="directed">
+        <node id="com.group4.backend.dto.CampaignRequest">
+            <data key="key0">60</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.model.BudgetRange">
+            <data key="key0">1</data>
+            <data key="key1">1000.0</data>
+        </node>
+        <node id="com.group4.backend.model.CampaignGoal">
+            <data key="key0">1</data>
+            <data key="key1">1000.0</data>
+        </node>
+        <node id="com.group4.backend.dto.InfluencerProfileRequest">
+            <data key="key0">88</data>
+            <data key="key1">11.36</data>
+        </node>
+        <node id="com.group4.backend.dto.SignupRequest">
+            <data key="key0">34</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.model.Role">
+            <data key="key0">1</data>
+            <data key="key1">1000.0</data>
+        </node>
+        <node id="com.group4.backend.dto.PaymentResponse">
+            <data key="key0">102</data>
+            <data key="key1">9.8</data>
+        </node>
+        <node id="com.group4.backend.model.PaymentStatus">
+            <data key="key0">1</data>
+            <data key="key1">1000.0</data>
+        </node>
+        <node id="com.group4.backend.dto.TokenRequest">
+            <data key="key0">14</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.dto.AuthResponse">
+            <data key="key0">38</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.dto.RegisterResponse">
+            <data key="key0">25</data>
+            <data key="key1">40.0</data>
+        </node>
+        <node id="com.group4.backend.dto.LoginRequest">
+            <data key="key0">29</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.dto.ResetPasswordRequest">
+            <data key="key0">18</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.dto.SignupResponse">
+            <data key="key0">17</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.dto.InfluencerProfileResponse">
+            <data key="key0">116</data>
+            <data key="key1">8.62</data>
+        </node>
+        <node id="com.group4.backend.dto.CampaignResponse">
+            <data key="key0">95</data>
+            <data key="key1">10.53</data>
+        </node>
+        <node id="com.group4.backend.model.CampaignStatus">
+            <data key="key0">1</data>
+            <data key="key1">1000.0</data>
+        </node>
+        <node id="com.group4.backend.dto.BrandProfileRequest">
+            <data key="key0">74</data>
+            <data key="key1">13.51</data>
+        </node>
+        <node id="com.group4.backend.dto.BrandProfileResponse">
+            <data key="key0">102</data>
+            <data key="key1">9.8</data>
+        </node>
+        <node id="com.group4.backend.dto.PaymentRequest">
+            <data key="key0">46</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.repository.PendingSignupRepository">
+            <data key="key0">5</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.repository.CampaignRepository">
+            <data key="key0">3</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.repository.InfluencerProfileRepository">
+            <data key="key0">4</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.repository.BrandProfileRepository">
+            <data key="key0">4</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.repository.UserRepository">
+            <data key="key0">4</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.repository.PasswordResetTokenRepository">
+            <data key="key0">4</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.repository.PaymentRepository">
+            <data key="key0">7</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.config.SpaWebConfig">
+            <data key="key0">14</data>
+            <data key="key1">142.86</data>
+        </node>
+        <node id="com.group4.backend.config.ApplicationConfig">
+            <data key="key0">21</data>
+            <data key="key1">95.24</data>
+        </node>
+        <node id="com.group4.backend.config.SecurityConfig">
+            <data key="key0">22</data>
+            <data key="key1">136.36</data>
+        </node>
+        <node id="com.group4.backend.security.JwtAuthenticationFilter">
+            <data key="key0">28</data>
+            <data key="key1">71.43</data>
+        </node>
+        <node id="com.group4.backend.config.DataInitializer">
+            <data key="key0">28</data>
+            <data key="key1">35.71</data>
+        </node>
+        <node id="com.group4.backend.config.RelaxedMailConfig">
+            <data key="key0">29</data>
+            <data key="key1">68.97</data>
+        </node>
+        <node id="com.group4.backend.security.JwtUtils">
+            <data key="key0">30</data>
+            <data key="key1">333.33</data>
+        </node>
+        <node id="com.group4.backend.controller.BrandProfileController">
+            <data key="key0">41</data>
+            <data key="key1">24.39</data>
+        </node>
+        <node id="com.group4.backend.service.BrandProfileService">
+            <data key="key0">67</data>
+            <data key="key1">14.93</data>
+        </node>
+        <node id="com.group4.backend.model.User">
+            <data key="key0">37</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.controller.InfluencerProfileController">
+            <data key="key0">38</data>
+            <data key="key1">52.63</data>
+        </node>
+        <node id="com.group4.backend.service.InfluencerProfileService">
+            <data key="key0">76</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.controller.SpaController">
+            <data key="key0">8</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.controller.CampaignController">
+            <data key="key0">38</data>
+            <data key="key1">26.32</data>
+        </node>
+        <node id="com.group4.backend.service.CampaignService">
+            <data key="key0">52</data>
+            <data key="key1">19.23</data>
+        </node>
+        <node id="com.group4.backend.controller.AuthController">
+            <data key="key0">51</data>
+            <data key="key1">39.22</data>
+        </node>
+        <node id="com.group4.backend.service.AuthService">
+            <data key="key0">125</data>
+            <data key="key1">64.0</data>
+        </node>
+        <node id="com.group4.backend.exception.DuplicateEmailException">
+            <data key="key0">5</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.controller.PaymentController">
+            <data key="key0">92</data>
+            <data key="key1">10.87</data>
+        </node>
+        <node id="com.group4.backend.service.PaymentService">
+            <data key="key0">86</data>
+            <data key="key1">116.28</data>
+        </node>
+        <node id="com.group4.backend.model.PasswordResetToken">
+            <data key="key0">37</data>
+            <data key="key1">81.08</data>
+        </node>
+        <node id="com.group4.backend.model.Payment">
+            <data key="key0">103</data>
+            <data key="key1">9.71</data>
+        </node>
+        <node id="com.group4.backend.model.BrandProfile">
+            <data key="key0">117</data>
+            <data key="key1">8.55</data>
+        </node>
+        <node id="com.group4.backend.model.InfluencerProfile">
+            <data key="key0">124</data>
+            <data key="key1">8.06</data>
+        </node>
+        <node id="com.group4.backend.model.PendingSignup">
+            <data key="key0">56</data>
+            <data key="key1">17.86</data>
+        </node>
+        <node id="com.group4.backend.model.Campaign">
+            <data key="key0">103</data>
+            <data key="key1">9.71</data>
+        </node>
+        <node id="com.group4.backend.service.SmtpEmailService">
+            <data key="key0">45</data>
+            <data key="key1">66.67</data>
+        </node>
+        <node id="com.group4.backend.service.EmailService">
+            <data key="key0">10</data>
+            <data key="key1">0.0</data>
+        </node>
+        <node id="com.group4.backend.service.ConsoleEmailService">
+            <data key="key0">17</data>
+            <data key="key1">58.82</data>
+        </node>
+        <node id="com.group4.backend.BackendApplication">
+            <data key="key0">5</data>
+            <data key="key1">0.0</data>
+        </node>
+        <edge source="com.group4.backend.controller.BrandProfileController" target="com.group4.backend.service.BrandProfileService"/>
+        <edge source="com.group4.backend.controller.BrandProfileController" target="com.group4.backend.repository.UserRepository"/>
+        <edge source="com.group4.backend.controller.BrandProfileController" target="com.group4.backend.model.User"/>
+        <edge source="com.group4.backend.controller.BrandProfileController" target="com.group4.backend.dto.BrandProfileRequest"/>
+        <edge source="com.group4.backend.controller.BrandProfileController" target="com.group4.backend.dto.BrandProfileResponse"/>
+        <edge source="com.group4.backend.controller.BrandProfileController" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.controller.InfluencerProfileController" target="com.group4.backend.service.InfluencerProfileService"/>
+        <edge source="com.group4.backend.controller.InfluencerProfileController" target="com.group4.backend.repository.UserRepository"/>
+        <edge source="com.group4.backend.controller.InfluencerProfileController" target="com.group4.backend.model.User"/>
+        <edge source="com.group4.backend.controller.InfluencerProfileController" target="com.group4.backend.dto.InfluencerProfileRequest"/>
+        <edge source="com.group4.backend.controller.InfluencerProfileController" target="com.group4.backend.dto.InfluencerProfileResponse"/>
+        <edge source="com.group4.backend.controller.InfluencerProfileController" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.service.CampaignService" target="com.group4.backend.repository.CampaignRepository"/>
+        <edge source="com.group4.backend.service.CampaignService" target="com.group4.backend.repository.UserRepository"/>
+        <edge source="com.group4.backend.service.CampaignService" target="com.group4.backend.dto.CampaignRequest"/>
+        <edge source="com.group4.backend.service.CampaignService" target="com.group4.backend.dto.CampaignResponse"/>
+        <edge source="com.group4.backend.service.CampaignService" target="com.group4.backend.model.User"/>
+        <edge source="com.group4.backend.service.CampaignService" target="com.group4.backend.model.Campaign"/>
+        <edge source="com.group4.backend.service.CampaignService" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.service.CampaignService" target="com.group4.backend.model.CampaignStatus"/>
+        <edge source="com.group4.backend.service.InfluencerProfileService" target="com.group4.backend.repository.InfluencerProfileRepository"/>
+        <edge source="com.group4.backend.service.InfluencerProfileService" target="com.group4.backend.repository.UserRepository"/>
+        <edge source="com.group4.backend.service.InfluencerProfileService" target="com.group4.backend.dto.InfluencerProfileRequest"/>
+        <edge source="com.group4.backend.service.InfluencerProfileService" target="com.group4.backend.dto.InfluencerProfileResponse"/>
+        <edge source="com.group4.backend.service.InfluencerProfileService" target="com.group4.backend.model.User"/>
+        <edge source="com.group4.backend.service.InfluencerProfileService" target="com.group4.backend.model.InfluencerProfile"/>
+        <edge source="com.group4.backend.service.InfluencerProfileService" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.dto.AuthResponse" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.service.BrandProfileService" target="com.group4.backend.repository.BrandProfileRepository"/>
+        <edge source="com.group4.backend.service.BrandProfileService" target="com.group4.backend.repository.UserRepository"/>
+        <edge source="com.group4.backend.service.BrandProfileService" target="com.group4.backend.dto.BrandProfileRequest"/>
+        <edge source="com.group4.backend.service.BrandProfileService" target="com.group4.backend.dto.BrandProfileResponse"/>
+        <edge source="com.group4.backend.service.BrandProfileService" target="com.group4.backend.model.User"/>
+        <edge source="com.group4.backend.service.BrandProfileService" target="com.group4.backend.model.BrandProfile"/>
+        <edge source="com.group4.backend.service.BrandProfileService" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.model.User" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.repository.UserRepository"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.repository.PendingSignupRepository"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.security.JwtUtils"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.repository.PasswordResetTokenRepository"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.service.EmailService"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.dto.SignupRequest"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.dto.SignupResponse"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.model.PendingSignup"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.dto.AuthResponse"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.model.User"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.dto.LoginRequest"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.model.PasswordResetToken"/>
+        <edge source="com.group4.backend.service.AuthService" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.model.Payment" target="com.group4.backend.model.PaymentStatus"/>
+        <edge source="com.group4.backend.model.PasswordResetToken" target="com.group4.backend.model.User"/>
+        <edge source="com.group4.backend.repository.PaymentRepository" target="com.group4.backend.model.PaymentStatus"/>
+        <edge source="com.group4.backend.model.PendingSignup" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.service.PaymentService" target="com.group4.backend.repository.PaymentRepository"/>
+        <edge source="com.group4.backend.service.PaymentService" target="com.group4.backend.repository.CampaignRepository"/>
+        <edge source="com.group4.backend.service.PaymentService" target="com.group4.backend.dto.PaymentRequest"/>
+        <edge source="com.group4.backend.service.PaymentService" target="com.group4.backend.dto.PaymentResponse"/>
+        <edge source="com.group4.backend.service.PaymentService" target="com.group4.backend.model.Campaign"/>
+        <edge source="com.group4.backend.service.PaymentService" target="com.group4.backend.model.Payment"/>
+        <edge source="com.group4.backend.service.PaymentService" target="com.group4.backend.model.PaymentStatus"/>
+        <edge source="com.group4.backend.config.DataInitializer" target="com.group4.backend.repository.UserRepository"/>
+        <edge source="com.group4.backend.config.DataInitializer" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.dto.PaymentResponse" target="com.group4.backend.model.PaymentStatus"/>
+        <edge source="com.group4.backend.config.ApplicationConfig" target="com.group4.backend.repository.UserRepository"/>
+        <edge source="com.group4.backend.security.JwtAuthenticationFilter" target="com.group4.backend.security.JwtUtils"/>
+        <edge source="com.group4.backend.controller.CampaignController" target="com.group4.backend.service.CampaignService"/>
+        <edge source="com.group4.backend.controller.CampaignController" target="com.group4.backend.repository.UserRepository"/>
+        <edge source="com.group4.backend.controller.CampaignController" target="com.group4.backend.dto.CampaignRequest"/>
+        <edge source="com.group4.backend.controller.CampaignController" target="com.group4.backend.model.User"/>
+        <edge source="com.group4.backend.controller.CampaignController" target="com.group4.backend.dto.CampaignResponse"/>
+        <edge source="com.group4.backend.controller.CampaignController" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.controller.AuthController" target="com.group4.backend.service.AuthService"/>
+        <edge source="com.group4.backend.controller.AuthController" target="com.group4.backend.dto.SignupRequest"/>
+        <edge source="com.group4.backend.controller.AuthController" target="com.group4.backend.dto.SignupResponse"/>
+        <edge source="com.group4.backend.controller.AuthController" target="com.group4.backend.dto.AuthResponse"/>
+        <edge source="com.group4.backend.controller.AuthController" target="com.group4.backend.exception.DuplicateEmailException"/>
+        <edge source="com.group4.backend.controller.AuthController" target="com.group4.backend.dto.LoginRequest"/>
+        <edge source="com.group4.backend.controller.AuthController" target="com.group4.backend.dto.TokenRequest"/>
+        <edge source="com.group4.backend.controller.AuthController" target="com.group4.backend.dto.ResetPasswordRequest"/>
+        <edge source="com.group4.backend.controller.PaymentController" target="com.group4.backend.service.PaymentService"/>
+        <edge source="com.group4.backend.controller.PaymentController" target="com.group4.backend.repository.UserRepository"/>
+        <edge source="com.group4.backend.controller.PaymentController" target="com.group4.backend.dto.PaymentRequest"/>
+        <edge source="com.group4.backend.controller.PaymentController" target="com.group4.backend.model.User"/>
+        <edge source="com.group4.backend.controller.PaymentController" target="com.group4.backend.dto.PaymentResponse"/>
+        <edge source="com.group4.backend.controller.PaymentController" target="com.group4.backend.model.PaymentStatus"/>
+        <edge source="com.group4.backend.controller.PaymentController" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.dto.BrandProfileRequest" target="com.group4.backend.model.BudgetRange"/>
+        <edge source="com.group4.backend.dto.BrandProfileResponse" target="com.group4.backend.model.BudgetRange"/>
+        <edge source="com.group4.backend.dto.SignupRequest" target="com.group4.backend.model.Role"/>
+        <edge source="com.group4.backend.model.BrandProfile" target="com.group4.backend.model.BudgetRange"/>
+        <edge source="com.group4.backend.config.SecurityConfig" target="com.group4.backend.security.JwtAuthenticationFilter"/>
+        <edge source="com.group4.backend.dto.CampaignRequest" target="com.group4.backend.model.BudgetRange"/>
+        <edge source="com.group4.backend.dto.CampaignRequest" target="com.group4.backend.model.CampaignGoal"/>
+        <edge source="com.group4.backend.dto.CampaignResponse" target="com.group4.backend.model.BudgetRange"/>
+        <edge source="com.group4.backend.dto.CampaignResponse" target="com.group4.backend.model.CampaignStatus"/>
+        <edge source="com.group4.backend.dto.CampaignResponse" target="com.group4.backend.model.CampaignGoal"/>
+        <edge source="com.group4.backend.model.Campaign" target="com.group4.backend.model.BudgetRange"/>
+        <edge source="com.group4.backend.model.Campaign" target="com.group4.backend.model.CampaignStatus"/>
+        <edge source="com.group4.backend.model.Campaign" target="com.group4.backend.model.CampaignGoal"/>
+    </graph>
+</graphml>

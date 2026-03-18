@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message, theme } from 'antd'
-import { UserOutlined, LinkOutlined, DollarOutlined } from '@ant-design/icons'
+import { UserOutlined, LinkOutlined, DollarOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
     getMyInfluencerProfile,
@@ -169,9 +169,12 @@ export const ProfileSetup = () => {
                 >
                     <div style={{ textAlign: 'center', marginBottom: 32 }}>
                         <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, marginBottom: 16, borderRadius: 8 }} />
-                        <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>
-                            Complete your profile
-                        </Title>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '0 0 8px' }}>
+                            <Title level={2} style={{ margin: 0, color: textColor }}>
+                                Complete your profile
+                            </Title>
+                            {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.5rem' }} />}
+                        </div>
                         <Text type="secondary">
                             Add details so brands can find and evaluate you. Complete all steps to appear in search.
                         </Text>

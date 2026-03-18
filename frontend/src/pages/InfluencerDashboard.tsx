@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined } from '@ant-design/icons'
+import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyInvitations } from '../services/invitationService'
 
@@ -116,7 +116,10 @@ export const InfluencerDashboard = () => {
                     </Header>
                     <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
                         <div style={{ marginBottom: 30 }}>
-                            <Title level={1} style={{ color: secondaryColor, margin: 0, fontSize: '3rem' }}>Welcome!</Title>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <Title level={1} style={{ color: secondaryColor, margin: 0, fontSize: '3rem' }}>Welcome!</Title>
+                                {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '2.5rem' }} title="Verified Profile" />}
+                            </div>
                             <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>Here's what's happening with your campaigns today.</Text>
                         </div>
 

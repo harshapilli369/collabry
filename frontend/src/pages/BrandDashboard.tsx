@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tabs, Modal, Form, Input, InputNumber, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined } from '@ant-design/icons'
+import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile } from '../services/brandService'
 import { getMyCampaigns, CAMPAIGN_STATUS_LABELS, BUDGET_RANGE_OPTIONS, type CampaignResponse, type CampaignStatus } from '../services/campaignService'
@@ -181,7 +181,10 @@ export const BrandDashboard = () => {
                     </Header>
                     <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
                         <div style={{ marginBottom: 30 }}>
-                            <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '3rem' }}>Welcome!</Title>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '3rem' }}>Welcome!</Title>
+                                {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '2.5rem' }} title="Verified Profile" />}
+                            </div>
                             <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>Overview of your improved brand performance.</Text>
                         </div>
 
@@ -224,7 +227,14 @@ export const BrandDashboard = () => {
                                     bordered={false}
                                     style={{ borderRadius: 12 }}
                                     extra={
-                                        <Button type="primary" icon={<PlusCircleOutlined />} onClick={() => navigate('/brand/campaigns/create')} style={{ color: '#000000' }}>
+                                        <Button 
+                                            type="primary" 
+                                            icon={<PlusCircleOutlined />} 
+                                            onClick={() => navigate('/brand/campaigns/create')} 
+                                            style={{ color: '#000000' }}
+                                            disabled={!user?.isVerified}
+                                            title={!user?.isVerified ? "Only verified brands can create campaigns" : ""}
+                                        >
                                             Create campaign
                                         </Button>
                                     }

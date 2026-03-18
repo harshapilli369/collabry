@@ -108,7 +108,7 @@ public class AuthService {
         pendingSignupRepository.delete(pending);
 
         String jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), false);
-        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId(), user.isVerified());
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -122,7 +122,7 @@ public class AuthService {
 
         var jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), request.isRememberMe());
 
-        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId(), user.isVerified());
     }
 
     // New Google Login Method
@@ -160,7 +160,7 @@ public class AuthService {
         });
 
         var jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), false);
-        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId(), user.isVerified());
     }
 
     private String fetchEmailFromGoogle(String accessToken) {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
     getMyBrandProfile,
@@ -23,6 +23,8 @@ export const BrandProfile = () => {
     const [loading, setLoading] = useState(false)
     const [fetching, setFetching] = useState(true)
     const navigate = useNavigate()
+    const userStr = localStorage.getItem('user')
+    const user = userStr ? JSON.parse(userStr) : null
 
     useEffect(() => {
         getMyBrandProfile()
@@ -139,9 +141,12 @@ export const BrandProfile = () => {
                             >
                                 Back to Dashboard
                             </Button>
-                            <Title level={1} style={{ color: primaryColor, margin: '0 0 8px', fontSize: '2rem' }}>
-                                Company Profile
-                            </Title>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '0 0 8px' }}>
+                                <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '2rem' }}>
+                                    Company Profile
+                                </Title>
+                                {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.8rem' }} />}
+                            </div>
                             <Text style={{ color: '#aaa' }}>
                                 Manage your brand profile. This is visible to influencers you contact.
                             </Text>
