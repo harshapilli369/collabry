@@ -24,7 +24,7 @@ export const ConfirmEmail = () => {
                 localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role }))
                 setStatus('success')
                 if (data.role === 'INFLUENCER') {
-                    navigate('/influencer/profile-setup', { replace: true })
+                    navigate('/influencer/profile/edit', { replace: true })
                 } else {
                     navigate('/brand/dashboard', { replace: true })
                 }

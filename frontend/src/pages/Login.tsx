@@ -33,8 +33,8 @@ export const Login = () => {
 
             if (data.role === 'INFLUENCER') {
                 const profile = await getMyInfluencerProfile();
-                if (!profile?.isComplete) {
-                    navigate('/influencer/profile-setup', { replace: true });
+                if (!profile?.complete) {
+                    navigate('/influencer/profile/edit', { replace: true });
                 } else {
                     navigate('/influencer/dashboard', { replace: true });
                 }
@@ -69,8 +69,8 @@ export const Login = () => {
 
                 if (data.role === 'INFLUENCER') {
                     const profile = await getMyInfluencerProfile();
-                    if (!profile?.isComplete) {
-                        navigate('/influencer/profile-setup', { replace: true });
+                    if (!profile?.complete) {
+                        navigate('/influencer/profile/edit', { replace: true });
                     } else {
                         navigate('/influencer/dashboard', { replace: true });
                     }

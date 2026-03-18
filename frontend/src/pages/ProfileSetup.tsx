@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message, theme } from 'antd'
-import { UserOutlined, LinkOutlined, DollarOutlined, CheckCircleFilled } from '@ant-design/icons'
+import { UserOutlined, LinkOutlined, DollarOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
     getMyInfluencerProfile,
@@ -192,7 +192,6 @@ export const ProfileSetup = () => {
                             <Title level={2} style={{ margin: 0, color: textColor }}>
                                 {isEdit ? 'Edit your profile' : 'Complete your profile'}
                             </Title>
-                            {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.5rem' }} />}
                         </div>
                         <Text type="secondary">
                             Add details so brands can find and evaluate you. Complete all steps to appear in search.
@@ -260,24 +259,21 @@ export const ProfileSetup = () => {
                             >
                                 <Input.Search 
                                     addonBefore="@" 
-                                    placeholder="username" 
-                                    enterButton="Connect"
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
                                     onSearch={(val) => handleConnect('INSTAGRAM', val)}
                                 />
                             </Form.Item>
                             <Form.Item name="youtubeHandle" label="YouTube channel/handle">
                                 <Input.Search 
                                     addonBefore="@" 
-                                    placeholder="channel or username" 
-                                    enterButton="Connect"
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
                                     onSearch={(val) => handleConnect('YOUTUBE', val)}
                                 />
                             </Form.Item>
                             <Form.Item name="tiktokHandle" label="TikTok handle">
                                 <Input.Search 
                                     addonBefore="@" 
-                                    placeholder="username" 
-                                    enterButton="Connect"
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
                                     onSearch={(val) => handleConnect('TIKTOK', val)}
                                 />
                             </Form.Item>
@@ -329,7 +325,7 @@ export const ProfileSetup = () => {
                                             /* validation failed */
                                         }
                                     }}
-                                    style={{ color: textColor, fontWeight: 600 }}
+                                    style={{ color: '#000', fontWeight: 600 }}
                                 >
                                     Next
                                 </Button>
@@ -339,7 +335,7 @@ export const ProfileSetup = () => {
                                     size="large"
                                     loading={loading}
                                     onClick={handleComplete}
-                                    style={{ color: textColor, fontWeight: 600 }}
+                                    style={{ color: '#000', fontWeight: 600 }}
                                 >
                                     {isEdit ? 'Save Changes' : 'Complete profile'}
                                 </Button>

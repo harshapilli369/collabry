@@ -39,7 +39,7 @@ export interface InfluencerProfileResponse {
     tiktokHandle?: string;
     rate?: number;
     audienceInfo?: string;
-    isComplete: boolean;
+    complete: boolean;
     createdAt?: string;
     updatedAt?: string;
 }

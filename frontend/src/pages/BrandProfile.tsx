@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined, CheckCircleFilled } from '@ant-design/icons'
+import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
     getMyBrandProfile,
@@ -25,8 +25,6 @@ export const BrandProfile = () => {
     const [fetching, setFetching] = useState(true)
     const [isEdit, setIsEdit] = useState(false)
     const navigate = useNavigate()
-    const userStr = localStorage.getItem('user')
-    const user = userStr ? JSON.parse(userStr) : null
 
     useEffect(() => {
         getMyBrandProfile()
@@ -160,12 +158,11 @@ export const BrandProfile = () => {
                             >
                                 Back to Profile
                             </Button>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '0 0 8px' }}>
-                                <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '2rem' }}>
-                                    {isEdit ? 'Edit Company Profile' : 'Complete Company Profile'}
-                                </Title>
-                                {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.8rem' }} />}
-                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '0 0 8px' }}>
+                            <Title level={2} style={{ margin: 0, color: textColor }}>
+                                {isEdit ? 'Edit your brand profile' : 'Complete your brand profile'}
+                            </Title>
+                        </div>
                             <Text style={{ color: '#aaa' }}>
                                 Manage your brand profile. This is visible to influencers you contact.
                             </Text>
@@ -224,21 +221,21 @@ export const BrandProfile = () => {
                             <Form.Item name="instagramUrl" label="Instagram">
                                 <Input.Search 
                                     placeholder="https://instagram.com/yourbrand" 
-                                    enterButton="Connect"
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
                                     onSearch={(val) => handleConnect('INSTAGRAM', val)}
                                 />
                             </Form.Item>
                             <Form.Item name="linkedInUrl" label="LinkedIn">
                                 <Input.Search 
                                     placeholder="https://linkedin.com/company/yourbrand" 
-                                    enterButton="Connect"
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
                                     onSearch={(val) => handleConnect('LINKEDIN', val)}
                                 />
                             </Form.Item>
                             <Form.Item name="twitterUrl" label="Twitter / X">
                                 <Input.Search 
                                     placeholder="https://twitter.com/yourbrand" 
-                                    enterButton="Connect"
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
                                     onSearch={(val) => handleConnect('TWITTER', val)}
                                 />
                             </Form.Item>
@@ -256,9 +253,9 @@ export const BrandProfile = () => {
                                     type="primary"
                                     htmlType="submit"
                                     loading={loading}
-                                    style={{ minWidth: 140, fontWeight: 600, color: textColor }}
+                                    style={{ color: '#000', fontWeight: 600 }}
                                 >
-                                    Save profile
+                                    {isEdit ? 'Save Changes' : 'Complete profile'}
                                 </Button>
                             </Form.Item>
                         </Form>
