@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, theme } from 'antd'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, theme } from 'antd'
 import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyInvitations } from '../services/invitationService'
@@ -80,7 +80,7 @@ export const InfluencerDashboard = () => {
                                 key: '2',
                                 icon: <UserOutlined />,
                                 label: 'Profile',
-                                onClick: () => navigate('/influencer/profile-setup'),
+                                onClick: () => navigate('/influencer/profile'),
                             },
                             {
                                 key: '3',

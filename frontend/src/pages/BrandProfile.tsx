@@ -23,6 +23,7 @@ export const BrandProfile = () => {
     const [form] = Form.useForm<BrandProfileRequest>()
     const [loading, setLoading] = useState(false)
     const [fetching, setFetching] = useState(true)
+    const [isEdit, setIsEdit] = useState(false)
     const navigate = useNavigate()
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
@@ -31,6 +32,7 @@ export const BrandProfile = () => {
         getMyBrandProfile()
             .then((profile: BrandProfileResponse | null) => {
                 if (profile) {
+                    setIsEdit(true)
                     form.setFieldsValue({
                         name: profile.name,
                         industry: profile.industry,
@@ -56,7 +58,7 @@ export const BrandProfile = () => {
             message.success('Profile saved successfully')
             // Short delay so success message is visible and backend commit is ready before dashboard loads
             setTimeout(() => {
-                navigate('/brand/dashboard', { replace: true })
+                navigate('/brand/profile', { replace: true })
             }, 300)
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Failed to save profile'
@@ -81,8 +83,7 @@ export const BrandProfile = () => {
             const u = JSON.parse(localStorage.getItem('user') || '{}')
             u.isVerified = true
             localStorage.setItem('user', JSON.stringify(u))
-            message.success(`Successfully connected ${platform}! Your profile is now verified.`)
-            window.location.reload()
+            message.success(`Successfully connected ${platform}! Your profile is now verified. Remember to click "Save profile" below!`)
         } catch (e) {
             message.error(`Failed to connect ${platform}`)
         }
@@ -154,14 +155,14 @@ export const BrandProfile = () => {
                             <Button
                                 type="link"
                                 icon={<ArrowLeftOutlined />}
-                                onClick={() => navigate('/brand/dashboard')}
+                                onClick={() => navigate('/brand/profile')}
                                 style={{ color: primaryColor, paddingLeft: 0, marginBottom: 16 }}
                             >
-                                Back to Dashboard
+                                Back to Profile
                             </Button>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '0 0 8px' }}>
                                 <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '2rem' }}>
-                                    Company Profile
+                                    {isEdit ? 'Edit Company Profile' : 'Complete Company Profile'}
                                 </Title>
                                 {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.8rem' }} />}
                             </div>
@@ -223,25 +224,22 @@ export const BrandProfile = () => {
                             <Form.Item name="instagramUrl" label="Instagram">
                                 <Input.Search 
                                     placeholder="https://instagram.com/yourbrand" 
-                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    enterButton="Connect"
                                     onSearch={(val) => handleConnect('INSTAGRAM', val)}
-                                    disabled={user?.isVerified}
                                 />
                             </Form.Item>
                             <Form.Item name="linkedInUrl" label="LinkedIn">
                                 <Input.Search 
                                     placeholder="https://linkedin.com/company/yourbrand" 
-                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    enterButton="Connect"
                                     onSearch={(val) => handleConnect('LINKEDIN', val)}
-                                    disabled={user?.isVerified}
                                 />
                             </Form.Item>
                             <Form.Item name="twitterUrl" label="Twitter / X">
                                 <Input.Search 
                                     placeholder="https://twitter.com/yourbrand" 
-                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    enterButton="Connect"
                                     onSearch={(val) => handleConnect('TWITTER', val)}
-                                    disabled={user?.isVerified}
                                 />
                             </Form.Item>
 

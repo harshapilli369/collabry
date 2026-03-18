@@ -23,6 +23,7 @@ export const ProfileSetup = () => {
     const [current, setCurrent] = useState(0)
     const [loading, setLoading] = useState(false)
     const [fetching, setFetching] = useState(true)
+    const [isEdit, setIsEdit] = useState(false)
     const [form] = Form.useForm<InfluencerProfileRequest & { saveAsDraft?: boolean }>()
     const navigate = useNavigate()
 
@@ -43,6 +44,7 @@ export const ProfileSetup = () => {
         getMyInfluencerProfile()
             .then((profile: InfluencerProfileResponse | null) => {
                 if (profile) {
+                    setIsEdit(true)
                     form.setFieldsValue({
                         name: profile.name,
                         age: profile.age,
@@ -95,8 +97,8 @@ export const ProfileSetup = () => {
                 audienceInfo: values.audienceInfo || undefined,
             }
             await updateMyInfluencerProfile(payload, saveAsDraft)
-            message.success(saveAsDraft ? 'Profile saved as draft' : 'Profile completed!')
-            navigate('/influencer/dashboard', { replace: true })
+            message.success(saveAsDraft ? 'Profile saved as draft' : 'Profile saved!')
+            navigate('/influencer/profile', { replace: true })
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Failed to save profile'
             message.error(msg)
@@ -135,8 +137,7 @@ export const ProfileSetup = () => {
             const u = JSON.parse(localStorage.getItem('user') || '{}')
             u.isVerified = true
             localStorage.setItem('user', JSON.stringify(u))
-            message.success(`Successfully connected ${platform}! Your profile is now verified.`)
-            window.location.reload()
+            message.success(`Successfully connected ${platform}! Your profile is now verified. Remember to click "Save Changes" at the bottom to save your handles!`)
         } catch (e) {
             message.error(`Failed to connect ${platform}`)
         }
@@ -189,7 +190,7 @@ export const ProfileSetup = () => {
                         <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, marginBottom: 16, borderRadius: 8 }} />
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '0 0 8px' }}>
                             <Title level={2} style={{ margin: 0, color: textColor }}>
-                                Complete your profile
+                                {isEdit ? 'Edit your profile' : 'Complete your profile'}
                             </Title>
                             {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.5rem' }} />}
                         </div>
@@ -260,27 +261,24 @@ export const ProfileSetup = () => {
                                 <Input.Search 
                                     addonBefore="@" 
                                     placeholder="username" 
-                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    enterButton="Connect"
                                     onSearch={(val) => handleConnect('INSTAGRAM', val)}
-                                    disabled={user?.isVerified}
                                 />
                             </Form.Item>
                             <Form.Item name="youtubeHandle" label="YouTube channel/handle">
                                 <Input.Search 
                                     addonBefore="@" 
                                     placeholder="channel or username" 
-                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    enterButton="Connect"
                                     onSearch={(val) => handleConnect('YOUTUBE', val)}
-                                    disabled={user?.isVerified}
                                 />
                             </Form.Item>
                             <Form.Item name="tiktokHandle" label="TikTok handle">
                                 <Input.Search 
                                     addonBefore="@" 
                                     placeholder="username" 
-                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    enterButton="Connect"
                                     onSearch={(val) => handleConnect('TIKTOK', val)}
-                                    disabled={user?.isVerified}
                                 />
                             </Form.Item>
                         </div>
@@ -343,7 +341,7 @@ export const ProfileSetup = () => {
                                     onClick={handleComplete}
                                     style={{ color: textColor, fontWeight: 600 }}
                                 >
-                                    Complete profile
+                                    {isEdit ? 'Save Changes' : 'Complete profile'}
                                 </Button>
                             )}
                         </div>

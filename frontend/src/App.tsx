@@ -12,6 +12,8 @@ import { Collaborations } from './pages/Collaborations'
 import { PaymentsDashboard } from './pages/PaymentsDashboard'
 import { BrandDashboard } from './pages/BrandDashboard'
 import { BrandProfile } from './pages/BrandProfile'
+import { ViewBrandProfile } from './pages/ViewBrandProfile'
+import { ViewInfluencerProfile } from './pages/ViewInfluencerProfile'
 import { BrandPayments } from './pages/BrandPayments'
 import { CreateCampaign } from './pages/CreateCampaign'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -27,7 +29,8 @@ function App() {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute allowedRole="INFLUENCER" />}>
           <Route path="/influencer/dashboard" element={<InfluencerDashboard />} />
-          <Route path="/influencer/profile-setup" element={<ProfileSetup />} />
+          <Route path="/influencer/profile" element={<ViewInfluencerProfile />} />
+          <Route path="/influencer/profile/edit" element={<ProfileSetup />} />
           <Route path="/influencer/invitations" element={<Invitations />} />
           <Route path="/influencer/invitations/:id" element={<InvitationDetail />} />
           <Route path="/influencer/collaborations" element={<Collaborations />} />
@@ -36,7 +39,8 @@ function App() {
 
         <Route element={<ProtectedRoute allowedRole="BRAND" />}>
           <Route path="/brand/dashboard" element={<BrandDashboard />} />
-          <Route path="/brand/profile" element={<BrandProfile />} />
+          <Route path="/brand/profile" element={<ViewBrandProfile />} />
+          <Route path="/brand/profile/edit" element={<BrandProfile />} />
           <Route path="/brand/campaigns/create" element={<CreateCampaign />} />
           <Route path="/brand/payments" element={<BrandPayments />} />
         </Route>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tabs, Modal, Form, Input, InputNumber, message, theme } from 'antd'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Tabs, Modal, Form, Input, InputNumber, message, theme } from 'antd'
 import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile } from '../services/brandService'
@@ -31,7 +31,7 @@ export const BrandDashboard = () => {
         getMyBrandProfile()
             .then((profile) => {
                 if (profile == null) {
-                    navigate('/brand/profile', { replace: true })
+                    navigate('/brand/profile/edit', { replace: true })
                     return
                 }
                 setBrandProfile(profile)
