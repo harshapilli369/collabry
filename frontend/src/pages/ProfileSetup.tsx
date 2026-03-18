@@ -8,6 +8,7 @@ import {
     type InfluencerProfileRequest,
     type InfluencerProfileResponse,
 } from '../services/influencerProfileService'
+import { userService } from '../services/userService'
 
 const { Title, Text } = Typography
 const { TextArea } = Input
@@ -122,6 +123,23 @@ export const ProfileSetup = () => {
         }
         const values = form.getFieldsValue()
         await onFinish(values, false)
+    }
+
+    const handleConnect = async (platform: string, handle: string | undefined) => {
+        if (!handle) {
+            message.warning(`Please enter a handle for ${platform}`)
+            return
+        }
+        try {
+            await userService.linkSocialAccount(platform, handle)
+            const u = JSON.parse(localStorage.getItem('user') || '{}')
+            u.isVerified = true
+            localStorage.setItem('user', JSON.stringify(u))
+            message.success(`Successfully connected ${platform}! Your profile is now verified.`)
+            window.location.reload()
+        } catch (e) {
+            message.error(`Failed to connect ${platform}`)
+        }
     }
 
     const primaryColor = '#FFFD82'
@@ -239,13 +257,31 @@ export const ProfileSetup = () => {
                                 label="Instagram handle"
                                 help="At least one social handle is required to complete your profile"
                             >
-                                <Input addonBefore="@" placeholder="username" />
+                                <Input.Search 
+                                    addonBefore="@" 
+                                    placeholder="username" 
+                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    onSearch={(val) => handleConnect('INSTAGRAM', val)}
+                                    disabled={user?.isVerified}
+                                />
                             </Form.Item>
                             <Form.Item name="youtubeHandle" label="YouTube channel/handle">
-                                <Input addonBefore="@" placeholder="channel or username" />
+                                <Input.Search 
+                                    addonBefore="@" 
+                                    placeholder="channel or username" 
+                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    onSearch={(val) => handleConnect('YOUTUBE', val)}
+                                    disabled={user?.isVerified}
+                                />
                             </Form.Item>
                             <Form.Item name="tiktokHandle" label="TikTok handle">
-                                <Input addonBefore="@" placeholder="username" />
+                                <Input.Search 
+                                    addonBefore="@" 
+                                    placeholder="username" 
+                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    onSearch={(val) => handleConnect('TIKTOK', val)}
+                                    disabled={user?.isVerified}
+                                />
                             </Form.Item>
                         </div>
 

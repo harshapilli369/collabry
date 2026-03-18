@@ -9,6 +9,7 @@ import {
     type BrandProfileRequest,
     type BrandProfileResponse,
 } from '../services/brandService'
+import { userService } from '../services/userService'
 
 const { Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -68,6 +69,23 @@ export const BrandProfile = () => {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
         navigate('/login', { replace: true })
+    }
+
+    const handleConnect = async (platform: string, handle: string | undefined) => {
+        if (!handle) {
+            message.warning(`Please enter a handle/URL for ${platform}`)
+            return
+        }
+        try {
+            await userService.linkSocialAccount(platform, handle)
+            const u = JSON.parse(localStorage.getItem('user') || '{}')
+            u.isVerified = true
+            localStorage.setItem('user', JSON.stringify(u))
+            message.success(`Successfully connected ${platform}! Your profile is now verified.`)
+            window.location.reload()
+        } catch (e) {
+            message.error(`Failed to connect ${platform}`)
+        }
     }
 
     return (
@@ -203,13 +221,28 @@ export const BrandProfile = () => {
                                 <TextArea rows={4} placeholder="Tell influencers about your brand and campaigns" />
                             </Form.Item>
                             <Form.Item name="instagramUrl" label="Instagram">
-                                <Input placeholder="https://instagram.com/yourbrand" />
+                                <Input.Search 
+                                    placeholder="https://instagram.com/yourbrand" 
+                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    onSearch={(val) => handleConnect('INSTAGRAM', val)}
+                                    disabled={user?.isVerified}
+                                />
                             </Form.Item>
                             <Form.Item name="linkedInUrl" label="LinkedIn">
-                                <Input placeholder="https://linkedin.com/company/yourbrand" />
+                                <Input.Search 
+                                    placeholder="https://linkedin.com/company/yourbrand" 
+                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    onSearch={(val) => handleConnect('LINKEDIN', val)}
+                                    disabled={user?.isVerified}
+                                />
                             </Form.Item>
                             <Form.Item name="twitterUrl" label="Twitter / X">
-                                <Input placeholder="https://twitter.com/yourbrand" />
+                                <Input.Search 
+                                    placeholder="https://twitter.com/yourbrand" 
+                                    enterButton={user?.isVerified ? "Connected" : "Connect"}
+                                    onSearch={(val) => handleConnect('TWITTER', val)}
+                                    disabled={user?.isVerified}
+                                />
                             </Form.Item>
 
                             <Form.Item name="budgetRange" label="Budget range">

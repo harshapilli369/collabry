@@ -13,6 +13,7 @@ const STATUS_ORDER: CampaignStatus[] = ['DRAFT', 'ACTIVE', 'COMPLETED', 'CANCELL
 export const BrandDashboard = () => {
     const navigate = useNavigate()
     const [profileCheckDone, setProfileCheckDone] = useState(false)
+    const [brandProfile, setBrandProfile] = useState<any>(null)
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
     const [campaignsLoading, setCampaignsLoading] = useState(false)
     const [inviteModalOpen, setInviteModalOpen] = useState(false)
@@ -33,6 +34,7 @@ export const BrandDashboard = () => {
                     navigate('/brand/profile', { replace: true })
                     return
                 }
+                setBrandProfile(profile)
                 setProfileCheckDone(true)
             })
             .catch(() => {
@@ -174,16 +176,23 @@ export const BrandDashboard = () => {
                 </Sider>
                 <Layout>
                     <Header style={{ padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', background: pageBackgroundColor }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-
-                            <Avatar size="large" icon={<UserOutlined />} style={{ backgroundColor: primaryColor, color: '#000' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Text style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 500 }}>
+                                {(() => {
+                                    let handle = brandProfile?.instagramUrl ? brandProfile.instagramUrl.split('/').filter(Boolean).pop() : brandProfile?.name || user?.email;
+                                    if (handle && !handle.startsWith('@') && !handle.includes('@')) {
+                                        handle = `@${handle}`;
+                                    }
+                                    return handle;
+                                })()}
+                            </Text>
+                            {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.2rem' }} title="Verified Brand" />}
                         </div>
                     </Header>
                     <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
                         <div style={{ marginBottom: 30 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '3rem' }}>Welcome!</Title>
-                                {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '2.5rem' }} title="Verified Profile" />}
                             </div>
                             <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>Overview of your improved brand performance.</Text>
                         </div>

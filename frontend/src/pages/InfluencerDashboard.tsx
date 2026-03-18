@@ -3,6 +3,7 @@ import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avata
 import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyInvitations } from '../services/invitationService'
+import { getMyInfluencerProfile } from '../services/influencerProfileService'
 
 const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -10,6 +11,7 @@ const { Title, Text } = Typography
 export const InfluencerDashboard = () => {
     const navigate = useNavigate()
     const [invitations, setInvitations] = useState<Awaited<ReturnType<typeof getMyInvitations>>>([])
+    const [profile, setProfile] = useState<any>(null)
 
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
@@ -18,6 +20,10 @@ export const InfluencerDashboard = () => {
         getMyInvitations()
             .then(setInvitations)
             .catch(() => setInvitations([]))
+            
+        getMyInfluencerProfile()
+            .then(setProfile)
+            .catch(() => {})
     }, [])
 
     const handleLogout = () => {
@@ -106,19 +112,23 @@ export const InfluencerDashboard = () => {
                 </Sider>
                 <Layout>
                     <Header style={{ padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', background: pageBackgroundColor }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            {/*<Text style={{ color: '#fff' }}>Welcome!</Text>*/}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <Text style={{ color: '#aaa', fontSize: '0.9rem' }}>ID: {user?.id}</Text>
-                                <Avatar size="large" icon={<UserOutlined />} style={{ backgroundColor: secondaryColor }} />
-                            </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Text style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 500 }}>
+                                {(() => {
+                                    let handle = profile?.instagramHandle || profile?.tiktokHandle || profile?.youtubeHandle || profile?.name || user?.email;
+                                    if (handle && !handle.startsWith('@') && !handle.includes('@')) {
+                                        handle = `@${handle}`;
+                                    }
+                                    return handle;
+                                })()}
+                            </Text>
+                            {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.2rem' }} title="Verified Influencer" />}
                         </div>
                     </Header>
                     <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
                         <div style={{ marginBottom: 30 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <Title level={1} style={{ color: secondaryColor, margin: 0, fontSize: '3rem' }}>Welcome!</Title>
-                                {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '2.5rem' }} title="Verified Profile" />}
                             </div>
                             <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>Here's what's happening with your campaigns today.</Text>
                         </div>
