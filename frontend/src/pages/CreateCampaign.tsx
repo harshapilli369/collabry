@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, InputNumber, theme, Card } from 'antd'
+import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, InputNumber, theme, Card, Alert } from 'antd'
 import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined, MailOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -26,6 +26,7 @@ export const CreateCampaign = () => {
     const [loading, setLoading] = useState(false)
     const [createdCampaign, setCreatedCampaign] = useState<CampaignResponse | null>(null)
     const [inviteSubmitting, setInviteSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState<string | null>(null)
     const navigate = useNavigate()
 
     const onFinish = async (values: CampaignRequest & { preferredContentTypesList?: string[] }) => {
@@ -43,12 +44,20 @@ export const CreateCampaign = () => {
                 endDate: values.endDate || undefined,
                 numberOfInfluencers: values.numberOfInfluencers,
             }
+            setSubmitError(null)
             const campaign = await createCampaign(payload)
-            setCreatedCampaign(campaign)
-            message.success('Campaign created successfully')
-            inviteForm.resetFields()
+            if (campaign?.id != null) {
+                setCreatedCampaign(campaign)
+                message.success('Campaign created successfully')
+                inviteForm.resetFields()
+            } else {
+                const err = 'Invalid response from server. Please try again.'
+                setSubmitError(err)
+                message.error(err)
+            }
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Failed to create campaign'
+            setSubmitError(msg)
             message.error(msg)
         } finally {
             setLoading(false)
@@ -168,6 +177,16 @@ export const CreateCampaign = () => {
                                 onFinish={onFinish}
                                 style={{ maxWidth: 640 }}
                             >
+                                {submitError && (
+                                    <Alert
+                                        type="error"
+                                        message={submitError}
+                                        showIcon
+                                        closable
+                                        onClose={() => setSubmitError(null)}
+                                        style={{ marginBottom: 16 }}
+                                    />
+                                )}
                                 <Title level={5} style={{ color: '#ccc', marginTop: 0 }}>Required</Title>
                                 <Form.Item
                                     name="name"
