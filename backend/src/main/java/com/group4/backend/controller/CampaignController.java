@@ -26,6 +26,9 @@ import java.util.Map;
 @RequestMapping("/api/campaigns")
 public class CampaignController {
 
+    /** Test user allowed to create campaigns without verification. */
+    private static final String TEST_BRAND_EMAIL = "brand@collabry";
+
     private final CampaignService campaignService;
     private final InvitationService invitationService;
     private final UserRepository userRepository;
@@ -44,7 +47,7 @@ public class CampaignController {
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        if (!user.isVerified()) {
+        if (!isAllowedToCreateCampaigns(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         CampaignResponse response = campaignService.create(user.getId(), request);
@@ -66,7 +69,7 @@ public class CampaignController {
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        if (!user.isVerified()) {
+        if (!isAllowedToCreateCampaigns(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         InvitationResponse response = invitationService.createInvitation(user.getId(), campaignId, request);
@@ -79,7 +82,7 @@ public class CampaignController {
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        if (!user.isVerified()) {
+        if (!isAllowedToCreateCampaigns(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         List<InfluencerRecommendationDTO> recommendations = aiRecommendationService.getRecommendations(campaignId);
@@ -98,6 +101,10 @@ public class CampaignController {
                 .reduce((a, b) -> a + "; " + b)
                 .orElse("Validation failed");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", message));
+    }
+
+    private boolean isAllowedToCreateCampaigns(User user) {
+        return user.isVerified() || TEST_BRAND_EMAIL.equalsIgnoreCase(user.getEmail());
     }
 
     private User getCurrentUser() {
