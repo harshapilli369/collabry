@@ -55,7 +55,9 @@ export const BrandCollaborations = () => {
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
 
-    const rateableInvitations = invitations.filter((i) => i.status === 'CONFIRMED' || i.status === 'ACCEPTED')
+    const rateableInvitations = invitations.filter(
+        (i) => (i.status === 'CONFIRMED' || i.status === 'ACCEPTED') && !i.rated
+    )
 
     const openRateModal = (inv: InvitationResponse) => {
         setRatingInvitation(inv)
@@ -221,10 +223,13 @@ export const BrandCollaborations = () => {
                                                             Confirm terms
                                                         </Button>
                                                     )}
-                                                    {(inv.status === 'CONFIRMED' || inv.status === 'ACCEPTED') && (
+                                                    {(inv.status === 'CONFIRMED' || inv.status === 'ACCEPTED') && !inv.rated && (
                                                         <Button type="default" size="small" icon={<StarOutlined />} onClick={() => openRateModal(inv)}>
                                                             Rate
                                                         </Button>
+                                                    )}
+                                                    {(inv.status === 'CONFIRMED' || inv.status === 'ACCEPTED') && inv.rated && (
+                                                        <Text type="secondary" style={{ fontSize: 12 }}>Rated</Text>
                                                     )}
                                                 </div>
                                             </div>

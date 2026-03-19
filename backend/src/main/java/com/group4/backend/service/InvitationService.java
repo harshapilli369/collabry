@@ -3,6 +3,7 @@ package com.group4.backend.service;
 import com.group4.backend.dto.*;
 import com.group4.backend.model.*;
 import com.group4.backend.repository.CampaignRepository;
+import com.group4.backend.repository.InfluencerRatingRepository;
 import com.group4.backend.repository.InvitationRepository;
 import com.group4.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -21,15 +22,18 @@ public class InvitationService {
     private final CampaignRepository campaignRepository;
     private final UserRepository userRepository;
     private final CampaignService campaignService;
+    private final InfluencerRatingRepository influencerRatingRepository;
 
     public InvitationService(InvitationRepository invitationRepository,
                              CampaignRepository campaignRepository,
                              UserRepository userRepository,
-                             CampaignService campaignService) {
+                             CampaignService campaignService,
+                             InfluencerRatingRepository influencerRatingRepository) {
         this.invitationRepository = invitationRepository;
         this.campaignRepository = campaignRepository;
         this.userRepository = userRepository;
         this.campaignService = campaignService;
+        this.influencerRatingRepository = influencerRatingRepository;
     }
 
     @Transactional
@@ -131,7 +135,11 @@ public class InvitationService {
     public List<InvitationResponse> getInvitationsForBrand(Long brandId) {
         return invitationRepository.findByBrandIdOrderByCreatedAtDesc(brandId)
                 .stream()
-                .map(this::toResponse)
+                .map(inv -> {
+                    InvitationResponse r = toResponse(inv);
+                    r.setRated(influencerRatingRepository.findByInvitationId(inv.getId()).isPresent());
+                    return r;
+                })
                 .collect(Collectors.toList());
     }
 

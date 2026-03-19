@@ -19,6 +19,7 @@ public class InvitationResponse {
     private Instant createdAt;
     private Instant updatedAt;
     private Instant respondedAt;
+    private Boolean rated;
 
     public InvitationResponse() {
     }
@@ -47,4 +48,6 @@ public class InvitationResponse {
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
     public Instant getRespondedAt() { return respondedAt; }
     public void setRespondedAt(Instant respondedAt) { this.respondedAt = respondedAt; }
+    public Boolean getRated() { return rated; }
+    public void setRated(Boolean rated) { this.rated = rated; }
 }

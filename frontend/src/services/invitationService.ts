@@ -40,6 +40,8 @@ export interface InvitationResponse {
     createdAt?: string;
     updatedAt?: string;
     respondedAt?: string;
+    /** True if the brand has already submitted a rating for this invitation. */
+    rated?: boolean;
 }
 
 export interface CampaignResponse {
