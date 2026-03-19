@@ -67,6 +67,15 @@ public class InvitationController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/brand/me")
+    public ResponseEntity<List<InvitationResponse>> getMyInvitationsAsBrand() {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(invitationService.getInvitationsForBrand(user.getId()));
+    }
+
     @PostMapping("/{id}/confirm-terms")
     public ResponseEntity<InvitationResponse> confirmTerms(@PathVariable Long id) {
         User user = getCurrentUser();

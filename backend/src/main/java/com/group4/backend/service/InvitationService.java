@@ -128,6 +128,13 @@ public class InvitationService {
                 .collect(Collectors.toList());
     }
 
+    public List<InvitationResponse> getInvitationsForBrand(Long brandId) {
+        return invitationRepository.findByBrandIdOrderByCreatedAtDesc(brandId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public InvitationResponse confirmTerms(Long invitationId, Long brandId) {
         CollaborationInvitation inv = invitationRepository.findById(invitationId)
