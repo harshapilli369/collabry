@@ -31,8 +31,8 @@ public class RatingService {
         if (!inv.getBrandId().equals(brandId)) {
             throw new IllegalArgumentException("Only the brand that collaborated can rate this influencer");
         }
-        if (inv.getStatus() != InvitationStatus.CONFIRMED) {
-            throw new IllegalArgumentException("You can only rate after the collaboration is completed (confirmed)");
+        if (inv.getStatus() != InvitationStatus.CONFIRMED && inv.getStatus() != InvitationStatus.ACCEPTED) {
+            throw new IllegalArgumentException("You can only rate after the collaboration is completed (accepted or confirmed)");
         }
 
         InfluencerRating rating = ratingRepository.findByInvitationId(inv.getId())

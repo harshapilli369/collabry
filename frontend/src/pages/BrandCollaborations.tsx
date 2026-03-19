@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Typography, ConfigProvider, Layout, Menu, Card, Row, Col, Button, message, theme, Modal, Form, Input, Rate } from 'antd'
-import { UserOutlined, LogoutOutlined, AppstoreOutlined, DollarOutlined, MailOutlined, TeamOutlined, StarOutlined, CheckCircleFilled } from '@ant-design/icons'
+import { UserOutlined, LogoutOutlined, AppstoreOutlined, DollarOutlined, MailOutlined, TeamOutlined, StarOutlined, CheckCircleFilled, CheckOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { getMyInvitationsAsBrand, INVITATION_STATUS_LABELS, type InvitationResponse, type InvitationStatus } from '../services/invitationService'
+import { getMyInvitationsAsBrand, confirmTerms, INVITATION_STATUS_LABELS, type InvitationResponse, type InvitationStatus } from '../services/invitationService'
 import { submitRating, type RatingRequest } from '../services/ratingService'
 
 const { Header, Content, Sider } = Layout
@@ -29,6 +29,7 @@ export const BrandCollaborations = () => {
     const [rateModalOpen, setRateModalOpen] = useState(false)
     const [ratingInvitation, setRatingInvitation] = useState<InvitationResponse | null>(null)
     const [submitting, setSubmitting] = useState(false)
+    const [confirmingId, setConfirmingId] = useState<number | null>(null)
     const [form] = Form.useForm()
 
     const load = () => {
@@ -54,7 +55,7 @@ export const BrandCollaborations = () => {
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
 
-    const confirmedInvitations = invitations.filter((i) => i.status === 'CONFIRMED')
+    const rateableInvitations = invitations.filter((i) => i.status === 'CONFIRMED' || i.status === 'ACCEPTED')
 
     const openRateModal = (inv: InvitationResponse) => {
         setRatingInvitation(inv)
@@ -85,6 +86,20 @@ export const BrandCollaborations = () => {
             message.error(e instanceof Error ? e.message : 'Failed to submit rating')
         } finally {
             setSubmitting(false)
+        }
+    }
+
+    const onConfirmTerms = async (inv: InvitationResponse) => {
+        if (inv.status !== 'NEGOTIATING') return
+        setConfirmingId(inv.id)
+        try {
+            await confirmTerms(inv.id)
+            message.success('Terms confirmed. You can now rate this influencer after the collaboration.')
+            load()
+        } catch (e) {
+            message.error(e instanceof Error ? e.message : 'Failed to confirm terms')
+        } finally {
+            setConfirmingId(null)
         }
     }
 
@@ -126,7 +141,7 @@ export const BrandCollaborations = () => {
                     <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
                         <div style={{ marginBottom: 30 }}>
                             <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '3rem' }}>My Collaborations</Title>
-                            <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>Invitations you’ve sent. Rate influencers after a collaboration is confirmed.</Text>
+                            <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>Invitations you’ve sent. Rate influencers after a collaboration is accepted or confirmed.</Text>
                         </div>
 
                         {loading ? (
@@ -137,7 +152,7 @@ export const BrandCollaborations = () => {
                             </Card>
                         ) : (
                             <>
-                                {confirmedInvitations.length > 0 && (
+                                {rateableInvitations.length > 0 && (
                                     <Card bordered={false} style={{ marginBottom: 24, borderRadius: 12, background: '#1c1c1c', border: '1px solid #333' }}>
                                         <Title level={5} style={{ color: primaryColor, marginBottom: 12 }}>
                                             <StarOutlined style={{ marginRight: 8 }} />
@@ -147,13 +162,13 @@ export const BrandCollaborations = () => {
                                             Help other brands by rating influencers you’ve worked with. Your rating and optional review will appear on their profile.
                                         </Text>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                            {confirmedInvitations.map((inv) => (
+                                            {rateableInvitations.map((inv) => (
                                                 <Card key={inv.id} size="small" style={{ background: '#0d0d0d', borderRadius: 8, borderColor: '#333' }}>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                                                         <div>
                                                             <Text strong style={{ color: '#fff' }}>Invitation #{inv.id}</Text>
                                                             <Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
-                                                                Campaign #{inv.campaignId} · Influencer ID {inv.influencerId} · Confirmed {formatDate(inv.updatedAt ?? inv.createdAt)}
+                                                                Campaign #{inv.campaignId} · Influencer ID {inv.influencerId} · {inv.status === 'CONFIRMED' ? 'Confirmed' : 'Accepted'} {formatDate(inv.updatedAt ?? inv.createdAt)}
                                                             </Text>
                                                         </div>
                                                         <Button
@@ -191,10 +206,22 @@ export const BrandCollaborations = () => {
                                                     </div>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                    <Text style={{ fontSize: 12, fontWeight: 600, color: inv.status === 'CONFIRMED' ? primaryColor : '#888' }}>
+                                                    <Text style={{ fontSize: 12, fontWeight: 600, color: (inv.status === 'CONFIRMED' || inv.status === 'ACCEPTED') ? primaryColor : inv.status === 'NEGOTIATING' ? '#faad14' : '#888' }}>
                                                         {INVITATION_STATUS_LABELS[inv.status as InvitationStatus]}
                                                     </Text>
-                                                    {inv.status === 'CONFIRMED' && (
+                                                    {inv.status === 'NEGOTIATING' && (
+                                                        <Button
+                                                            type="primary"
+                                                            size="small"
+                                                            icon={<CheckOutlined />}
+                                                            loading={confirmingId === inv.id}
+                                                            onClick={() => onConfirmTerms(inv)}
+                                                            style={{ color: '#000000' }}
+                                                        >
+                                                            Confirm terms
+                                                        </Button>
+                                                    )}
+                                                    {(inv.status === 'CONFIRMED' || inv.status === 'ACCEPTED') && (
                                                         <Button type="default" size="small" icon={<StarOutlined />} onClick={() => openRateModal(inv)}>
                                                             Rate
                                                         </Button>
