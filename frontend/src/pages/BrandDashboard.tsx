@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Tabs, Modal, Form, Input, InputNumber, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined, CheckCircleFilled } from '@ant-design/icons'
+import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined, CheckCircleFilled, TeamOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile } from '../services/brandService'
 import { getMyCampaigns, CAMPAIGN_STATUS_LABELS, BUDGET_RANGE_OPTIONS, type CampaignResponse, type CampaignStatus } from '../services/campaignService'
@@ -151,6 +151,12 @@ export const BrandDashboard = () => {
                                         label: 'View my campaigns',
                                     },
                                 ],
+                            },
+                            {
+                                key: 'collaborations',
+                                icon: <TeamOutlined />,
+                                label: 'Collaborations',
+                                onClick: () => navigate('/brand/collaborations'),
                             },
                             {
                                 key: 'payments',

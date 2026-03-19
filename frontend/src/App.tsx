@@ -15,6 +15,7 @@ import { BrandProfile } from './pages/BrandProfile'
 import { ViewBrandProfile } from './pages/ViewBrandProfile'
 import { ViewInfluencerProfile } from './pages/ViewInfluencerProfile'
 import { BrandPayments } from './pages/BrandPayments'
+import { BrandCollaborations } from './pages/BrandCollaborations'
 import { CreateCampaign } from './pages/CreateCampaign'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
@@ -41,6 +42,7 @@ function App() {
           <Route path="/brand/dashboard" element={<BrandDashboard />} />
           <Route path="/brand/profile" element={<ViewBrandProfile />} />
           <Route path="/brand/profile/edit" element={<BrandProfile />} />
+          <Route path="/brand/collaborations" element={<BrandCollaborations />} />
           <Route path="/brand/campaigns/create" element={<CreateCampaign />} />
           <Route path="/brand/payments" element={<BrandPayments />} />
         </Route>

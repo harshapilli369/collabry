@@ -151,6 +151,18 @@ export async function getMyCollaborations(): Promise<InvitationResponse[]> {
     return response.json();
 }
 
+export async function getMyInvitationsAsBrand(): Promise<InvitationResponse[]> {
+    const response = await fetch(`${INVITATIONS_URL}/brand/me`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to load invitations');
+    }
+    return response.json();
+}
+
 export async function createInvitation(campaignId: number, request: InvitationRequest): Promise<InvitationResponse> {
     const response = await fetch(`${CAMPAIGNS_URL}/${campaignId}/invitations`, {
         method: 'POST',

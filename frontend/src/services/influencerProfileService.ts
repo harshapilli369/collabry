@@ -25,6 +25,16 @@ export interface InfluencerProfileRequest {
     saveAsDraft?: boolean;
 }
 
+export interface RatingResponse {
+    id: number;
+    invitationId: number;
+    brandId: number;
+    influencerId: number;
+    rating: number;
+    review?: string;
+    createdAt?: string;
+}
+
 export interface InfluencerProfileResponse {
     id: number;
     userId: number;
@@ -42,6 +52,9 @@ export interface InfluencerProfileResponse {
     complete: boolean;
     createdAt?: string;
     updatedAt?: string;
+    averageRating?: number;
+    totalRatings?: number;
+    recentReviews?: RatingResponse[];
 }
 
 export async function getMyInfluencerProfile(): Promise<InfluencerProfileResponse | null> {

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Card, Typography, Button, ConfigProvider, Layout, Menu, Descriptions, theme, Avatar, Spin, Tag, Space, Row, Col } from 'antd'
-import { UserOutlined, LogoutOutlined, AppstoreOutlined, ArrowLeftOutlined, EditOutlined, InstagramOutlined, YoutubeOutlined, CheckCircleFilled, DollarOutlined, MailOutlined, TeamOutlined } from '@ant-design/icons'
+import { Card, Typography, Button, ConfigProvider, Layout, Menu, Descriptions, theme, Avatar, Spin, Tag, Space, Row, Col, Rate } from 'antd'
+import { UserOutlined, LogoutOutlined, AppstoreOutlined, ArrowLeftOutlined, EditOutlined, InstagramOutlined, YoutubeOutlined, CheckCircleFilled, DollarOutlined, MailOutlined, TeamOutlined, StarFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { getMyInfluencerProfile, type InfluencerProfileResponse } from '../services/influencerProfileService'
+import { getMyInfluencerProfile, type InfluencerProfileResponse, type RatingResponse } from '../services/influencerProfileService'
 
 const { Content, Header, Sider } = Layout
 const { Title, Text, Paragraph } = Typography
@@ -249,6 +249,33 @@ export const ViewInfluencerProfile = () => {
                                         </Descriptions.Item>
                                     </Descriptions>
                                 </Card>
+
+                                {(profile?.totalRatings != null && profile.totalRatings > 0) && (
+                                    <Card bordered={false} style={{ backgroundColor: cardBackgroundColor, borderRadius: 12, marginTop: 24 }}>
+                                        <Title level={5} style={{ color: secondaryColor, marginBottom: 12 }}>
+                                            <StarFilled style={{ marginRight: 8, color: primaryColor }} />
+                                            Ratings & Reviews
+                                        </Title>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                                            <Rate disabled allowHalf value={profile.averageRating ?? 0} style={{ color: primaryColor }} />
+                                            <Text style={{ color: '#d9d9d9' }}>
+                                                {typeof profile.averageRating === 'number' ? profile.averageRating.toFixed(1) : '0'} ({profile.totalRatings} {profile.totalRatings === 1 ? 'review' : 'reviews'})
+                                            </Text>
+                                        </div>
+                                        {profile.recentReviews && profile.recentReviews.length > 0 && (
+                                            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                                                {profile.recentReviews.map((r: RatingResponse) => (
+                                                    <div key={r.id} style={{ padding: '12px 0', borderBottom: '1px solid #333' }}>
+                                                        <Rate disabled value={r.rating} count={5} style={{ fontSize: 12, color: primaryColor }} />
+                                                        {r.review && (
+                                                            <Paragraph style={{ color: '#d9d9d9', margin: '6px 0 0', fontSize: '0.9rem' }}>{r.review}</Paragraph>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </Space>
+                                        )}
+                                    </Card>
+                                )}
                             </Col>
                         </Row>
                     </Content>
