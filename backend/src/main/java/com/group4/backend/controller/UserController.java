@@ -1,6 +1,8 @@
 package com.group4.backend.controller;
 
+import com.group4.backend.dto.InfluencerSearchResult;
 import com.group4.backend.dto.SocialLinkRequest;
+import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.service.UserService;
@@ -12,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -24,6 +27,15 @@ public class UserController {
     public UserController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
+    }
+
+    @GetMapping("/influencers")
+    public ResponseEntity<List<InfluencerSearchResult>> listInfluencers() {
+        User currentUser = getCurrentUser();
+        if (currentUser.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(userService.listInfluencers());
     }
 
     @PutMapping("/me/link-social")

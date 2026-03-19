@@ -11,11 +11,17 @@ const getAuthHeaders = () => {
     return headers;
 };
 
+const getUsersApiUrl = () => API_URL.replace('/auth', '/users');
+
+export interface InfluencerSearchResult {
+    id: number;
+    email: string;
+    displayName: string;
+}
+
 export const userService = {
     linkSocialAccount: async (platform: string, handle: string): Promise<void> => {
-        // VITE_API_BASE_URL usually points to /api/auth.
-        const usersApiUrl = API_URL.replace('/auth', '/users');
-        const response = await fetch(`${usersApiUrl}/me/link-social`, {
+        const response = await fetch(`${getUsersApiUrl()}/me/link-social`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify({ platform, handle }),
@@ -25,5 +31,15 @@ export const userService = {
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.message || 'Failed to link social account');
         }
+    },
+
+    /** List influencers with id, email, displayName (for finding user IDs). */
+    listInfluencers: async (): Promise<InfluencerSearchResult[]> => {
+        const response = await fetch(`${getUsersApiUrl()}/influencers`, { method: 'GET', headers: getAuthHeaders() });
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.message || 'Failed to load influencers');
+        }
+        return response.json();
     },
 };

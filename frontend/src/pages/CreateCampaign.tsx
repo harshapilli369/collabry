@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, InputNumber, theme, Card, Alert } from 'antd'
+import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, InputNumber, theme, Card, Alert, Table, Modal } from 'antd'
 import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined, MailOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -11,6 +11,7 @@ import {
     type CampaignResponse,
 } from '../services/campaignService'
 import { createInvitation } from '../services/invitationService'
+import { userService, type InfluencerSearchResult } from '../services/userService'
 
 const { Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -27,7 +28,22 @@ export const CreateCampaign = () => {
     const [createdCampaign, setCreatedCampaign] = useState<CampaignResponse | null>(null)
     const [inviteSubmitting, setInviteSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState<string | null>(null)
+    const [findIdModalOpen, setFindIdModalOpen] = useState(false)
+    const [influencerList, setInfluencerList] = useState<InfluencerSearchResult[]>([])
+    const [influencerListLoading, setInfluencerListLoading] = useState(false)
     const navigate = useNavigate()
+
+    const openFindIdModal = () => {
+        setFindIdModalOpen(true)
+        setInfluencerListLoading(true)
+        userService.listInfluencers()
+            .then(setInfluencerList)
+            .catch(() => {
+                message.error('Failed to load influencers')
+                setInfluencerList([])
+            })
+            .finally(() => setInfluencerListLoading(false))
+    }
 
     const onFinish = async (values: CampaignRequest & { preferredContentTypesList?: string[] }) => {
         setLoading(true)
@@ -268,7 +284,14 @@ export const CreateCampaign = () => {
                                     <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>
                                         <Form.Item
                                             name="influencerId"
-                                            label="Influencer user ID"
+                                            label={
+                                                <span>
+                                                    Influencer user ID
+                                                    <Button type="link" size="small" onClick={openFindIdModal} style={{ paddingLeft: 8 }}>
+                                                        Find user ID
+                                                    </Button>
+                                                </span>
+                                            }
                                             rules={[{ required: true, message: 'Enter the influencer’s user ID' }]}
                                         >
                                             <InputNumber min={1} step={1} placeholder="e.g. 2" style={{ width: '100%' }} />
@@ -294,6 +317,28 @@ export const CreateCampaign = () => {
                                 </Card>
                             </div>
                         )}
+
+            <Modal
+                title="Influencer user IDs"
+                open={findIdModalOpen}
+                onCancel={() => setFindIdModalOpen(false)}
+                footer={<Button onClick={() => setFindIdModalOpen(false)}>Close</Button>}
+                width={560}
+            >
+                <p style={{ color: '#666', marginBottom: 12 }}>Copy the ID and paste it into the invite form.</p>
+                <Table
+                    size="small"
+                    loading={influencerListLoading}
+                    dataSource={influencerList}
+                    rowKey="id"
+                    columns={[
+                        { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
+                        { title: 'Email', dataIndex: 'email', key: 'email' },
+                        { title: 'Name', dataIndex: 'displayName', key: 'displayName' },
+                    ]}
+                    pagination={influencerList.length <= 10 ? false : { pageSize: 10 }}
+                />
+            </Modal>
                     </Content>
                 </Layout>
             </Layout>

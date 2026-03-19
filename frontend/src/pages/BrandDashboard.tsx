@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Tabs, Modal, Form, Input, InputNumber, message, theme } from 'antd'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Tabs, Modal, Form, Input, InputNumber, Table, message, theme } from 'antd'
 import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined, CheckCircleFilled, TeamOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile } from '../services/brandService'
 import { getMyCampaigns, CAMPAIGN_STATUS_LABELS, BUDGET_RANGE_OPTIONS, type CampaignResponse, type CampaignStatus } from '../services/campaignService'
 import { createInvitation } from '../services/invitationService'
+import { userService, type InfluencerSearchResult } from '../services/userService'
 
 const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -20,6 +21,9 @@ export const BrandDashboard = () => {
     const [inviteCampaignId, setInviteCampaignId] = useState<number | null>(null)
     const [inviteSubmitting, setInviteSubmitting] = useState(false)
     const [inviteForm] = Form.useForm()
+    const [findIdModalOpen, setFindIdModalOpen] = useState(false)
+    const [influencerList, setInfluencerList] = useState<InfluencerSearchResult[]>([])
+    const [influencerListLoading, setInfluencerListLoading] = useState(false)
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
 
@@ -67,6 +71,18 @@ export const BrandDashboard = () => {
         setInviteCampaignId(campaignId)
         inviteForm.resetFields()
         setInviteModalOpen(true)
+    }
+
+    const openFindIdModal = () => {
+        setFindIdModalOpen(true)
+        setInfluencerListLoading(true)
+        userService.listInfluencers()
+            .then(setInfluencerList)
+            .catch(() => {
+                message.error('Failed to load influencers')
+                setInfluencerList([])
+            })
+            .finally(() => setInfluencerListLoading(false))
     }
     const closeInviteModal = () => {
         setInviteModalOpen(false)
@@ -320,7 +336,18 @@ export const BrandDashboard = () => {
                 destroyOnClose
             >
                 <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>
-                    <Form.Item name="influencerId" label="Influencer user ID" rules={[{ required: true, message: 'Enter the influencer’s user ID' }]}>
+                    <Form.Item
+                        name="influencerId"
+                        label={
+                            <span>
+                                Influencer user ID
+                                <Button type="link" size="small" onClick={openFindIdModal} style={{ paddingLeft: 8 }}>
+                                    Find user ID
+                                </Button>
+                            </span>
+                        }
+                        rules={[{ required: true, message: 'Enter the influencer’s user ID' }]}
+                    >
                         <InputNumber min={1} step={1} style={{ width: '100%' }} placeholder="e.g. 2" />
                     </Form.Item>
                     <Form.Item name="message" label="Message (optional)">
@@ -331,6 +358,28 @@ export const BrandDashboard = () => {
                         <Button style={{ marginLeft: 8 }} onClick={closeInviteModal}>Cancel</Button>
                     </Form.Item>
                 </Form>
+            </Modal>
+
+            <Modal
+                title="Influencer user IDs"
+                open={findIdModalOpen}
+                onCancel={() => setFindIdModalOpen(false)}
+                footer={<Button onClick={() => setFindIdModalOpen(false)}>Close</Button>}
+                width={560}
+            >
+                <p style={{ color: '#666', marginBottom: 12 }}>Copy the ID and paste it into the invite form.</p>
+                <Table
+                    size="small"
+                    loading={influencerListLoading}
+                    dataSource={influencerList}
+                    rowKey="id"
+                    columns={[
+                        { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
+                        { title: 'Email', dataIndex: 'email', key: 'email' },
+                        { title: 'Name', dataIndex: 'displayName', key: 'displayName' },
+                    ]}
+                    pagination={influencerList.length <= 10 ? false : { pageSize: 10 }}
+                />
             </Modal>
         </ConfigProvider>
     )
