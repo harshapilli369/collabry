@@ -17,10 +17,14 @@ public class InfluencerProfileService {
 
     private final InfluencerProfileRepository influencerProfileRepository;
     private final UserRepository userRepository;
+    private final RatingService ratingService;
 
-    public InfluencerProfileService(InfluencerProfileRepository influencerProfileRepository, UserRepository userRepository) {
+    public InfluencerProfileService(InfluencerProfileRepository influencerProfileRepository,
+                                   UserRepository userRepository,
+                                   RatingService ratingService) {
         this.influencerProfileRepository = influencerProfileRepository;
         this.userRepository = userRepository;
+        this.ratingService = ratingService;
     }
 
     public Optional<InfluencerProfileResponse> getByUserId(Long userId) {

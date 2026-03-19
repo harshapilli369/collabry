@@ -2,6 +2,7 @@ package com.group4.backend.service;
 
 import com.group4.backend.dto.InfluencerProfileRequest;
 import com.group4.backend.dto.InfluencerProfileResponse;
+import com.group4.backend.dto.RatingResponse;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
@@ -16,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,6 +33,8 @@ class InfluencerProfileServiceTest {
     private InfluencerProfileRepository influencerProfileRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private RatingService ratingService;
 
     @InjectMocks
     private InfluencerProfileService influencerProfileService;
@@ -78,6 +82,30 @@ class InfluencerProfileServiceTest {
         Optional<InfluencerProfileResponse> result = influencerProfileService.getByUserId(20L);
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getByUserId_whenProfileExists_includesRatingDataOnProfile() {
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(existingProfile));
+        when(ratingService.getAverageRating(20L)).thenReturn(4.5);
+        RatingResponse r1 = new RatingResponse();
+        r1.setRating(5);
+        r1.setReview("Great!");
+        RatingResponse r2 = new RatingResponse();
+        r2.setRating(4);
+        r2.setReview("Good collaboration");
+        List<RatingResponse> reviews = List.of(r1, r2);
+        when(ratingService.getRatingsForInfluencer(20L)).thenReturn(reviews);
+        when(ratingService.getRecentReviews(20L, 5)).thenReturn(reviews);
+
+        Optional<InfluencerProfileResponse> result = influencerProfileService.getByUserId(20L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getAverageRating()).isEqualTo(4.5);
+        assertThat(result.get().getTotalRatings()).isEqualTo(2);
+        assertThat(result.get().getRecentReviews()).hasSize(2);
+        assertThat(result.get().getRecentReviews().get(0).getRating()).isEqualTo(5);
+        assertThat(result.get().getRecentReviews().get(0).getReview()).isEqualTo("Great!");
     }
 
     @Test
