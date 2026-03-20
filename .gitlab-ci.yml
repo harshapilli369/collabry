@@ -1,12 +1,24 @@
 # GitLab CI/CD - Collabry
-# develop branch: build, test, publish (dev tag), deploy to dev (port 8074).
-# main branch: build, test, publish (latest), deploy to production (port 8073).
+# develop branch: build, test, Designite/DCode, publish (dev tag), deploy to dev (port 8074).
+# main branch: build, test, Designite/DCode, publish (latest), deploy to production (port 8073).
+# MR pipelines: build, test, Designite/DCode (no publish/deploy unless branch rules match).
+#
+# Designite submit needs CI/CD variables: DCODE_PROJECT_ID, DCODE_API_KEY (masked).
+# Requires repo files: .quality/requirements.txt, .quality/push_to_dcode.py
 
 stages:
   - build
   - test
+  - run-dj
+  - submit-dcode
   - publish
   - deploy
+
+.dcode_rules:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 # --- Build: compile backend and frontend ---
 build-backend:
@@ -59,6 +71,38 @@ test:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "develop"
+
+# --- DesigniteJava (code smells) + submit to DCode ---
+run-dj-job:
+  extends: .dcode_rules
+  stage: run-dj
+  image: openjdk:26-ea-jdk
+  tags:
+    - dalfcs_docker_kvm
+  script:
+    - echo "Downloading DesigniteJava"
+    - curl -fsSL https://designite-tools.com/assets/DesigniteJava.jar -o DesigniteJava.jar
+    - echo "Running DesigniteJava"
+    - mkdir smells/
+    - java -jar $CI_PROJECT_DIR/DesigniteJava.jar -i $CI_PROJECT_DIR -o $CI_PROJECT_DIR/smells/ -d
+  artifacts:
+    name: "designite-smells-$CI_COMMIT_SHORT_SHA"
+    expose_as: "DesigniteJava Smell Reports"
+    paths:
+      - smells/
+    expire_in: 4 weeks
+
+submit-dcode-job:
+  extends: .dcode_rules
+  stage: submit-dcode
+  image: python:3.10-alpine
+  tags:
+    - dalfcs_docker_kvm
+  dependencies:
+    - run-dj-job
+  script:
+    - pip3 install -r $CI_PROJECT_DIR/.quality/requirements.txt
+    - python3 $CI_PROJECT_DIR/.quality/push_to_dcode.py $DCODE_PROJECT_ID $DCODE_API_KEY $CI_PROJECT_DIR/smells/ $CI_COMMIT_SHA
 
 # --- Publish: build and push Docker image ---
 # main -> latest + commit SHA; develop -> dev-latest + dev-SHA
