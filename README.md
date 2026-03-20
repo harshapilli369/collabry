@@ -61,34 +61,26 @@ cd group04
 ```
 
 ### 2. Docker Setup (Recommended)
-This is the easiest way to run the application. It sets up both backend and frontend with a single command.
+This is the easiest way to run the application. It sets up both backend and frontend with a single command. **All configuration and secrets are read from a root `.env` file**; nothing is hardcoded in `docker-compose.yml`.
 
 1.  **Create the environment file**:
-    Create a file named `.env` in the **root** folder (`group04/.env`) and add your Google Client ID and Email Config:
-    ```env
-    # 1. Google Auth
-    VITE_GOOGLE_CLIENT_ID=your_google_client_id
-
-    # 2. Email Service (Required for Sign Up / Forgot Password)
-    # Use your Gmail + App Password (https://myaccount.google.com/apppasswords)
-    SPRING_MAIL_HOST=smtp.gmail.com
-    SPRING_MAIL_PORT=465
-    SPRING_MAIL_USERNAME=your_email@gmail.com
-    SPRING_MAIL_PASSWORD=your_app_password
-    SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
-    SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=false
-    SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE=true
-    SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST=*
-    APP_MAIL_FROM=your_email@gmail.com
+    In the **root** folder (`group04/`), copy the example file and edit it with your values:
+    ```bash
+    cp .env.example .env
     ```
-    
-    > **Note:** We use `.env` instead of `application-local.properties` because Docker containers are immutable. We inject secrets at runtime for security.
+    Then open `.env` and set at least:
+    - **VITE_GOOGLE_CLIENT_ID** — Your Google OAuth client ID (for frontend login).
+    - **VITE_API_BASE_URL** — Keep `http://localhost:9090/api/auth` when running Docker on your machine.
+    - **SMTP / Gmail** — Required for signup confirmation and password-reset emails. Use your Gmail address and a [Gmail App Password](https://myaccount.google.com/apppasswords) (16 characters, no spaces; enable 2-Step Verification first):
+      - `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD`, `APP_MAIL_FROM`, and the other `SPRING_MAIL_*` variables as in `.env.example`.
+
+    The full list of variables is in **`.env.example`** in the project root. Do not commit `.env` to Git.
 
 2.  **Run with Docker Compose**:
     ```bash
-    docker-compose up --build
+    docker compose up --build
     ```
-    *(The `--build` flag is only needed the first time or after pulling new code).*
+    *(Or `docker-compose up --build` depending on your setup. The `--build` flag is only needed the first time or after pulling new code.)*
 
     - **Backend**: Runs on `http://localhost:9090`
     - **Frontend**: Runs on `http://localhost:5173`
@@ -221,7 +213,8 @@ In production, use environment variables or a secrets manager for the password; 
 
 ## Quick reference
 
-- **Backend port:** 8080 (configurable in `application.properties`)
+- **Docker:** All config and secrets come from the root **`.env`** file. Copy `.env.example` to `.env` and fill in your values before `docker compose up --build`.
+- **Backend port:** 9090 (Docker) or 8080 (local; configurable in `application.properties`)
 - **Frontend dev server:** usually `http://localhost:5173`
 - **Auth API base:** `http://localhost:<backend-port>/api/auth`
 - **More detail:** see `SETUP.md`

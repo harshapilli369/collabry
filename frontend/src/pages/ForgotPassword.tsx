@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Form, Input, Button, Typography, ConfigProvider } from 'antd'
+import { Form, Input, Button, Typography, ConfigProvider, theme } from 'antd'
 import { MailOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
 import { forgotPassword } from '../services/authService'
@@ -25,13 +25,14 @@ export const ForgotPassword = () => {
 
     // Colors from User Palette (Synced with index.css)
     const primaryColor = '#FFFD82'; // Neon Yellow-Green
-    const textColor = '#000000'; // Black (for inside the white card)
-    const pageBackgroundColor = '#1E1E1E'; // Primary BG
-    const cardBackgroundColor = '#FFFFFF'; // Pure White
+    const textColor = '#ffffff'; // Black (for inside the white card)
+    const pageBackgroundColor = '#000000'; // Primary BG
+    const cardBackgroundColor = '#141414'; // Pure White
 
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorText: textColor,
@@ -39,12 +40,7 @@ export const ForgotPassword = () => {
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                 },
                 components: {
-                    Button: {
-                        colorPrimary: primaryColor,
-                        algorithm: true,
-                        primaryShadow: 'none',
-                        colorTextLightSolid: textColor,
-                    },
+                    Button: {},
                     Input: {
                         paddingBlock: 10,
                     }

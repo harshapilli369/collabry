@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Form, Input, Button, Typography, ConfigProvider } from 'antd'
+import { Form, Input, Button, Typography, ConfigProvider, theme } from 'antd'
 import { LockOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
 import { resetPassword } from '../services/authService'
@@ -36,13 +36,14 @@ export const ResetPassword = () => {
 
     // Colors from User Palette (Synced with index.css)
     const primaryColor = '#FFFD82'; // Neon Yellow-Green
-    const textColor = '#000000'; // Black (for inside the white card)
-    const pageBackgroundColor = '#1E1E1E'; // Primary BG
-    const cardBackgroundColor = '#FFFFFF'; // Pure White
+    const textColor = '#ffffff'; // Black (for inside the white card)
+    const pageBackgroundColor = '#000000'; // Primary BG
+    const cardBackgroundColor = '#141414'; // Pure White
 
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorText: textColor,
@@ -50,12 +51,7 @@ export const ResetPassword = () => {
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                 },
                 components: {
-                    Button: {
-                        colorPrimary: primaryColor,
-                        algorithm: true,
-                        primaryShadow: 'none',
-                        colorTextLightSolid: textColor,
-                    },
+                    Button: {},
                     Input: {
                         paddingBlock: 10,
                     }
@@ -90,72 +86,72 @@ export const ResetPassword = () => {
                         </>
                     ) : (
                         <>
-                    <div style={{ textAlign: 'center', marginBottom: 30 }}>
-                        <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>Reset Password</Title>
-                        <Text type="secondary">Enter your new password</Text>
-                    </div>
+                            <div style={{ textAlign: 'center', marginBottom: 30 }}>
+                                <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>Reset Password</Title>
+                                <Text type="secondary">Enter your new password</Text>
+                            </div>
 
-                    <Form
-                        name="reset-password"
-                        onFinish={onFinish}
-                        layout="vertical"
-                        size="large"
-                    >
-                        <Form.Item
-                            name="password"
-                            rules={[{ required: true, message: 'Please input your new Password!' }]}
-                        >
-                            <Input.Password
-                                prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                                placeholder="New Password"
-                            />
-                        </Form.Item>
-
-                        <Form.Item
-                            name="confirm"
-                            dependencies={['password']}
-                            hasFeedback
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Please confirm your password!',
-                                },
-                                ({ getFieldValue }) => ({
-                                    validator(_, value) {
-                                        if (!value || getFieldValue('password') === value) {
-                                            return Promise.resolve();
-                                        }
-                                        return Promise.reject(new Error('The new password that you entered does not match!'));
-                                    },
-                                }),
-                            ]}
-                        >
-                            <Input.Password
-                                prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                                placeholder="Confirm Password"
-                            />
-                        </Form.Item>
-
-                        <Form.Item>
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                block
-                                loading={loading}
-                                style={{
-                                    height: 50,
-                                    fontWeight: 600,
-                                    fontSize: 16,
-                                    color: textColor
-                                }}
+                            <Form
+                                name="reset-password"
+                                onFinish={onFinish}
+                                layout="vertical"
+                                size="large"
                             >
-                                Reset Password
-                            </Button>
-                        </Form.Item>
-                    </Form>
-                    <div style={{ textAlign: 'center', marginTop: 20 }}>
-                        <Link to="/login" style={{ color: '#BD72EB', fontWeight: 500 }}>Back to Login</Link>
-                    </div>
+                                <Form.Item
+                                    name="password"
+                                    rules={[{ required: true, message: 'Please input your new Password!' }]}
+                                >
+                                    <Input.Password
+                                        prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+                                        placeholder="New Password"
+                                    />
+                                </Form.Item>
+
+                                <Form.Item
+                                    name="confirm"
+                                    dependencies={['password']}
+                                    hasFeedback
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please confirm your password!',
+                                        },
+                                        ({ getFieldValue }) => ({
+                                            validator(_, value) {
+                                                if (!value || getFieldValue('password') === value) {
+                                                    return Promise.resolve();
+                                                }
+                                                return Promise.reject(new Error('The new password that you entered does not match!'));
+                                            },
+                                        }),
+                                    ]}
+                                >
+                                    <Input.Password
+                                        prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+                                        placeholder="Confirm Password"
+                                    />
+                                </Form.Item>
+
+                                <Form.Item>
+                                    <Button
+                                        type="primary"
+                                        htmlType="submit"
+                                        block
+                                        loading={loading}
+                                        style={{
+                                            height: 50,
+                                            fontWeight: 600,
+                                            fontSize: 16,
+                                            color: textColor
+                                        }}
+                                    >
+                                        Reset Password
+                                    </Button>
+                                </Form.Item>
+                            </Form>
+                            <div style={{ textAlign: 'center', marginTop: 20 }}>
+                                <Link to="/login" style={{ color: '#BD72EB', fontWeight: 500 }}>Back to Login</Link>
+                            </div>
                         </>
                     )}
                 </div>

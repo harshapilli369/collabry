@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tabs } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined } from '@ant-design/icons'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tabs, Modal, Form, Input, InputNumber, Select, message, theme } from 'antd'
+import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined, SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile } from '../services/brandService'
-import { getMyCampaigns, CAMPAIGN_STATUS_LABELS, BUDGET_RANGE_OPTIONS, type CampaignResponse, type CampaignStatus } from '../services/campaignService'
+import { getMyCampaigns, CAMPAIGN_STATUS_LABELS, BUDGET_RANGE_OPTIONS, PREFERRED_CONTENT_OPTIONS, type CampaignResponse, type CampaignStatus } from '../services/campaignService'
+import {
+    createInvitation,
+    getSentInvitations,
+    withdrawInvitation,
+    updateInvitation,
+    INVITATION_STATUS_LABELS,
+    type InvitationResponse,
+    type InvitationRequest,
+    type UpdateInvitationRequest,
+} from '../services/invitationService'
 
 const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -14,6 +24,16 @@ export const BrandDashboard = () => {
     const [profileCheckDone, setProfileCheckDone] = useState(false)
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
     const [campaignsLoading, setCampaignsLoading] = useState(false)
+    const [inviteModalOpen, setInviteModalOpen] = useState(false)
+    const [inviteCampaignId, setInviteCampaignId] = useState<number | null>(null)
+    const [inviteSubmitting, setInviteSubmitting] = useState(false)
+    const [inviteForm] = Form.useForm()
+    const [sentInvitations, setSentInvitations] = useState<InvitationResponse[]>([])
+    const [sentInvitationsLoading, setSentInvitationsLoading] = useState(false)
+    const [editModalOpen, setEditModalOpen] = useState(false)
+    const [editingInvitation, setEditingInvitation] = useState<InvitationResponse | null>(null)
+    const [editForm] = Form.useForm<UpdateInvitationRequest>()
+    const [editSubmitting, setEditSubmitting] = useState(false)
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
 
@@ -44,6 +64,15 @@ export const BrandDashboard = () => {
             .finally(() => setCampaignsLoading(false))
     }, [profileCheckDone, user?.role])
 
+    useEffect(() => {
+        if (!profileCheckDone || user?.role !== 'BRAND') return
+        setSentInvitationsLoading(true)
+        getSentInvitations()
+            .then(setSentInvitations)
+            .catch(() => setSentInvitations([]))
+            .finally(() => setSentInvitationsLoading(false))
+    }, [profileCheckDone, user?.role])
+
     const campaignsByStatus = STATUS_ORDER.map((status) => ({
         status,
         label: CAMPAIGN_STATUS_LABELS[status],
@@ -56,9 +85,81 @@ export const BrandDashboard = () => {
         navigate('/login', { replace: true })
     }
 
+    const openInviteModal = (campaignId: number) => {
+        setInviteCampaignId(campaignId)
+        inviteForm.resetFields()
+        setInviteModalOpen(true)
+    }
+    const closeInviteModal = () => {
+        setInviteModalOpen(false)
+        setInviteCampaignId(null)
+    }
+    const onInviteSubmit = async (values: InvitationRequest & { expiresInDays?: number }) => {
+        if (inviteCampaignId == null) return
+        setInviteSubmitting(true)
+        try {
+            await createInvitation(inviteCampaignId, {
+                influencerId: values.influencerId,
+                message: values.message?.trim() || undefined,
+                proposedAmount: values.proposedAmount,
+                proposedTimeline: values.proposedTimeline?.trim() || undefined,
+                proposedDeliverables: values.proposedDeliverables?.trim() || undefined,
+                platform: values.platform || undefined,
+                expiresInDays: values.expiresInDays ?? 14,
+            })
+            message.success('Invitation sent')
+            closeInviteModal()
+            getSentInvitations().then(setSentInvitations).catch(() => {})
+        } catch (e) {
+            message.error(e instanceof Error ? e.message : 'Failed to send invitation')
+        } finally {
+            setInviteSubmitting(false)
+        }
+    }
+
+    const handleWithdraw = async (inv: InvitationResponse) => {
+        try {
+            await withdrawInvitation(inv.id)
+            message.success('Invitation withdrawn')
+            setSentInvitations((prev) => prev.filter((i) => i.id !== inv.id))
+        } catch (e) {
+            message.error(e instanceof Error ? e.message : 'Failed to withdraw')
+        }
+    }
+
+    const openEditModal = (inv: InvitationResponse) => {
+        setEditingInvitation(inv)
+        editForm.setFieldsValue({
+            message: inv.brandMessage,
+            proposedAmount: inv.proposedAmount,
+            proposedTimeline: inv.proposedTimeline,
+            proposedDeliverables: inv.proposedDeliverables,
+            platform: inv.platform,
+        })
+        setEditModalOpen(true)
+    }
+    const closeEditModal = () => {
+        setEditModalOpen(false)
+        setEditingInvitation(null)
+    }
+    const onEditSubmit = async (values: UpdateInvitationRequest) => {
+        if (!editingInvitation) return
+        setEditSubmitting(true)
+        try {
+            await updateInvitation(editingInvitation.id, values)
+            message.success('Invitation updated')
+            closeEditModal()
+            getSentInvitations().then(setSentInvitations).catch(() => {})
+        } catch (e) {
+            message.error(e instanceof Error ? e.message : 'Failed to update')
+        } finally {
+            setEditSubmitting(false)
+        }
+    }
+
     const primaryColor = '#FFFD82'; // Neon Yellow-Green
-    const textColor = '#000000';
-    const pageBackgroundColor = '#1E1E1E';
+    const textColor = '#ffffff';
+    const pageBackgroundColor = '#000000';
 
 
     if (!profileCheckDone && user?.role === 'BRAND') {
@@ -68,6 +169,7 @@ export const BrandDashboard = () => {
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorTextBase: textColor,
@@ -75,7 +177,7 @@ export const BrandDashboard = () => {
                 },
                 components: {
                     Layout: {
-                        bodyBg: pageBackgroundColor,
+                        bodyBg: '#000000',
                         headerBg: '#000000',
                         siderBg: '#000000',
                     },
@@ -120,6 +222,18 @@ export const BrandDashboard = () => {
                                         label: 'View my campaigns',
                                     },
                                 ],
+                            },
+                            {
+                                key: 'influencers',
+                                icon: <SearchOutlined />,
+                                label: 'Find influencers',
+                                onClick: () => navigate('/brand/influencers'),
+                            },
+                            {
+                                key: 'payments',
+                                icon: <DollarOutlined />,
+                                label: 'Payments',
+                                onClick: () => navigate('/brand/payments'),
                             },
                             {
                                 key: 'profile',
@@ -189,7 +303,7 @@ export const BrandDashboard = () => {
                                     bordered={false}
                                     style={{ borderRadius: 12 }}
                                     extra={
-                                        <Button type="primary" icon={<PlusCircleOutlined />} onClick={() => navigate('/brand/campaigns/create')} style={{ color: textColor }}>
+                                        <Button type="primary" icon={<PlusCircleOutlined />} onClick={() => navigate('/brand/campaigns/create')} style={{ color: '#000000' }}>
                                             Create campaign
                                         </Button>
                                     }
@@ -211,14 +325,14 @@ export const BrandDashboard = () => {
                                                             <Text type="secondary">No {label.toLowerCase()} campaigns.</Text>
                                                         ) : (
                                                             list.map((campaign) => (
-                                                                <Card key={campaign.id} size="small" style={{ background: '#fafafa', borderRadius: 8 }}>
-                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                                <Card key={campaign.id} size="small" style={{ background: '#1c1c1c', borderRadius: 8, borderColor: '#333' }}>
+                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
                                                                         <div>
-                                                                            <Text strong>{campaign.name}</Text>
+                                                                            <Text strong style={{ color: '#fff', fontSize: 16 }}>{campaign.name}</Text>
                                                                             {campaign.description && (
-                                                                                <div><Text type="secondary" style={{ fontSize: 12 }}>{campaign.description.slice(0, 100)}{campaign.description.length > 100 ? '…' : ''}</Text></div>
+                                                                                <div><Text type="secondary" style={{ fontSize: 13 }}>{campaign.description.slice(0, 100)}{campaign.description.length > 100 ? '…' : ''}</Text></div>
                                                                             )}
-                                                                            <div style={{ marginTop: 4 }}>
+                                                                            <div style={{ marginTop: 6 }}>
                                                                                 <Text type="secondary" style={{ fontSize: 12 }}>
                                                                                     Budget: {BUDGET_RANGE_OPTIONS.find((o) => o.value === campaign.budgetRange)?.label ?? campaign.budgetRange}
                                                                                     {campaign.numberOfInfluencers != null && ` · ${campaign.numberOfInfluencers} influencer(s)`}
@@ -226,7 +340,10 @@ export const BrandDashboard = () => {
                                                                                 </Text>
                                                                             </div>
                                                                         </div>
-                                                                        <Text style={{ fontSize: 12, fontWeight: 600, color: '#666' }}>{CAMPAIGN_STATUS_LABELS[campaign.status]}</Text>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                            <Text style={{ fontSize: 12, fontWeight: 600, color: primaryColor }}>{CAMPAIGN_STATUS_LABELS[campaign.status]}</Text>
+                                                                            <Button type="default" size="small" icon={<MailOutlined />} onClick={() => openInviteModal(campaign.id)}>Invite</Button>
+                                                                        </div>
                                                                     </div>
                                                                 </Card>
                                                             ))
@@ -239,19 +356,118 @@ export const BrandDashboard = () => {
                                 </Card>
                             </Col>
 
-                            <Col span={12}>
-                                <Card title="Invited Influencers" bordered={false} style={{ borderRadius: 12, height: '100%' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                                        <Text>Pending Responses: 0</Text>
-                                        <Button type="link">Manage</Button>
-                                    </div>
-                                    <Text type="secondary">Invite influencers from your campaigns.</Text>
+                            <Col span={24}>
+                                <Card
+                                    title="Sent invitations"
+                                    bordered={false}
+                                    style={{ borderRadius: 12 }}
+                                    extra={
+                                        <Button type="link" onClick={() => navigate('/brand/influencers')} style={{ color: primaryColor, padding: 0 }}>
+                                            Find influencers
+                                        </Button>
+                                    }
+                                >
+                                    <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+                                        Track status: Sent, Accepted, Rejected, Expired, Withdrawn. You can withdraw or edit an invitation before it is accepted.
+                                    </Text>
+                                    {sentInvitationsLoading ? (
+                                        <Text type="secondary">Loading…</Text>
+                                    ) : sentInvitations.length === 0 ? (
+                                        <Text type="secondary">No invitations sent yet. Use &quot;Find influencers&quot; or Invite on a campaign to send one.</Text>
+                                    ) : (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                            {sentInvitations.map((inv) => {
+                                                const canWithdrawOrEdit = inv.status === 'PENDING' || inv.status === 'NEGOTIATING'
+                                                const campaign = campaigns.find((c) => c.id === inv.campaignId)
+                                                return (
+                                                    <Card key={inv.id} size="small" style={{ background: '#1c1c1c', borderRadius: 8, borderColor: '#333' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                                                            <div>
+                                                                <Text strong style={{ color: '#fff' }}>Campaign: {campaign?.name ?? `#${inv.campaignId}`}</Text>
+                                                                <span style={{ marginLeft: 8 }}>
+                                                                    <Text type="secondary">Influencer ID {inv.influencerId}</Text>
+                                                                </span>
+                                                                {inv.proposedAmount != null && (
+                                                                    <span style={{ marginLeft: 8 }}>
+                                                                        <Text type="secondary">· ${Number(inv.proposedAmount).toLocaleString()}</Text>
+                                                                    </span>
+                                                                )}
+                                                                <div style={{ marginTop: 4 }}>
+                                                                    <Text style={{ fontSize: 12, fontWeight: 600, color: primaryColor }}>{INVITATION_STATUS_LABELS[inv.status]}</Text>
+                                                                </div>
+                                                            </div>
+                                                            {canWithdrawOrEdit && (
+                                                                <div style={{ display: 'flex', gap: 8 }}>
+                                                                    <Button type="default" size="small" icon={<EditOutlined />} onClick={() => openEditModal(inv)}>Edit</Button>
+                                                                    <Button type="default" size="small" danger icon={<DeleteOutlined />} onClick={() => handleWithdraw(inv)}>Withdraw</Button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </Card>
+                                                )
+                                            })}
+                                        </div>
+                                    )}
                                 </Card>
                             </Col>
                         </Row>
                     </Content>
                 </Layout>
             </Layout>
+
+            <Modal title="Invite influencer" open={inviteModalOpen} onCancel={closeInviteModal} footer={null} destroyOnClose width={520}>
+                <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>
+                    <Form.Item name="influencerId" label="Influencer user ID" rules={[{ required: true, message: 'Enter the influencer’s user ID' }]}>
+                        <InputNumber min={1} step={1} style={{ width: '100%' }} placeholder="e.g. 2" />
+                    </Form.Item>
+                    <Form.Item name="message" label="Message (optional)">
+                        <Input.TextArea rows={2} placeholder="Personal message to the influencer" />
+                    </Form.Item>
+                    <Form.Item name="proposedDeliverables" label="Deliverables">
+                        <Input.TextArea rows={2} placeholder="e.g. 1 Instagram Reel, 3 Stories" />
+                    </Form.Item>
+                    <Form.Item name="proposedTimeline" label="Timeline">
+                        <Input placeholder="e.g. 2 weeks from acceptance" />
+                    </Form.Item>
+                    <Form.Item name="proposedAmount" label="Budget / proposed amount">
+                        <InputNumber min={0} step={100} style={{ width: '100%' }} placeholder="Amount" addonBefore="$" />
+                    </Form.Item>
+                    <Form.Item name="platform" label="Platform">
+                        <Select placeholder="Select platform" allowClear options={PREFERRED_CONTENT_OPTIONS} />
+                    </Form.Item>
+                    <Form.Item name="expiresInDays" label="Invitation valid for (days)" initialValue={14}>
+                        <InputNumber min={1} max={90} style={{ width: '100%' }} />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" loading={inviteSubmitting} style={{ color: '#000000' }}>Send invitation</Button>
+                        <Button style={{ marginLeft: 8 }} onClick={closeInviteModal}>Cancel</Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            <Modal title="Edit invitation" open={editModalOpen} onCancel={closeEditModal} footer={null} destroyOnClose width={520}>
+                <Form form={editForm} layout="vertical" onFinish={onEditSubmit}>
+                    <Form.Item name="message" label="Message">
+                        <Input.TextArea rows={2} placeholder="Message to influencer" />
+                    </Form.Item>
+                    <Form.Item name="proposedDeliverables" label="Deliverables">
+                        <Input.TextArea rows={2} placeholder="e.g. 1 Instagram Reel" />
+                    </Form.Item>
+                    <Form.Item name="proposedTimeline" label="Timeline">
+                        <Input placeholder="e.g. 2 weeks" />
+                    </Form.Item>
+                    <Form.Item name="proposedAmount" label="Proposed amount">
+                        <InputNumber min={0} step={100} style={{ width: '100%' }} addonBefore="$" />
+                    </Form.Item>
+                    <Form.Item name="platform" label="Platform">
+                        <Select placeholder="Select platform" allowClear options={PREFERRED_CONTENT_OPTIONS} />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" loading={editSubmitting} style={{ color: '#000000' }}>Save changes</Button>
+                        <Button style={{ marginLeft: 8 }} onClick={closeEditModal}>Cancel</Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
         </ConfigProvider>
     )
 }

@@ -40,6 +40,11 @@ public class InfluencerProfileRequest {
 
     private BigDecimal rate;
 
+    private Long followerCount;
+
+    @DecimalMin("0") @DecimalMax("100")
+    private BigDecimal engagementRate;
+
     @Size(max = 2000)
     private String audienceInfo;
 
@@ -77,6 +82,12 @@ public class InfluencerProfileRequest {
 
     public BigDecimal getRate() { return rate; }
     public void setRate(BigDecimal rate) { this.rate = rate; }
+
+    public Long getFollowerCount() { return followerCount; }
+    public void setFollowerCount(Long followerCount) { this.followerCount = followerCount; }
+
+    public BigDecimal getEngagementRate() { return engagementRate; }
+    public void setEngagementRate(BigDecimal engagementRate) { this.engagementRate = engagementRate; }
 
     public String getAudienceInfo() { return audienceInfo; }
     public void setAudienceInfo(String audienceInfo) { this.audienceInfo = audienceInfo; }

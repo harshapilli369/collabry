@@ -121,6 +121,7 @@ node_modules/
 .stylelintcache
 *.bak
 *.orig
+.cursor/
 
 ############################
 # Secrets / Keys (IMPORTANT!)

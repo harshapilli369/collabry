@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message } from 'antd'
+import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message, theme } from 'antd'
 import { UserOutlined, LinkOutlined, DollarOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -53,6 +53,8 @@ export const ProfileSetup = () => {
                         youtubeHandle: profile.youtubeHandle ?? undefined,
                         tiktokHandle: profile.tiktokHandle ?? undefined,
                         rate: profile.rate ?? undefined,
+                        followerCount: profile.followerCount ?? undefined,
+                        engagementRate: profile.engagementRate ?? undefined,
                         audienceInfo: profile.audienceInfo ?? undefined,
                     })
                 }
@@ -91,6 +93,8 @@ export const ProfileSetup = () => {
                 youtubeHandle: values.youtubeHandle || undefined,
                 tiktokHandle: values.tiktokHandle || undefined,
                 rate: values.rate ?? undefined,
+                followerCount: values.followerCount ?? undefined,
+                engagementRate: values.engagementRate ?? undefined,
                 audienceInfo: values.audienceInfo || undefined,
             }
             await updateMyInfluencerProfile(payload, saveAsDraft)
@@ -125,15 +129,16 @@ export const ProfileSetup = () => {
     }
 
     const primaryColor = '#FFFD82'
-    const textColor = '#000000'
-    const pageBackgroundColor = '#1E1E1E'
-    const cardBackgroundColor = '#FFFFFF'
+    const textColor = '#ffffff'
+    const pageBackgroundColor = '#000000'
+    const cardBackgroundColor = '#141414'
 
     if (!isInfluencer && !fetching) return null
 
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorText: textColor,
@@ -141,12 +146,7 @@ export const ProfileSetup = () => {
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                 },
                 components: {
-                    Button: {
-                        colorPrimary: primaryColor,
-                        algorithm: true,
-                        primaryShadow: 'none',
-                        colorTextLightSolid: textColor,
-                    },
+                    Button: {},
                     Input: { paddingBlock: 10 },
                 },
             }}
@@ -172,7 +172,7 @@ export const ProfileSetup = () => {
                     }}
                 >
                     <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                        <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, marginBottom: 16 }} />
+                        <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, marginBottom: 16, borderRadius: 8 }} />
                         <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>
                             Complete your profile
                         </Title>
@@ -267,6 +267,12 @@ export const ProfileSetup = () => {
                                     min={0}
                                     precision={2}
                                 />
+                            </Form.Item>
+                            <Form.Item name="followerCount" label="Follower count (optional)" help="Helps brands filter by reach">
+                                <InputNumber placeholder="e.g. 50000" style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="engagementRate" label="Engagement rate % (optional)" help="e.g. 3.5">
+                                <InputNumber placeholder="e.g. 3.5" style={{ width: '100%' }} min={0} max={100} step={0.1} />
                             </Form.Item>
                             <Form.Item name="audienceInfo" label="Audience info (optional)">
                                 <TextArea rows={4} placeholder="e.g. Demographics, engagement metrics, reach..." />

@@ -51,7 +51,8 @@ public class AuthService {
     }
 
     /**
-     * Register: save as pending only; send confirmation email. User is created only after they confirm.
+     * Register: save as pending only; send confirmation email. User is created only
+     * after they confirm.
      */
     public SignupResponse register(SignupRequest request) {
         if (!SignupRequest.isAllowedRole(request.getRole())) {
@@ -78,16 +79,18 @@ public class AuthService {
         try {
             emailService.sendConfirmationEmail(request.getEmail(), confirmationLink);
         } catch (Exception e) {
-            System.err.println("Email send failed (registration still succeeded). Confirmation link: " + confirmationLink);
-            e.printStackTrace();
+            // Rethrow so the API returns an error and the user is not told to "check email" when none was sent
+            throw new RuntimeException("Could not send confirmation email. Please check SMTP settings or try again later. " + e.getMessage(), e);
         }
 
-        return new SignupResponse("Check your email to confirm your account. The link expires in " + CONFIRMATION_EXIRY_HOURS + " hours.");
+        return new SignupResponse("Check your email to confirm your account. The link expires in "
+                + CONFIRMATION_EXIRY_HOURS + " hours.");
 
     }
 
     /**
-     * Confirm email: create User from pending signup, then delete pending. Returns JWT so frontend can log in.
+     * Confirm email: create User from pending signup, then delete pending. Returns
+     * JWT so frontend can log in.
      */
     public AuthResponse confirmEmail(String token) {
         PendingSignup pending = pendingSignupRepository.findByToken(token)
@@ -105,7 +108,7 @@ public class AuthService {
         pendingSignupRepository.delete(pending);
 
         String jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), false);
-        return new AuthResponse(jwtToken, user.getEmail(), user.getRole());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId());
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -119,7 +122,7 @@ public class AuthService {
 
         var jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), request.isRememberMe());
 
-        return new AuthResponse(jwtToken, user.getEmail(), user.getRole());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId());
     }
 
     // New Google Login Method
@@ -157,7 +160,7 @@ public class AuthService {
         });
 
         var jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), false);
-        return new AuthResponse(jwtToken, user.getEmail(), user.getRole());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId());
     }
 
     private String fetchEmailFromGoogle(String accessToken) {

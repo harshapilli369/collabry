@@ -7,6 +7,12 @@ Follow these steps to get the project running on your local machine.
 *   Java JDK 17+
 *   Maven
 
+## Docker (recommended)
+To run with Docker, use the **root** `.env` file (not only `frontend/.env`):
+1.  In the project root (`group04/`), copy `cp .env.example .env` and edit `.env` with your Google Client ID and Gmail SMTP (App Password) settings.
+2.  Run `docker compose up --build`. Backend and frontend read all config from this root `.env` file.
+See the main **README.md** for the full list of variables and Docker steps.
+
 ## 1. Backend Setup (Spring Boot)
 The backend runs on port **9090**.
 

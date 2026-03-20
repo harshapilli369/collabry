@@ -1,39 +1,40 @@
+# All config and secrets are loaded from the root .env file.
+# Copy .env.example to .env and fill in your values before running.
+# See README.md for the list of required variables.
+
 services:
   backend:
     build: ./backend
+    env_file:
+      - .env
     ports:
       - "9090:9090"
     environment:
       - SERVER_PORT=9090
-      # Use "backend" as variable if needed for inter-service communication
-      # For now, it's just the API running inside
-
-      # SMTP Settings (Passed from .env)
-      - SPRING_MAIL_HOST=smtp.gmail.com
-      - SPRING_MAIL_PORT=465
-      - SPRING_MAIL_USERNAME=collabry1@gmail.com
-      - SPRING_MAIL_PASSWORD=pvhinjfgpjgjoiae
-      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
-      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
-      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE=true
-      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST=*
-      - APP_MAIL_FROM=collabry1@gmail.com
-
+      # SMTP (from .env) - explicit pass-through so backend always gets mail config
+      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST}
+      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT:-465}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:-true}
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:-false}
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE=${SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE:-true}
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST=${SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST:-*}
+      - APP_MAIL_FROM=${APP_MAIL_FROM}
     networks:
       - app-network
+    volumes:
+      - ./data:/app/data
 
   frontend:
     build: ./frontend
+    env_file:
+      - .env
     ports:
       - "5173:5173"
     environment:
-      # The backend URL. Since this is read by the BROWSER (client-side),
-      # it needs to be localhost if accessed from the host machine browser.
-      # If we were doing server-side rendering or proxying, it would be http://backend:9090
-      # But for Vite dev server, the browser is on the host.
-      - VITE_API_BASE_URL=http://localhost:9090/api/auth
-      # Pass the Google Client ID from the host's .env file
-      - VITE_GOOGLE_CLIENT_ID=337303186898-c8jdr70o76m93ask0j4nfip2hmh10m3p.apps.googleusercontent.com
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:9090/api/auth}
+      - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
     depends_on:
       - backend
     networks:

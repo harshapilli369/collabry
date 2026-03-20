@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message } from 'antd'
+import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, theme } from 'antd'
 import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -15,8 +15,8 @@ const { Title, Text } = Typography
 const { TextArea } = Input
 
 const primaryColor = '#FFFD82'
-const textColor = '#000000'
-const cardBackgroundColor = '#FFFFFF'
+const textColor = '#ffffff'
+const cardBackgroundColor = '#141414'
 
 export const BrandProfile = () => {
     const [form] = Form.useForm<BrandProfileRequest>()
@@ -71,6 +71,7 @@ export const BrandProfile = () => {
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorTextBase: textColor,
@@ -78,8 +79,8 @@ export const BrandProfile = () => {
                 },
                 components: {
                     Layout: {
-                        bodyBg: cardBackgroundColor,
-                        headerBg: cardBackgroundColor,
+                        bodyBg: '#000000',
+                        headerBg: '#000000',
                         siderBg: '#000000',
                     },
                     Menu: {
@@ -127,7 +128,7 @@ export const BrandProfile = () => {
                         ]}
                     />
                 </Sider>
-                <Layout style={{ backgroundColor: cardBackgroundColor }}>
+                <Layout style={{ backgroundColor: '#000000' }}>
                     <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280, backgroundColor: cardBackgroundColor }}>
                         <div style={{ marginBottom: 24 }}>
                             <Button

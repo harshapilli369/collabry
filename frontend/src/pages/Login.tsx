@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Form, Input, Button, Checkbox, Typography, Divider, ConfigProvider, message } from 'antd'
+import { Form, Input, Button, Checkbox, Typography, Divider, ConfigProvider, message, theme } from 'antd'
 import { MailOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons'
 import { Link, useNavigate } from 'react-router-dom'
 import { useGoogleLogin } from '@react-oauth/google'
@@ -27,7 +27,7 @@ export const Login = () => {
             }
             console.log('Login success:', data);
             localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
+            localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role }));
             message.success('Login successful!');
             alert('Login successful!');
 
@@ -90,13 +90,14 @@ export const Login = () => {
     // Colors from User Palette (Synced with index.css)
     const primaryColor = '#FFFD82'; // Neon Yellow-Green
     const secondaryColor = '#BD72EB'; // Soft Purple
-    const textColor = '#000000'; // Black (for inside the white card)
-    const pageBackgroundColor = '#1E1E1E'; // Primary BG
-    const cardBackgroundColor = '#FFFFFF'; // Pure White
+    const textColor = '#ffffff'; // Black (for inside the white card)
+    const pageBackgroundColor = '#000000'; // Primary BG
+    const cardBackgroundColor = '#141414'; // Pure White
 
     return (
         <ConfigProvider
             theme={{
+                algorithm: theme.darkAlgorithm,
                 token: {
                     colorPrimary: primaryColor,
                     colorText: textColor,
@@ -104,12 +105,7 @@ export const Login = () => {
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                 },
                 components: {
-                    Button: {
-                        colorPrimary: primaryColor,
-                        algorithm: true,
-                        primaryShadow: 'none',
-                        colorTextLightSolid: textColor, // Ensures text is black on the neon button
-                    },
+                    Button: {},
                     Input: {
                         paddingBlock: 10,
                     }
@@ -135,7 +131,7 @@ export const Login = () => {
                     {/* Logo Section */}
                     <div style={{ textAlign: 'center', marginBottom: 30 }}>
                         <div style={{ marginBottom: 20 }}>
-                            <img src="/logo.png" alt="Collabry Logo" style={{ height: 60 }} />
+                            <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, borderRadius: 8 }} />
                         </div>
 
                         <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>Collabry</Title>
@@ -176,7 +172,7 @@ export const Login = () => {
                                 <Form.Item name="rememberMe" valuePropName="checked" noStyle>
                                     <Checkbox
                                         style={{
-                                            color: 'rgba(0,0,0,0.5)',
+                                            color: 'textColor',
                                         }}
                                         className="custom-checkbox"
                                     >
@@ -199,7 +195,7 @@ export const Login = () => {
                                     height: 50,
                                     fontWeight: 600,
                                     fontSize: 16,
-                                    color: textColor
+                                    color: "#000000"
                                 }}
                             >
                                 Log In
@@ -217,7 +213,7 @@ export const Login = () => {
                         style={{
                             height: 50,
                             fontWeight: 500,
-                            color: textColor,
+                            color: "#000000",
                             borderColor: '#eee',
                             backgroundColor: '#fff'
                         }}
@@ -226,7 +222,7 @@ export const Login = () => {
                     </Button>
 
                     <div style={{ textAlign: 'center', marginTop: 30 }}>
-                        <Text style={{ color: 'rgba(0,0,0,0.5)' }}>Don't have an account? </Text>
+                        <Text style={{ color: 'textColor' }}>Don't have an account? </Text>
                         <Link to="/signup" style={{ color: secondaryColor, fontWeight: 500 }}>Sign up</Link>
                     </div>
                 </div>

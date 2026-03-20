@@ -1,19 +1,19 @@
 :root {
   /* User Defined Palette */
-  --primary-bg: #1E1E1E;
+  --primary-bg: #000000;
   /* Pure Black */
   --primary-accent: #FFFD82;
   /* Neon Yellow-Green */
   --secondary-accent: #BD72EB;
   /* Soft Purple */
-  --card-bg: #FFFFFF;
-  /* Pure White */
+  --card-bg: #141414;
+  /* Dark Grey */
   --input-bg: #1A1A1A;
   /* Off-Black */
   --text-primary: #FFFFFF;
   /* White (for dark bg) */
-  --text-secondary: #000000;
-  /* Black (for light cards) */
+  --text-secondary: #FFFFFF;
+  /* White (for dark cards) */
 }
 
 body {
