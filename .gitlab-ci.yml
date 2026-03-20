@@ -100,9 +100,17 @@ submit-dcode-job:
     - dalfcs_docker_kvm
   dependencies:
     - run-dj-job
+  before_script:
+    # Unset vars disappear in the shell and Python sees "wrong arg count". Fail clearly first.
+    - |
+      if [ -z "${DCODE_PROJECT_ID:-}" ] || [ -z "${DCODE_API_KEY:-}" ]; then
+        echo "ERROR: DCODE_PROJECT_ID and DCODE_API_KEY must be non-empty in CI/CD Variables."
+        echo "Merge request pipelines: if variables are marked Protected, they are omitted unless the source branch is protected — adjust or use unprotected variables for course MRs."
+        exit 1
+      fi
   script:
     - pip3 install -r $CI_PROJECT_DIR/.quality/requirements.txt
-    - python3 $CI_PROJECT_DIR/.quality/push_to_dcode.py $DCODE_PROJECT_ID $DCODE_API_KEY $CI_PROJECT_DIR/smells/ $CI_COMMIT_SHA
+    - python3 $CI_PROJECT_DIR/.quality/push_to_dcode.py "$DCODE_PROJECT_ID" "$DCODE_API_KEY" "$CI_PROJECT_DIR/smells/" "$CI_COMMIT_SHA"
 
 # --- Publish: build and push Docker image ---
 # main -> latest + commit SHA; develop -> dev-latest + dev-SHA

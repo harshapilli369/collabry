@@ -13,6 +13,11 @@ def main():
     # --- ARGUMENT VALIDATION ---
     if len(sys.argv) != 5:
         print("Error: Incorrect number of arguments.", file=sys.stderr)
+        print(
+            "Hint: In GitLab CI, unset variables are omitted by the shell — "
+            "set DCODE_PROJECT_ID and DCODE_API_KEY; on MRs, Protected variables are not injected unless the branch is protected.",
+            file=sys.stderr,
+        )
         print(f"Usage: {sys.argv[0]} <project-id> <api-key> <directory-to-upload> <commit-hash>", file=sys.stderr)
         sys.exit(1)
 
@@ -20,6 +25,13 @@ def main():
     api_key = sys.argv[2]
     file_dir = sys.argv[3]
     commit_sha = sys.argv[4]
+
+    if not project_id.strip() or not api_key.strip():
+        print(
+            "Error: <project-id> and <api-key> must be non-empty (check CI variables are passed into the job).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     # Check if the provided directory exists
     if not os.path.isdir(file_dir):
