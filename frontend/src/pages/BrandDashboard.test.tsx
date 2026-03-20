@@ -36,7 +36,14 @@ describe('BrandDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.setItem('user', JSON.stringify({ role: 'BRAND', id: 1, email: 'brand@test.com' }))
-    mockGetMyBrandProfile.mockResolvedValue({ id: 1, companyName: 'Test Co', userId: 1 } as brandService.BrandProfileResponse)
+    mockGetMyBrandProfile.mockResolvedValue({
+      id: 1,
+      userId: 1,
+      name: 'Test Co',
+      industry: 'Technology',
+      website: 'https://test.example',
+      email: 'brand@test.com',
+    })
     mockGetMyCampaigns.mockResolvedValue([])
     mockGetSentInvitations.mockResolvedValue([])
     mockWithdrawInvitation.mockResolvedValue()
