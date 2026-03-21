@@ -90,6 +90,7 @@ export const CreateCampaign = () => {
             })
             message.success('Invitation sent to influencer')
             inviteForm.resetFields()
+            navigate('/brand/collaborations', { replace: true })
         } catch (e) {
             message.error(e instanceof Error ? e.message : 'Failed to send invitation')
         } finally {
