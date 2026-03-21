@@ -1,16 +1,16 @@
 import { useState } from 'react'
-import { Button, Card, Col, ConfigProvider, Form, Input, InputNumber, Layout, Menu, Row, Select, Typography, Avatar, Modal, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, SearchOutlined, AppstoreOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import { Button, Card, Col, Form, Input, InputNumber, Row, Select, Typography, Avatar, Modal, message } from 'antd'
+import { UserOutlined, SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import { searchInfluencers, type InfluencerProfileResponse, type InfluencerSearchParams } from '../services/influencerProfileService'
 import { getMyCampaigns, type CampaignResponse } from '../services/campaignService'
 import { createInvitation, type InvitationRequest } from '../services/invitationService'
 import { PREFERRED_CONTENT_OPTIONS } from '../services/campaignService'
 
-const { Content, Sider } = Layout
 const { Title, Text } = Typography
 
-const primaryColor = '#FFFD82'
+const primaryColor = BRAND_PORTAL_PRIMARY
 const cardBg = '#1c1c1c'
 
 export const InfluencerSearch = () => {
@@ -84,39 +84,8 @@ export const InfluencerSearch = () => {
         }
     }
 
-    const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        navigate('/login', { replace: true })
-    }
-
     return (
-        <ConfigProvider
-            theme={{
-                algorithm: theme.darkAlgorithm,
-                token: { colorPrimary: primaryColor, colorTextBase: '#ffffff', fontFamily: 'Inter, sans-serif' },
-                components: { Layout: { bodyBg: '#000000', headerBg: '#000000', siderBg: '#000000' }, Menu: { darkItemBg: '#000000', darkItemSelectedBg: '#333333' } },
-            }}
-        >
-            <Layout style={{ minHeight: '100vh' }}>
-                <Sider width={250} theme="dark">
-                    <div style={{ padding: '20px', textAlign: 'center' }}>
-                        <Title level={4} style={{ color: '#fff', margin: 0 }}>Collabry</Title>
-                        <Text style={{ color: primaryColor }}>Brand Portal</Text>
-                    </div>
-                    <Menu
-                        theme="dark"
-                        mode="inline"
-                        selectedKeys={['search']}
-                        items={[
-                            { key: 'dashboard', icon: <AppstoreOutlined />, label: 'Dashboard', onClick: () => navigate('/brand/dashboard') },
-                            { key: 'search', icon: <SearchOutlined />, label: 'Find influencers' },
-                            { key: 'logout', icon: <LogoutOutlined />, label: 'Logout', onClick: handleLogout, danger: true },
-                        ]}
-                    />
-                </Sider>
-                <Layout style={{ backgroundColor: '#000000' }}>
-                    <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
+        <BrandPortalLayout activeMenuKey="influencers">
                         <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/brand/dashboard')} style={{ color: primaryColor, paddingLeft: 0, marginBottom: 16 }}>
                             Back to Dashboard
                         </Button>
@@ -190,9 +159,6 @@ export const InfluencerSearch = () => {
                                 </Col>
                             ))}
                         </Row>
-                    </Content>
-                </Layout>
-            </Layout>
 
             <Modal
                 title={`Invite ${selectedInfluencer?.name ?? ''}`}
@@ -233,6 +199,6 @@ export const InfluencerSearch = () => {
                     </Form.Item>
                 </Form>
             </Modal>
-        </ConfigProvider>
+        </BrandPortalLayout>
     )
 }

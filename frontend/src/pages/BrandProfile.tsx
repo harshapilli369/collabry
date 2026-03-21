@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import { Form, Input, Button, Typography, Select, message } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import {
     getMyBrandProfile,
     updateMyBrandProfile,
@@ -11,13 +12,11 @@ import {
 } from '../services/brandService'
 import { userService } from '../services/userService'
 
-const { Content, Sider } = Layout
 const { Title, Text } = Typography
 const { TextArea } = Input
 
-const primaryColor = '#FFFD82'
+const primaryColor = BRAND_PORTAL_PRIMARY
 const textColor = '#ffffff'
-const cardBackgroundColor = '#141414'
 
 export const BrandProfile = () => {
     const [form] = Form.useForm<BrandProfileRequest>()
@@ -65,12 +64,6 @@ export const BrandProfile = () => {
         }
     }
 
-    const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        navigate('/login', { replace: true })
-    }
-
     const handleConnect = async (platform: string, handle: string | undefined) => {
         if (!handle) {
             message.warning(`Please enter a handle/URL for ${platform}`)
@@ -88,67 +81,7 @@ export const BrandProfile = () => {
     }
 
     return (
-        <ConfigProvider
-            theme={{
-                algorithm: theme.darkAlgorithm,
-                token: {
-                    colorPrimary: primaryColor,
-                    colorTextBase: textColor,
-                    fontFamily: 'Inter, sans-serif',
-                },
-                components: {
-                    Layout: {
-                        bodyBg: '#000000',
-                        headerBg: '#000000',
-                        siderBg: '#000000',
-                    },
-                    Menu: {
-                        darkItemBg: '#000000',
-                        darkItemSelectedBg: '#333333',
-                    },
-                },
-            }}
-        >
-            <Layout style={{ minHeight: '100vh' }}>
-                <Sider width={250} theme="dark">
-                    <div style={{ padding: '20px', textAlign: 'center' }}>
-                        <Title level={4} style={{ color: '#fff', margin: 0 }}>Collabry</Title>
-                        <Text style={{ color: primaryColor }}>Brand Portal</Text>
-                    </div>
-                    <Menu
-                        theme="dark"
-                        mode="inline"
-                        selectedKeys={['profile']}
-                        items={[
-                            {
-                                key: 'dashboard',
-                                icon: <AppstoreOutlined />,
-                                label: 'Dashboard',
-                                onClick: () => navigate('/brand/dashboard'),
-                            },
-                            {
-                                key: 'profile',
-                                icon: <UserOutlined />,
-                                label: 'Profile',
-                            },
-                            {
-                                key: 'campaign',
-                                icon: <PlusCircleOutlined />,
-                                label: 'Create Campaign',
-                                onClick: () => navigate('/brand/campaigns/create'),
-                            },
-                            {
-                                key: 'logout',
-                                icon: <LogoutOutlined />,
-                                label: 'Logout',
-                                onClick: handleLogout,
-                                danger: true,
-                            },
-                        ]}
-                    />
-                </Sider>
-                <Layout style={{ backgroundColor: '#000000' }}>
-                    <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280, backgroundColor: cardBackgroundColor }}>
+        <BrandPortalLayout activeMenuKey="profile">
                         <div style={{ marginBottom: 24 }}>
                             <Button
                                 type="link"
@@ -259,9 +192,6 @@ export const BrandProfile = () => {
                                 </Button>
                             </Form.Item>
                         </Form>
-                    </Content>
-                </Layout>
-            </Layout>
-        </ConfigProvider>
+        </BrandPortalLayout>
     )
 }

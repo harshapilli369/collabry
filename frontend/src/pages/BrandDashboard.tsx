@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Tabs, Modal, Form, Input, InputNumber, Select, Table, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined, SearchOutlined, EditOutlined, DeleteOutlined, CheckCircleFilled, TeamOutlined } from '@ant-design/icons'
-import { useNavigate } from 'react-router-dom'
+import { Typography, Button, Card, Row, Col, Tabs, Modal, Form, Input, InputNumber, Select, Table, message } from 'antd'
+import { PlusCircleOutlined, FundProjectionScreenOutlined, MailOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import { getMyBrandProfile } from '../services/brandService'
 import { getMyCampaigns, CAMPAIGN_STATUS_LABELS, BUDGET_RANGE_OPTIONS, PREFERRED_CONTENT_OPTIONS, type CampaignResponse, type CampaignStatus } from '../services/campaignService'
 import {
@@ -16,12 +17,12 @@ import {
 } from '../services/invitationService'
 import { userService, type InfluencerSearchResult } from '../services/userService'
 
-const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
 const STATUS_ORDER: CampaignStatus[] = ['DRAFT', 'ACTIVE', 'COMPLETED', 'CANCELLED']
 
 export const BrandDashboard = () => {
     const navigate = useNavigate()
+    const location = useLocation()
     const [profileCheckDone, setProfileCheckDone] = useState(false)
     const [brandProfile, setBrandProfile] = useState<any>(null)
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
@@ -79,17 +80,20 @@ export const BrandDashboard = () => {
             .finally(() => setSentInvitationsLoading(false))
     }, [profileCheckDone, user?.role])
 
+    useEffect(() => {
+        if (location.hash !== '#brand-my-campaigns') return
+        const id = 'brand-my-campaigns'
+        const scroll = () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        scroll()
+        const t = window.setTimeout(scroll, 300)
+        return () => clearTimeout(t)
+    }, [location.hash, location.pathname, profileCheckDone, campaignsLoading])
+
     const campaignsByStatus = STATUS_ORDER.map((status) => ({
         status,
         label: CAMPAIGN_STATUS_LABELS[status],
         list: campaigns.filter((c) => c.status === status),
     }))
-
-    const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        navigate('/login', { replace: true })
-    }
 
     const openInviteModal = (campaignId: number) => {
         setInviteCampaignId(campaignId)
@@ -175,122 +179,14 @@ export const BrandDashboard = () => {
         }
     }
 
-    const primaryColor = '#FFFD82'; // Neon Yellow-Green
-    const textColor = '#ffffff';
-    const pageBackgroundColor = '#000000';
-
+    const primaryColor = BRAND_PORTAL_PRIMARY
 
     if (!profileCheckDone && user?.role === 'BRAND') {
         return null
     }
 
     return (
-        <ConfigProvider
-            theme={{
-                algorithm: theme.darkAlgorithm,
-                token: {
-                    colorPrimary: primaryColor,
-                    colorTextBase: textColor,
-                    fontFamily: 'Inter, sans-serif',
-                },
-                components: {
-                    Layout: {
-                        bodyBg: '#000000',
-                        headerBg: '#000000',
-                        siderBg: '#000000',
-                    },
-                    Menu: {
-                        darkItemBg: '#000000',
-                        darkItemSelectedBg: '#333333',
-                    }
-                }
-            }}
-        >
-            <Layout style={{ minHeight: '100vh' }}>
-                <Sider width={250} theme="dark">
-                    <div style={{ padding: '20px', textAlign: 'center' }}>
-                        <Title level={4} style={{ color: '#fff', margin: 0 }}>Collabry</Title>
-                        <Text style={{ color: primaryColor }}>Brand Portal</Text>
-                    </div>
-                    <Menu
-                        theme="dark"
-                        mode="inline"
-                        defaultSelectedKeys={['dashboard']}
-                        defaultOpenKeys={['campaign']}
-                        items={[
-                            {
-                                key: 'dashboard',
-                                icon: <AppstoreOutlined />,
-                                label: 'Dashboard',
-                            },
-                            {
-                                key: 'campaign',
-                                icon: <FundProjectionScreenOutlined />,
-                                label: 'Campaign',
-                                children: [
-                                    {
-                                        key: 'campaign-create',
-                                        icon: <PlusCircleOutlined />,
-                                        label: 'Create campaign',
-                                        onClick: () => navigate('/brand/campaigns/create'),
-                                    },
-                                    {
-                                        key: 'campaign-view',
-                                        icon: <UnorderedListOutlined />,
-                                        label: 'View my campaigns',
-                                    },
-                                ],
-                            },
-                            {
-                                key: 'influencers',
-                                icon: <SearchOutlined />,
-                                label: 'Find influencers',
-                                onClick: () => navigate('/brand/influencers'),
-                            },
-                            {
-                                key: 'collaborations',
-                                icon: <TeamOutlined />,
-                                label: 'Collaborations',
-                                onClick: () => navigate('/brand/collaborations'),
-                            },
-                            {
-                                key: 'payments',
-                                icon: <DollarOutlined />,
-                                label: 'Payments',
-                                onClick: () => navigate('/brand/payments'),
-                            },
-                            {
-                                key: 'profile',
-                                icon: <UserOutlined />,
-                                label: 'Profile',
-                                onClick: () => navigate('/brand/profile'),
-                            },
-                            {
-                                key: 'logout',
-                                icon: <LogoutOutlined />,
-                                label: 'Logout',
-                                onClick: handleLogout,
-                                danger: true
-                            },
-                        ]}
-                    />
-                </Sider>
-                <Layout>
-                    <Header style={{ padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', background: pageBackgroundColor }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Text style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 500 }}>
-                                {(() => {
-                                    let handle = brandProfile?.instagramUrl ? brandProfile.instagramUrl.split('/').filter(Boolean).pop() : brandProfile?.name || user?.email;
-                                    if (handle && !handle.startsWith('@') && !handle.includes('@')) {
-                                        handle = `@${handle}`;
-                                    }
-                                    return handle;
-                                })()}
-                            </Text>
-                            {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.2rem' }} title="Verified Brand" />}
-                        </div>
-                    </Header>
-                    <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
+        <BrandPortalLayout activeMenuKey="dashboard" brandProfileForHeader={brandProfile}>
                         <div style={{ marginBottom: 30 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '3rem' }}>Welcome!</Title>
@@ -326,7 +222,7 @@ export const BrandDashboard = () => {
                             </Col>
 
                             {/* Campaign section: Create campaign + View my campaigns by status */}
-                            <Col span={24}>
+                            <Col span={24} id="brand-my-campaigns">
                                 <Card
                                     title={
                                         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -452,9 +348,6 @@ export const BrandDashboard = () => {
                                 </Card>
                             </Col>
                         </Row>
-                    </Content>
-                </Layout>
-            </Layout>
 
             <Modal title="Invite influencer" open={inviteModalOpen} onCancel={closeInviteModal} footer={null} destroyOnClose width={520}>
                 <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>
@@ -542,6 +435,6 @@ export const BrandDashboard = () => {
                     </Form.Item>
                 </Form>
             </Modal>
-        </ConfigProvider>
+        </BrandPortalLayout>
     )
 }
