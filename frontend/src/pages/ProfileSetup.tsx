@@ -56,6 +56,8 @@ export const ProfileSetup = () => {
                         youtubeHandle: profile.youtubeHandle ?? undefined,
                         tiktokHandle: profile.tiktokHandle ?? undefined,
                         rate: profile.rate ?? undefined,
+                        followerCount: profile.followerCount ?? undefined,
+                        engagementRate: profile.engagementRate ?? undefined,
                         audienceInfo: profile.audienceInfo ?? undefined,
                     })
                 }
@@ -94,6 +96,8 @@ export const ProfileSetup = () => {
                 youtubeHandle: values.youtubeHandle || undefined,
                 tiktokHandle: values.tiktokHandle || undefined,
                 rate: values.rate ?? undefined,
+                followerCount: values.followerCount ?? undefined,
+                engagementRate: values.engagementRate ?? undefined,
                 audienceInfo: values.audienceInfo || undefined,
             }
             await updateMyInfluencerProfile(payload, saveAsDraft)
@@ -296,6 +300,12 @@ export const ProfileSetup = () => {
                                     min={0}
                                     precision={2}
                                 />
+                            </Form.Item>
+                            <Form.Item name="followerCount" label="Follower count (optional)" help="Helps brands filter by reach">
+                                <InputNumber placeholder="e.g. 50000" style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="engagementRate" label="Engagement rate % (optional)" help="e.g. 3.5">
+                                <InputNumber placeholder="e.g. 3.5" style={{ width: '100%' }} min={0} max={100} step={0.1} />
                             </Form.Item>
                             <Form.Item name="audienceInfo" label="Audience info (optional)">
                                 <TextArea rows={4} placeholder="e.g. Demographics, engagement metrics, reach..." />

@@ -38,6 +38,12 @@ public class CollaborationInvitation {
     @Column(name = "proposed_deliverables", columnDefinition = "TEXT")
     private String proposedDeliverables;
 
+    @Column(length = 100)
+    private String platform;
+
+    @Column(name = "expires_at")
+    private Instant expiresAt;
+
     @Column(name = "responded_at")
     private Instant respondedAt;
 
@@ -80,6 +86,10 @@ public class CollaborationInvitation {
     public void setProposedTimeline(String proposedTimeline) { this.proposedTimeline = proposedTimeline; }
     public String getProposedDeliverables() { return proposedDeliverables; }
     public void setProposedDeliverables(String proposedDeliverables) { this.proposedDeliverables = proposedDeliverables; }
+    public String getPlatform() { return platform; }
+    public void setPlatform(String platform) { this.platform = platform; }
+    public Instant getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(Instant expiresAt) { this.expiresAt = expiresAt; }
     public Instant getRespondedAt() { return respondedAt; }
     public void setRespondedAt(Instant respondedAt) { this.respondedAt = respondedAt; }
     public Instant getCreatedAt() { return createdAt; }

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Backend Mock UI – Collabry API Tester</title>
+  <style>
+    :root { --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --success: #3fb950; --danger: #f85149; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; line-height: 1.5; }
+    h1 { font-size: 1.25rem; margin: 0 0 8px; color: var(--accent); }
+    .subtitle { color: var(--muted); font-size: 0.875rem; margin-bottom: 16px; }
+    section { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    section h2 { font-size: 1rem; margin: 0 0 12px; }
+    label { display: block; margin-bottom: 4px; font-size: 0.875rem; color: var(--muted); }
+    input, textarea, select, button { width: 100%; max-width: 400px; padding: 8px 12px; margin-bottom: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); }
+    button { cursor: pointer; font-weight: 600; max-width: 200px; }
+    button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    button.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+    pre { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; overflow: auto; font-size: 0.8rem; white-space: pre-wrap; word-break: break-all; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+    .status { font-size: 0.875rem; margin-top: 8px; }
+    .status.ok { color: var(--success); }
+    .status.err { color: var(--danger); }
+  </style>
+</head>
+<body>
+  <h1>Backend Mock UI – Collabry API Tester</h1>
+  <p class="subtitle">Use this page to verify the backend (influencer search, invitations, withdraw, edit). Start the backend (e.g. port 8080), then log in as a brand user.</p>
+
+  <section>
+    <h2>1. Config &amp; Auth</h2>
+    <label>API base URL</label>
+    <input type="text" id="baseUrl" value="http://localhost:9090" placeholder="http://localhost:9090" />
+    <label>Email (brand user)</label>
+    <input type="text" id="email" placeholder="brand@example.com" />
+    <label>Password</label>
+    <input type="password" id="password" placeholder="password" />
+    <div class="row">
+      <button class="primary" onclick="login()">Login</button>
+      <button onclick="logout()">Clear token</button>
+    </div>
+    <p class="status" id="authStatus"></p>
+  </section>
+
+  <section>
+    <h2>2. Search influencers (GET /api/influencers/search)</h2>
+    <p class="subtitle">Brand only. Optional: niche, location, minFollowers, maxFollowers, minEngagementRate</p>
+    <div class="row">
+      <div><label>Niche</label><input type="text" id="searchNiche" placeholder="Fashion" /></div>
+      <div><label>Location</label><input type="text" id="searchLocation" placeholder="NYC" /></div>
+      <div><label>Min followers</label><input type="number" id="searchMinFollowers" placeholder="1000" /></div>
+      <div><label>Max followers</label><input type="number" id="searchMaxFollowers" placeholder="100000" /></div>
+      <div><label>Min engagement %</label><input type="number" id="searchMinEngagement" step="0.1" placeholder="2.5" /></div>
+    </div>
+    <button class="primary" onclick="searchInfluencers()">Search</button>
+    <p class="status" id="searchStatus"></p>
+    <pre id="searchResult">(no request yet)</pre>
+  </section>
+
+  <section>
+    <h2>3. Sent invitations (GET /api/invitations/sent)</h2>
+    <p class="subtitle">Brand only. Track status: Sent, Accepted, Rejected, Expired, Withdrawn.</p>
+    <button class="primary" onclick="getSentInvitations()">Load sent invitations</button>
+    <p class="status" id="sentStatus"></p>
+    <pre id="sentResult">(no request yet)</pre>
+  </section>
+
+  <section>
+    <h2>4. Send invitation (POST /api/campaigns/:campaignId/invitations)</h2>
+    <p class="subtitle">Campaign details: deliverables, timeline, budget, platform, expiresInDays.</p>
+    <div class="row">
+      <div><label>Campaign ID</label><input type="number" id="invCampaignId" placeholder="1" /></div>
+      <div><label>Influencer ID (user id)</label><input type="number" id="invInfluencerId" placeholder="2" /></div>
+    </div>
+    <label>Message</label><textarea id="invMessage" rows="2" placeholder="Optional message"></textarea>
+    <label>Deliverables</label><input type="text" id="invDeliverables" placeholder="e.g. 2 Reels, 3 Stories" />
+    <label>Timeline</label><input type="text" id="invTimeline" placeholder="e.g. 2 weeks" />
+    <label>Proposed amount ($)</label><input type="number" id="invAmount" step="100" placeholder="1000" />
+    <label>Platform</label><input type="text" id="invPlatform" placeholder="e.g. INSTAGRAM_REEL" />
+    <label>Expires in days</label><input type="number" id="invExpiresDays" value="14" min="1" max="90" />
+    <button class="primary" onclick="createInvitation()">Send invitation</button>
+    <p class="status" id="createStatus"></p>
+    <pre id="createResult">(no request yet)</pre>
+  </section>
+
+  <section>
+    <h2>5. Withdraw invitation (DELETE /api/invitations/:id)</h2>
+    <p class="subtitle">Brand only. Allowed only for PENDING or NEGOTIATING.</p>
+    <label>Invitation ID</label><input type="number" id="withdrawId" placeholder="1" />
+    <button class="danger" onclick="withdrawInvitation()">Withdraw</button>
+    <p class="status" id="withdrawStatus"></p>
+  </section>
+
+  <section>
+    <h2>6. Edit invitation (PUT /api/invitations/:id)</h2>
+    <p class="subtitle">Brand only. Allowed only for PENDING or NEGOTIATING.</p>
+    <label>Invitation ID</label><input type="number" id="editId" placeholder="1" />
+    <label>Message</label><textarea id="editMessage" rows="2"></textarea>
+    <label>Proposed amount ($)</label><input type="number" id="editAmount" step="100" />
+    <label>Timeline</label><input type="text" id="editTimeline" />
+    <label>Deliverables</label><input type="text" id="editDeliverables" />
+    <label>Platform</label><input type="text" id="editPlatform" />
+    <button class="primary" onclick="editInvitation()">Update invitation</button>
+    <p class="status" id="editStatus"></p>
+    <pre id="editResult">(no request yet)</pre>
+  </section>
+
+  <script>
+    function base() { return (document.getElementById('baseUrl').value || '').replace(/\/$/, ''); }
+    function token() { return localStorage.getItem('mockUiToken') || ''; }
+    function headers() {
+      const h = { 'Content-Type': 'application/json' };
+      if (token()) h['Authorization'] = 'Bearer ' + token();
+      return h;
+    }
+    function setAuthStatus(msg, ok) {
+      const el = document.getElementById('authStatus');
+      el.textContent = msg;
+      el.className = 'status ' + (ok ? 'ok' : 'err');
+    }
+    async function login() {
+      const email = document.getElementById('email').value.trim();
+      const pass = document.getElementById('password').value;
+      if (!email || !pass) { setAuthStatus('Enter email and password', false); return; }
+      setAuthStatus('Logging in…', true);
+      try {
+        const r = await fetch(base() + '/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass })
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) { setAuthStatus(data.message || 'Login failed ' + r.status, false); return; }
+        const t = data.token || data.accessToken;
+        if (t) { localStorage.setItem('mockUiToken', t); setAuthStatus('Logged in. Token saved.', true); }
+        else setAuthStatus('No token in response', false);
+      } catch (e) { setAuthStatus('Error: ' + e.message, false); }
+    }
+    function logout() {
+      localStorage.removeItem('mockUiToken');
+      setAuthStatus('Token cleared.', true);
+    }
+    async function searchInfluencers() {
+      const q = new URLSearchParams();
+      const niche = document.getElementById('searchNiche').value.trim();
+      const location = document.getElementById('searchLocation').value.trim();
+      const minF = document.getElementById('searchMinFollowers').value;
+      const maxF = document.getElementById('searchMaxFollowers').value;
+      const minE = document.getElementById('searchMinEngagement').value;
+      if (niche) q.set('niche', niche);
+      if (location) q.set('location', location);
+      if (minF) q.set('minFollowers', minF);
+      if (maxF) q.set('maxFollowers', maxF);
+      if (minE) q.set('minEngagementRate', minE);
+      const url = base() + '/api/influencers/search' + (q.toString() ? '?' + q : '');
+      document.getElementById('searchStatus').textContent = 'Requesting…';
+      try {
+        const r = await fetch(url, { headers: headers() });
+        const data = await r.json().catch(() => ({}));
+        document.getElementById('searchResult').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('searchStatus').textContent = r.ok ? 'OK ' + r.status : (data.message || 'Error ' + r.status);
+        document.getElementById('searchStatus').className = 'status ' + (r.ok ? 'ok' : 'err');
+      } catch (e) {
+        document.getElementById('searchStatus').textContent = 'Error: ' + e.message;
+        document.getElementById('searchStatus').className = 'status err';
+      }
+    }
+    async function getSentInvitations() {
+      document.getElementById('sentStatus').textContent = 'Requesting…';
+      try {
+        const r = await fetch(base() + '/api/invitations/sent', { headers: headers() });
+        const data = await r.json().catch(() => ({}));
+        document.getElementById('sentResult').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('sentStatus').textContent = r.ok ? 'OK ' + r.status : (data.message || 'Error ' + r.status);
+        document.getElementById('sentStatus').className = 'status ' + (r.ok ? 'ok' : 'err');
+      } catch (e) {
+        document.getElementById('sentStatus').textContent = 'Error: ' + e.message;
+        document.getElementById('sentStatus').className = 'status err';
+      }
+    }
+    async function createInvitation() {
+      const campaignId = document.getElementById('invCampaignId').value;
+      const influencerId = document.getElementById('invInfluencerId').value;
+      if (!campaignId || !influencerId) { document.getElementById('createStatus').textContent = 'Set campaign ID and influencer ID'; document.getElementById('createStatus').className = 'status err'; return; }
+      const body = {
+        influencerId: parseInt(influencerId, 10),
+        message: document.getElementById('invMessage').value.trim() || undefined,
+        proposedDeliverables: document.getElementById('invDeliverables').value.trim() || undefined,
+        proposedTimeline: document.getElementById('invTimeline').value.trim() || undefined,
+        proposedAmount: document.getElementById('invAmount').value ? parseFloat(document.getElementById('invAmount').value) : undefined,
+        platform: document.getElementById('invPlatform').value.trim() || undefined,
+        expiresInDays: parseInt(document.getElementById('invExpiresDays').value, 10) || 14
+      };
+      document.getElementById('createStatus').textContent = 'Sending…';
+      try {
+        const r = await fetch(base() + '/api/campaigns/' + campaignId + '/invitations', {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify(body)
+        });
+        const data = await r.json().catch(() => ({}));
+        document.getElementById('createResult').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('createStatus').textContent = r.ok ? 'Created ' + r.status : (data.message || 'Error ' + r.status);
+        document.getElementById('createStatus').className = 'status ' + (r.ok ? 'ok' : 'err');
+      } catch (e) {
+        document.getElementById('createStatus').textContent = 'Error: ' + e.message;
+        document.getElementById('createStatus').className = 'status err';
+      }
+    }
+    async function withdrawInvitation() {
+      const id = document.getElementById('withdrawId').value;
+      if (!id) { document.getElementById('withdrawStatus').textContent = 'Set invitation ID'; document.getElementById('withdrawStatus').className = 'status err'; return; }
+      document.getElementById('withdrawStatus').textContent = 'Requesting…';
+      try {
+        const r = await fetch(base() + '/api/invitations/' + id, { method: 'DELETE', headers: headers() });
+        const data = r.status === 204 ? {} : await r.json().catch(() => ({}));
+        document.getElementById('withdrawStatus').textContent = r.status === 204 ? 'Withdrawn (204)' : (data.message || 'Error ' + r.status);
+        document.getElementById('withdrawStatus').className = 'status ' + (r.status === 204 ? 'ok' : 'err');
+      } catch (e) {
+        document.getElementById('withdrawStatus').textContent = 'Error: ' + e.message;
+        document.getElementById('withdrawStatus').className = 'status err';
+      }
+    }
+    async function editInvitation() {
+      const id = document.getElementById('editId').value;
+      if (!id) { document.getElementById('editStatus').textContent = 'Set invitation ID'; document.getElementById('editStatus').className = 'status err'; return; }
+      const body = {
+        message: document.getElementById('editMessage').value.trim() || undefined,
+        proposedAmount: document.getElementById('editAmount').value ? parseFloat(document.getElementById('editAmount').value) : undefined,
+        proposedTimeline: document.getElementById('editTimeline').value.trim() || undefined,
+        proposedDeliverables: document.getElementById('editDeliverables').value.trim() || undefined,
+        platform: document.getElementById('editPlatform').value.trim() || undefined
+      };
+      document.getElementById('editStatus').textContent = 'Updating…';
+      try {
+        const r = await fetch(base() + '/api/invitations/' + id, {
+          method: 'PUT',
+          headers: headers(),
+          body: JSON.stringify(body)
+        });
+        const data = await r.json().catch(() => ({}));
+        document.getElementById('editResult').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('editStatus').textContent = r.ok ? 'OK ' + r.status : (data.message || 'Error ' + r.status);
+        document.getElementById('editStatus').className = 'status ' + (r.ok ? 'ok' : 'err');
+      } catch (e) {
+        document.getElementById('editStatus').textContent = 'Error: ' + e.message;
+        document.getElementById('editStatus').className = 'status err';
+      }
+    }
+  </script>
+</body>
+</html>

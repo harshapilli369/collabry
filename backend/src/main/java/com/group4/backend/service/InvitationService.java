@@ -62,6 +62,12 @@ public class InvitationService {
         inv.setBrandId(brandId);
         inv.setStatus(InvitationStatus.PENDING);
         inv.setBrandMessage(emptyToNull(request.getMessage()));
+        inv.setProposedAmount(request.getProposedAmount());
+        inv.setProposedTimeline(emptyToNull(request.getProposedTimeline()));
+        inv.setProposedDeliverables(emptyToNull(request.getProposedDeliverables()));
+        inv.setPlatform(emptyToNull(request.getPlatform()));
+        int days = request.getExpiresInDays() != null && request.getExpiresInDays() > 0 ? request.getExpiresInDays() : 14;
+        inv.setExpiresAt(java.time.Instant.now().plusSeconds(days * 86400L));
 
         inv = invitationRepository.save(inv);
         return toResponse(inv);
@@ -72,6 +78,39 @@ public class InvitationService {
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void withdraw(Long invitationId, Long brandId) {
+        CollaborationInvitation inv = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+        if (!inv.getBrandId().equals(brandId)) {
+            throw new IllegalArgumentException("Only the brand that sent the invitation can withdraw it");
+        }
+        if (inv.getStatus() != InvitationStatus.PENDING && inv.getStatus() != InvitationStatus.NEGOTIATING) {
+            throw new IllegalArgumentException("You can only withdraw PENDING or NEGOTIATING invitations");
+        }
+        inv.setStatus(InvitationStatus.WITHDRAWN);
+        invitationRepository.save(inv);
+    }
+
+    @Transactional
+    public InvitationResponse updateInvitation(Long invitationId, Long brandId, UpdateInvitationRequest request) {
+        CollaborationInvitation inv = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+        if (!inv.getBrandId().equals(brandId)) {
+            throw new IllegalArgumentException("Only the brand that sent the invitation can edit it");
+        }
+        if (inv.getStatus() != InvitationStatus.PENDING && inv.getStatus() != InvitationStatus.NEGOTIATING) {
+            throw new IllegalArgumentException("You can only edit PENDING or NEGOTIATING invitations");
+        }
+        if (request.getMessage() != null) inv.setBrandMessage(emptyToNull(request.getMessage()));
+        if (request.getProposedAmount() != null) inv.setProposedAmount(request.getProposedAmount());
+        if (request.getProposedTimeline() != null) inv.setProposedTimeline(emptyToNull(request.getProposedTimeline()));
+        if (request.getProposedDeliverables() != null) inv.setProposedDeliverables(emptyToNull(request.getProposedDeliverables()));
+        if (request.getPlatform() != null) inv.setPlatform(emptyToNull(request.getPlatform()));
+        inv = invitationRepository.save(inv);
+        return toResponse(inv);
     }
 
     public InvitationDetailResponse getInvitationWithCampaignDetails(Long invitationId, Long influencerId) {
@@ -93,6 +132,9 @@ public class InvitationService {
         if (!inv.getInfluencerId().equals(influencerId)) {
             throw new IllegalArgumentException("You are not the invited influencer");
         }
+        if (effectiveStatus(inv) == InvitationStatus.EXPIRED) {
+            throw new IllegalArgumentException("This invitation has expired");
+        }
         if (inv.getStatus() != InvitationStatus.PENDING && inv.getStatus() != InvitationStatus.NEGOTIATING) {
             throw new IllegalArgumentException("You can only respond to PENDING or NEGOTIATING invitations");
         }
@@ -112,6 +154,9 @@ public class InvitationService {
                 .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
         if (!inv.getInfluencerId().equals(influencerId)) {
             throw new IllegalArgumentException("You are not the invited influencer");
+        }
+        if (effectiveStatus(inv) == InvitationStatus.EXPIRED) {
+            throw new IllegalArgumentException("This invitation has expired");
         }
         if (inv.getStatus() != InvitationStatus.PENDING && inv.getStatus() != InvitationStatus.NEGOTIATING) {
             throw new IllegalArgumentException("You can only negotiate on PENDING or NEGOTIATING invitations");
@@ -171,15 +216,25 @@ public class InvitationService {
         r.setCampaignId(inv.getCampaignId());
         r.setInfluencerId(inv.getInfluencerId());
         r.setBrandId(inv.getBrandId());
-        r.setStatus(inv.getStatus());
+        r.setStatus(effectiveStatus(inv));
         r.setBrandMessage(inv.getBrandMessage());
         r.setProposedAmount(inv.getProposedAmount());
         r.setProposedTimeline(inv.getProposedTimeline());
         r.setProposedDeliverables(inv.getProposedDeliverables());
+        r.setPlatform(inv.getPlatform());
+        r.setExpiresAt(inv.getExpiresAt());
         r.setCreatedAt(inv.getCreatedAt());
         r.setUpdatedAt(inv.getUpdatedAt());
         r.setRespondedAt(inv.getRespondedAt());
         return r;
+    }
+
+    private InvitationStatus effectiveStatus(CollaborationInvitation inv) {
+        if (inv.getStatus() == InvitationStatus.PENDING && inv.getExpiresAt() != null
+                && java.time.Instant.now().isAfter(inv.getExpiresAt())) {
+            return InvitationStatus.EXPIRED;
+        }
+        return inv.getStatus();
     }
 
     private InvitationDetailResponse toDetailResponse(CollaborationInvitation inv) {
@@ -188,11 +243,13 @@ public class InvitationService {
         r.setCampaignId(inv.getCampaignId());
         r.setInfluencerId(inv.getInfluencerId());
         r.setBrandId(inv.getBrandId());
-        r.setStatus(inv.getStatus());
+        r.setStatus(effectiveStatus(inv));
         r.setBrandMessage(inv.getBrandMessage());
         r.setProposedAmount(inv.getProposedAmount());
         r.setProposedTimeline(inv.getProposedTimeline());
         r.setProposedDeliverables(inv.getProposedDeliverables());
+        r.setPlatform(inv.getPlatform());
+        r.setExpiresAt(inv.getExpiresAt());
         r.setCreatedAt(inv.getCreatedAt());
         r.setUpdatedAt(inv.getUpdatedAt());
         r.setRespondedAt(inv.getRespondedAt());

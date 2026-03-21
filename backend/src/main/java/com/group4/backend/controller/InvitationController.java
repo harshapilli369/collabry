@@ -37,6 +37,15 @@ public class InvitationController {
         return ResponseEntity.ok(invitationService.getInvitationsForInfluencer(user.getId()));
     }
 
+    @GetMapping("/sent")
+    public ResponseEntity<List<InvitationResponse>> getSentInvitations() {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(invitationService.getInvitationsForBrand(user.getId()));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<InvitationDetailResponse> getInvitationById(@PathVariable Long id) {
         User user = getCurrentUser();
@@ -83,6 +92,26 @@ public class InvitationController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         InvitationResponse response = invitationService.confirmTerms(id, user.getId());
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> withdrawInvitation(@PathVariable Long id) {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        invitationService.withdraw(id, user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<InvitationResponse> updateInvitation(@PathVariable Long id, @RequestBody com.group4.backend.dto.UpdateInvitationRequest request) {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        InvitationResponse response = invitationService.updateInvitation(id, user.getId(), request);
         return ResponseEntity.ok(response);
     }
 

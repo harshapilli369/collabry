@@ -7,10 +7,14 @@ import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.InfluencerProfileRepository;
 import com.group4.backend.repository.UserRepository;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class InfluencerProfileService {
@@ -30,6 +34,42 @@ public class InfluencerProfileService {
     public Optional<InfluencerProfileResponse> getByUserId(Long userId) {
         return influencerProfileRepository.findByUserId(userId)
                 .map(this::toResponse);
+    }
+
+    /**
+     * Search discoverable (complete) influencer profiles by niche, location, followers, engagement rate.
+     * For use by brands to find influencers.
+     */
+    public List<InfluencerProfileResponse> search(String niche, String location, Long minFollowers, Long maxFollowers,
+                                                   java.math.BigDecimal minEngagementRate) {
+        if (minFollowers != null && maxFollowers != null && minFollowers > maxFollowers) {
+            throw new IllegalArgumentException("minFollowers cannot be greater than maxFollowers");
+        }
+        Specification<InfluencerProfile> spec = (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+            predicates.add(cb.isTrue(root.get("isComplete")));
+            if (niche != null && !niche.isBlank()) {
+                String nicheTerm = "%" + niche.trim().toLowerCase() + "%";
+                predicates.add(cb.like(cb.lower(root.get("niche")), nicheTerm));
+            }
+            if (location != null && !location.isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("location")), "%" + location.trim().toLowerCase() + "%"));
+            }
+            if (minFollowers != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("followerCount"), minFollowers));
+            }
+            if (maxFollowers != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("followerCount"), maxFollowers));
+            }
+            if (minEngagementRate != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("engagementRate"), minEngagementRate));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+        return influencerProfileRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"))
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -54,6 +94,8 @@ public class InfluencerProfileService {
         profile.setYoutubeHandle(emptyToNull(request.getYoutubeHandle()));
         profile.setTiktokHandle(emptyToNull(request.getTiktokHandle()));
         profile.setRate(request.getRate());
+        profile.setFollowerCount(request.getFollowerCount());
+        profile.setEngagementRate(request.getEngagementRate());
         profile.setAudienceInfo(emptyToNull(request.getAudienceInfo()));
 
         if (request.isSaveAsDraft()) {
@@ -101,6 +143,8 @@ public class InfluencerProfileService {
         response.setYoutubeHandle(profile.getYoutubeHandle());
         response.setTiktokHandle(profile.getTiktokHandle());
         response.setRate(profile.getRate());
+        response.setFollowerCount(profile.getFollowerCount());
+        response.setEngagementRate(profile.getEngagementRate());
         response.setAudienceInfo(profile.getAudienceInfo());
         response.setComplete(profile.isComplete());
         response.setCreatedAt(profile.getCreatedAt());

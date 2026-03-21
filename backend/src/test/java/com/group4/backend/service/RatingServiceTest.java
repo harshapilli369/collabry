@@ -87,7 +87,7 @@ class RatingServiceTest {
 
     @Test
     void submitRating_whenInvitationNotConfirmed_throws() {
-        confirmedInvitation.setStatus(InvitationStatus.ACCEPTED);
+        confirmedInvitation.setStatus(InvitationStatus.PENDING);
         RatingRequest request = new RatingRequest();
         request.setInvitationId(100L);
         request.setRating(4);
