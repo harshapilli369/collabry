@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Typography, ConfigProvider, Layout, Menu, Card, Row, Col, Button, message, theme, Modal, Form, Input, Rate } from 'antd'
-import { UserOutlined, LogoutOutlined, AppstoreOutlined, DollarOutlined, MailOutlined, TeamOutlined, StarOutlined, CheckCircleFilled, CheckOutlined } from '@ant-design/icons'
+import { Typography, ConfigProvider, Layout, Menu, Card, Button, message, theme, Modal, Form, Input, Rate } from 'antd'
+import { UserOutlined, LogoutOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, StarOutlined, CheckCircleFilled, CheckOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyInvitationsAsBrand, confirmTerms, INVITATION_STATUS_LABELS, type InvitationResponse, type InvitationStatus } from '../services/invitationService'
 import { submitRating, type RatingRequest } from '../services/ratingService'
@@ -10,7 +10,6 @@ const { Title, Text } = Typography
 const { TextArea } = Input
 
 const primaryColor = '#FFFD82'
-const secondaryColor = '#BD72EB'
 const pageBackgroundColor = '#000000'
 
 function formatDate(s: string | undefined) {

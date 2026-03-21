@@ -64,7 +64,7 @@ describe('InfluencerSearch', () => {
   })
 
   it('displays search results and Invite button for each influencer', async () => {
-    const mockInfluencers = [
+    const mockInfluencers: influencerProfileService.InfluencerProfileResponse[] = [
       {
         id: 1,
         userId: 10,
@@ -72,10 +72,10 @@ describe('InfluencerSearch', () => {
         age: 25,
         location: 'NYC',
         niche: 'Fashion',
-        isComplete: true,
+        complete: true,
         followerCount: 50000,
         engagementRate: 3.5,
-      } as influencerProfileService.InfluencerProfileResponse,
+      },
     ]
     mockSearchInfluencers.mockResolvedValue(mockInfluencers)
     renderWithRouter()
@@ -89,7 +89,7 @@ describe('InfluencerSearch', () => {
   })
 
   it('opens invite modal with campaign select when Invite is clicked', async () => {
-    const mockInfluencers = [
+    const mockInfluencers: influencerProfileService.InfluencerProfileResponse[] = [
       {
         id: 1,
         userId: 10,
@@ -97,8 +97,8 @@ describe('InfluencerSearch', () => {
         age: 25,
         location: 'NYC',
         niche: 'Fashion',
-        isComplete: true,
-      } as influencerProfileService.InfluencerProfileResponse,
+        complete: true,
+      },
     ]
     mockSearchInfluencers.mockResolvedValue(mockInfluencers)
     mockGetMyCampaigns.mockResolvedValue([
