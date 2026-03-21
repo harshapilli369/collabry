@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Tabs, Modal, Form, Input, InputNumber, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined, CheckCircleFilled } from '@ant-design/icons'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Tabs, Modal, Form, Input, InputNumber, message, theme, Drawer, Spin, Avatar, Progress, Tag, Divider } from 'antd'
+import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined, CheckCircleFilled, RobotOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile } from '../services/brandService'
 import { getMyCampaigns, CAMPAIGN_STATUS_LABELS, BUDGET_RANGE_OPTIONS, type CampaignResponse, type CampaignStatus } from '../services/campaignService'
 import { createInvitation } from '../services/invitationService'
+import { getCampaignRecommendations, type InfluencerRecommendationDTO } from '../services/recommendationService'
 
 const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -20,6 +21,12 @@ export const BrandDashboard = () => {
     const [inviteCampaignId, setInviteCampaignId] = useState<number | null>(null)
     const [inviteSubmitting, setInviteSubmitting] = useState(false)
     const [inviteForm] = Form.useForm()
+
+    const [aiDrawerOpen, setAiDrawerOpen] = useState(false)
+    const [aiDrawerCampaignId, setAiDrawerCampaignId] = useState<number | null>(null)
+    const [aiRecommendations, setAiRecommendations] = useState<InfluencerRecommendationDTO[]>([])
+    const [aiLoading, setAiLoading] = useState(false)
+
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
 
@@ -84,6 +91,30 @@ export const BrandDashboard = () => {
         } finally {
             setInviteSubmitting(false)
         }
+    }
+
+    const openAiDrawer = async (campaignId: number) => {
+        setAiDrawerCampaignId(campaignId)
+        setAiDrawerOpen(true)
+        setAiLoading(true)
+        setAiRecommendations([])
+        try {
+            const recs = await getCampaignRecommendations(campaignId)
+            setAiRecommendations(recs)
+        } catch (e) {
+            message.error(e instanceof Error ? e.message : 'Failed to load AI recommendations')
+        } finally {
+            setAiLoading(false)
+        }
+    }
+    const closeAiDrawer = () => {
+        setAiDrawerOpen(false)
+        setAiDrawerCampaignId(null)
+    }
+    const handleInviteFromAi = (influencerId: number) => {
+        setInviteCampaignId(aiDrawerCampaignId)
+        inviteForm.setFieldsValue({ influencerId })
+        setInviteModalOpen(true)
     }
 
     const primaryColor = '#FFFD82'; // Neon Yellow-Green
@@ -281,8 +312,9 @@ export const BrandDashboard = () => {
                                                                             </div>
                                                                         </div>
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                            <Text style={{ fontSize: 12, fontWeight: 600, color: primaryColor }}>{CAMPAIGN_STATUS_LABELS[campaign.status]}</Text>
-                                                                            <Button type="default" size="small" icon={<MailOutlined />} onClick={() => openInviteModal(campaign.id)}>Invite</Button>
+                                                                            <Text style={{ fontSize: 12, fontWeight: 600, color: '#aaa' }}>{CAMPAIGN_STATUS_LABELS[campaign.status]}</Text>
+                                                                            <Button type="primary" size="small" icon={<RobotOutlined />} style={{ color: '#000', background: primaryColor, borderColor: primaryColor }} onClick={() => openAiDrawer(campaign.id)}>AI Match</Button>
+                                                                            <Button type="default" size="small" style={{ background: 'transparent', color: '#fff', borderColor: '#555' }} icon={<MailOutlined />} onClick={() => openInviteModal(campaign.id)}>Invite</Button>
                                                                         </div>
                                                                     </div>
                                                                 </Card>
@@ -321,11 +353,102 @@ export const BrandDashboard = () => {
                         <Input.TextArea rows={3} placeholder="Personal message to the influencer" />
                     </Form.Item>
                     <Form.Item>
-                        <Button type="primary" htmlType="submit" loading={inviteSubmitting} style={{ color: '#000000' }}>Send invitation</Button>
+                        <Button type="primary" htmlType="submit" loading={inviteSubmitting} style={{ color: '#000' }}>Send invitation</Button>
                         <Button style={{ marginLeft: 8 }} onClick={closeInviteModal}>Cancel</Button>
                     </Form.Item>
                 </Form>
             </Modal>
+
+            <Drawer
+                title={
+                    <span style={{ color: primaryColor, fontSize: '1.2rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <RobotOutlined />
+                        AI Matchmaker
+                    </span>
+                }
+                placement="right"
+                onClose={closeAiDrawer}
+                open={aiDrawerOpen}
+                width={550}
+                styles={{ body: { background: '#0a0a0a', color: '#fff', padding: 24 }, header: { background: '#111', borderBottom: '1px solid #333' } }}
+            >
+                {aiLoading ? (
+                    <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                        <Spin size="large" />
+                        <div style={{ marginTop: 24, color: '#aaa', fontSize: 16 }}>Scanning influencer dataset...</div>
+                        <div style={{ marginTop: 8, color: '#666', fontSize: 13 }}>Analyzing campaign metrics, niche resonance, and engagement rates</div>
+                    </div>
+                ) : aiRecommendations.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '100px 0', color: '#aaa' }}>
+                        <RobotOutlined style={{ fontSize: 40, opacity: 0.2, marginBottom: 16 }} />
+                        <div>No optimal matches found for this campaign's criteria.</div>
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <Text style={{ color: '#aaa', fontSize: 14 }}>We analyzed your campaign metrics against available influencers. Here are your top algorithmic matches:</Text>
+                        
+                        {aiRecommendations.map((rec, idx) => (
+                            <Card 
+                                key={rec.influencerId} 
+                                bordered={false} 
+                                style={{ 
+                                    background: 'linear-gradient(145deg, #1c1c1c 0%, #151515 100%)', 
+                                    borderRadius: 16,
+                                    border: idx === 0 ? `1px solid ${primaryColor}` : '1px solid #2a2a2a',
+                                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                                    overflow: 'hidden'
+                                }}
+                                bodyStyle={{ padding: idx === 0 ? 0 : 20 }}
+                            >
+                                {idx === 0 && (
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                        <div style={{ background: primaryColor, color: '#000', fontSize: 11, fontWeight: 'bold', padding: '4px 12px', borderBottomLeftRadius: 12 }}>
+                                            TOP MATCH
+                                        </div>
+                                    </div>
+                                )}
+                                <div style={{ display: 'flex', gap: 20, padding: idx === 0 ? '8px 20px 20px' : 0 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Progress 
+                                            type="circle" 
+                                            percent={rec.matchScore} 
+                                            size={70} 
+                                            strokeWidth={8}
+                                            strokeColor={
+                                                rec.matchScore >= 90 ? { '0%': '#108ee9', '100%': primaryColor } 
+                                                : rec.matchScore >= 75 ? { '0%': '#faad14', '100%': primaryColor } 
+                                                : '#faad14'
+                                            } 
+                                            format={(percent) => <span style={{ color: '#fff', fontSize: '18px', fontWeight: 800 }}>{percent}%</span>}
+                                        />
+                                        <Text style={{ color: '#888', fontSize: 11, marginTop: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>Match</Text>
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                                <Avatar src={rec.profilePictureUrl || undefined} icon={!rec.profilePictureUrl ? <UserOutlined /> : undefined} size={50} style={{ border: `2px solid ${primaryColor}40` }} />
+                                                <div>
+                                                    <div style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>{rec.name || `Influencer #${rec.influencerId}`}</div>
+                                                    {rec.niche && <Tag style={{ marginTop: 6, background: '#112233', border: '1px solid #1890ff', color: '#40a9ff', borderRadius: 12, padding: '0 8px' }}>{rec.niche}</Tag>}
+                                                </div>
+                                            </div>
+                                            <Button type="primary" onClick={() => handleInviteFromAi(rec.influencerId)} style={{ background: primaryColor, color: '#000', fontWeight: 600, borderRadius: 20, padding: '0 16px', border: 'none' }}>
+                                                Invite
+                                            </Button>
+                                        </div>
+                                        <Divider style={{ margin: '16px 0', borderColor: '#2a2a2a' }} />
+                                        <div style={{ background: '#000000', padding: '12px 16px', borderRadius: 8, borderLeft: `3px solid ${primaryColor}` }}>
+                                            <Text style={{ color: '#ccc', fontSize: 13, lineHeight: 1.5 }}>
+                                                {rec.reason}
+                                            </Text>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+            </Drawer>
         </ConfigProvider>
     )
 }

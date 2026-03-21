@@ -22,11 +22,11 @@ public class GroqApiClient {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    public boolean isConfigured() {
+        return apiKey != null && !"dummy".equals(apiKey) && !apiKey.isBlank();
+    }
+
     public String getChatCompletion(String prompt) {
-        if ("dummy".equals(apiKey)) {
-            System.err.println("Groq API key is 'dummy'. AI recommendations will return empty.");
-            return "{\"recommendations\": []}";
-        }
         
         String url = "https://api.groq.com/openai/v1/chat/completions";
 
@@ -39,7 +39,7 @@ public class GroqApiClient {
         message.put("content", prompt);
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "llama3-8b-8192");
+        requestBody.put("model", "llama-3.3-70b-versatile");
         requestBody.put("messages", List.of(message));
         requestBody.put("response_format", Map.of("type", "json_object"));
         requestBody.put("temperature", 0.1);
