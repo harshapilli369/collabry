@@ -3,6 +3,7 @@ package com.group4.backend.service;
 import com.group4.backend.dto.*;
 import com.group4.backend.model.*;
 import com.group4.backend.repository.CampaignRepository;
+import com.group4.backend.repository.InfluencerRatingRepository;
 import com.group4.backend.repository.InvitationRepository;
 import com.group4.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +38,8 @@ class InvitationServiceTest {
     private UserRepository userRepository;
     @Mock
     private CampaignService campaignService;
+    @Mock
+    private InfluencerRatingRepository influencerRatingRepository;
 
     @InjectMocks
     private InvitationService invitationService;
@@ -66,6 +70,8 @@ class InvitationServiceTest {
         invitation.setStatus(InvitationStatus.PENDING);
         invitation.setBrandMessage("Join us");
         invitation.setCreatedAt(Instant.now());
+
+        lenient().when(influencerRatingRepository.findByInvitationId(anyLong())).thenReturn(Optional.empty());
     }
 
     @Test

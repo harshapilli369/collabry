@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, InputNumber, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import { Form, Input, Button, Typography, ConfigProvider, Layout, Menu, Select, message, InputNumber, theme, Card, Alert, Table, Modal } from 'antd'
+import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, ArrowLeftOutlined, MailOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
     createCampaign,
@@ -8,7 +8,10 @@ import {
     CAMPAIGN_GOAL_OPTIONS,
     PREFERRED_CONTENT_OPTIONS,
     type CampaignRequest,
+    type CampaignResponse,
 } from '../services/campaignService'
+import { createInvitation } from '../services/invitationService'
+import { userService, type InfluencerSearchResult } from '../services/userService'
 
 const { Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -20,8 +23,27 @@ const cardBackgroundColor = '#141414'
 
 export const CreateCampaign = () => {
     const [form] = Form.useForm<CampaignRequest & { preferredContentTypesList?: string[] }>()
+    const [inviteForm] = Form.useForm<{ influencerId: number; message?: string }>()
     const [loading, setLoading] = useState(false)
+    const [createdCampaign, setCreatedCampaign] = useState<CampaignResponse | null>(null)
+    const [inviteSubmitting, setInviteSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState<string | null>(null)
+    const [findIdModalOpen, setFindIdModalOpen] = useState(false)
+    const [influencerList, setInfluencerList] = useState<InfluencerSearchResult[]>([])
+    const [influencerListLoading, setInfluencerListLoading] = useState(false)
     const navigate = useNavigate()
+
+    const openFindIdModal = () => {
+        setFindIdModalOpen(true)
+        setInfluencerListLoading(true)
+        userService.listInfluencers()
+            .then(setInfluencerList)
+            .catch(() => {
+                message.error('Failed to load influencers')
+                setInfluencerList([])
+            })
+            .finally(() => setInfluencerListLoading(false))
+    }
 
     const onFinish = async (values: CampaignRequest & { preferredContentTypesList?: string[] }) => {
         setLoading(true)
@@ -38,16 +60,45 @@ export const CreateCampaign = () => {
                 endDate: values.endDate || undefined,
                 numberOfInfluencers: values.numberOfInfluencers,
             }
-            await createCampaign(payload)
-            message.success('Campaign created successfully')
-            setTimeout(() => {
-                navigate('/brand/dashboard', { replace: true })
-            }, 300)
+            setSubmitError(null)
+            const campaign = await createCampaign(payload)
+            if (campaign?.id != null) {
+                setCreatedCampaign(campaign)
+                message.success('Campaign created successfully')
+                inviteForm.resetFields()
+            } else {
+                const err = 'Invalid response from server. Please try again.'
+                setSubmitError(err)
+                message.error(err)
+            }
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Failed to create campaign'
+            setSubmitError(msg)
             message.error(msg)
+        } finally {
             setLoading(false)
         }
+    }
+
+    const onInviteSubmit = async (values: { influencerId: number; message?: string }) => {
+        if (!createdCampaign) return
+        setInviteSubmitting(true)
+        try {
+            await createInvitation(createdCampaign.id, {
+                influencerId: values.influencerId,
+                message: values.message?.trim() || undefined,
+            })
+            message.success('Invitation sent to influencer')
+            inviteForm.resetFields()
+        } catch (e) {
+            message.error(e instanceof Error ? e.message : 'Failed to send invitation')
+        } finally {
+            setInviteSubmitting(false)
+        }
+    }
+
+    const goToDashboard = () => {
+        navigate('/brand/dashboard', { replace: true })
     }
 
     const handleLogout = () => {
@@ -135,77 +186,159 @@ export const CreateCampaign = () => {
                             </Text>
                         </div>
 
-                        <Form
-                            form={form}
-                            layout="vertical"
-                            onFinish={onFinish}
-                            style={{ maxWidth: 640 }}
-                        >
-                            <Title level={5} style={{ color: '#ccc', marginTop: 0 }}>Required</Title>
-                            <Form.Item
-                                name="name"
-                                label="Campaign name"
-                                rules={[{ required: true, message: 'Campaign name is required' }]}
+                        {!createdCampaign ? (
+                            <Form
+                                form={form}
+                                layout="vertical"
+                                onFinish={onFinish}
+                                style={{ maxWidth: 640 }}
                             >
-                                <Input placeholder="e.g. Spring Collection Launch 2025" />
-                            </Form.Item>
-                            <Form.Item
-                                name="budgetRange"
-                                label="Budget range"
-                                rules={[{ required: true, message: 'Budget range is required' }]}
-                            >
-                                <Select
-                                    placeholder="Select campaign budget range"
-                                    options={BUDGET_RANGE_OPTIONS}
-                                />
-                            </Form.Item>
-
-                            <Title level={5} style={{ color: '#ccc', marginTop: 24 }}>Optional</Title>
-                            <Form.Item name="description" label="Description">
-                                <TextArea rows={4} placeholder="Describe the campaign, deliverables, and key messages" />
-                            </Form.Item>
-                            <Form.Item name="campaignGoal" label="Campaign goal">
-                                <Select
-                                    placeholder="Select primary goal"
-                                    allowClear
-                                    options={CAMPAIGN_GOAL_OPTIONS}
-                                />
-                            </Form.Item>
-                            <Form.Item
-                                name="preferredContentTypesList"
-                                label="Preferred content types"
-                            >
-                                <Select
-                                    mode="multiple"
-                                    placeholder="Select content types (e.g. Reels, YouTube)"
-                                    allowClear
-                                    options={PREFERRED_CONTENT_OPTIONS}
-                                />
-                            </Form.Item>
-                            <Form.Item name="startDate" label="Start date">
-                                <Input type="date" />
-                            </Form.Item>
-                            <Form.Item name="endDate" label="End date">
-                                <Input type="date" />
-                            </Form.Item>
-                            <Form.Item
-                                name="numberOfInfluencers"
-                                label="Number of influencers"
-                            >
-                                <InputNumber min={1} placeholder="e.g. 5" style={{ width: '100%' }} />
-                            </Form.Item>
-
-                            <Form.Item style={{ marginTop: 32 }}>
-                                <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    loading={loading}
-                                    style={{ minWidth: 160, fontWeight: 600, color: '#000000' }}
+                                {submitError && (
+                                    <Alert
+                                        type="error"
+                                        message={submitError}
+                                        showIcon
+                                        closable
+                                        onClose={() => setSubmitError(null)}
+                                        style={{ marginBottom: 16 }}
+                                    />
+                                )}
+                                <Title level={5} style={{ color: '#ccc', marginTop: 0 }}>Required</Title>
+                                <Form.Item
+                                    name="name"
+                                    label="Campaign name"
+                                    rules={[{ required: true, message: 'Campaign name is required' }]}
                                 >
-                                    Create campaign
-                                </Button>
-                            </Form.Item>
-                        </Form>
+                                    <Input placeholder="e.g. Spring Collection Launch 2025" />
+                                </Form.Item>
+                                <Form.Item
+                                    name="budgetRange"
+                                    label="Budget range"
+                                    rules={[{ required: true, message: 'Budget range is required' }]}
+                                >
+                                    <Select
+                                        placeholder="Select campaign budget range"
+                                        options={BUDGET_RANGE_OPTIONS}
+                                    />
+                                </Form.Item>
+
+                                <Title level={5} style={{ color: '#ccc', marginTop: 24 }}>Optional</Title>
+                                <Form.Item name="description" label="Description">
+                                    <TextArea rows={4} placeholder="Describe the campaign, deliverables, and key messages" />
+                                </Form.Item>
+                                <Form.Item name="campaignGoal" label="Campaign goal">
+                                    <Select
+                                        placeholder="Select primary goal"
+                                        allowClear
+                                        options={CAMPAIGN_GOAL_OPTIONS}
+                                    />
+                                </Form.Item>
+                                <Form.Item
+                                    name="preferredContentTypesList"
+                                    label="Preferred content types"
+                                >
+                                    <Select
+                                        mode="multiple"
+                                        placeholder="Select content types (e.g. Reels, YouTube)"
+                                        allowClear
+                                        options={PREFERRED_CONTENT_OPTIONS}
+                                    />
+                                </Form.Item>
+                                <Form.Item name="startDate" label="Start date">
+                                    <Input type="date" />
+                                </Form.Item>
+                                <Form.Item name="endDate" label="End date">
+                                    <Input type="date" />
+                                </Form.Item>
+                                <Form.Item
+                                    name="numberOfInfluencers"
+                                    label="Number of influencers"
+                                >
+                                    <InputNumber min={1} placeholder="e.g. 5" style={{ width: '100%' }} />
+                                </Form.Item>
+
+                                <Form.Item style={{ marginTop: 32 }}>
+                                    <Button
+                                        type="primary"
+                                        htmlType="submit"
+                                        loading={loading}
+                                        style={{ minWidth: 160, fontWeight: 600, color: '#000000' }}
+                                    >
+                                        Create campaign
+                                    </Button>
+                                </Form.Item>
+                            </Form>
+                        ) : (
+                            <div style={{ maxWidth: 640 }}>
+                                <Card
+                                    style={{ marginBottom: 24, borderColor: primaryColor, borderWidth: 1 }}
+                                    styles={{ body: { padding: 24 } }}
+                                >
+                                    <Title level={5} style={{ color: primaryColor, marginTop: 0 }}>
+                                        Campaign &quot;{createdCampaign.name}&quot; created
+                                    </Title>
+                                    <Text style={{ color: '#aaa', display: 'block', marginBottom: 24 }}>
+                                        You can invite an influencer now, or go to the Dashboard and use the Invite button on your campaign card anytime.
+                                    </Text>
+
+                                    <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>
+                                        <Form.Item
+                                            name="influencerId"
+                                            label={
+                                                <span>
+                                                    Influencer user ID
+                                                    <Button type="link" size="small" onClick={openFindIdModal} style={{ paddingLeft: 8 }}>
+                                                        Find user ID
+                                                    </Button>
+                                                </span>
+                                            }
+                                            rules={[{ required: true, message: 'Enter the influencer’s user ID' }]}
+                                        >
+                                            <InputNumber min={1} step={1} placeholder="e.g. 2" style={{ width: '100%' }} />
+                                        </Form.Item>
+                                        <Form.Item name="message" label="Message (optional)">
+                                            <TextArea rows={3} placeholder="Personal message to the influencer" />
+                                        </Form.Item>
+                                        <Form.Item style={{ marginBottom: 0 }}>
+                                            <Button
+                                                type="primary"
+                                                htmlType="submit"
+                                                loading={inviteSubmitting}
+                                                icon={<MailOutlined />}
+                                                style={{ marginRight: 8, color: '#000000' }}
+                                            >
+                                                Send invitation
+                                            </Button>
+                                            <Button type="default" onClick={goToDashboard}>
+                                                Skip — go to Dashboard
+                                            </Button>
+                                        </Form.Item>
+                                    </Form>
+                                </Card>
+                            </div>
+                        )}
+
+            <Modal
+                title="Influencer user IDs"
+                open={findIdModalOpen}
+                onCancel={() => setFindIdModalOpen(false)}
+                footer={<Button onClick={() => setFindIdModalOpen(false)}>Close</Button>}
+                width={560}
+            >
+                <p style={{ color: '#666', marginBottom: 12 }}>Copy the ID and paste it into the invite form.</p>
+                <Table
+                    size="small"
+                    loading={influencerListLoading}
+                    dataSource={influencerList}
+                    rowKey="id"
+                    columns={[
+                        { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
+                        { title: 'Email', dataIndex: 'email', key: 'email' },
+                        { title: 'Name', dataIndex: 'displayName', key: 'displayName' },
+                    ]}
+                    pagination={influencerList.length <= 10 ? false : { pageSize: 10 }}
+                />
+            </Modal>
                     </Content>
                 </Layout>
             </Layout>

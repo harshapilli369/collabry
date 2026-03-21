@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tabs, Modal, Form, Input, InputNumber, Select, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined, SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Tabs, Modal, Form, Input, InputNumber, Select, Table, message, theme } from 'antd'
+import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, UnorderedListOutlined, DollarOutlined, MailOutlined, SearchOutlined, EditOutlined, DeleteOutlined, CheckCircleFilled, TeamOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile } from '../services/brandService'
 import { getMyCampaigns, CAMPAIGN_STATUS_LABELS, BUDGET_RANGE_OPTIONS, PREFERRED_CONTENT_OPTIONS, type CampaignResponse, type CampaignStatus } from '../services/campaignService'
@@ -14,6 +14,7 @@ import {
     type InvitationRequest,
     type UpdateInvitationRequest,
 } from '../services/invitationService'
+import { userService, type InfluencerSearchResult } from '../services/userService'
 
 const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -22,12 +23,16 @@ const STATUS_ORDER: CampaignStatus[] = ['DRAFT', 'ACTIVE', 'COMPLETED', 'CANCELL
 export const BrandDashboard = () => {
     const navigate = useNavigate()
     const [profileCheckDone, setProfileCheckDone] = useState(false)
+    const [brandProfile, setBrandProfile] = useState<any>(null)
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
     const [campaignsLoading, setCampaignsLoading] = useState(false)
     const [inviteModalOpen, setInviteModalOpen] = useState(false)
     const [inviteCampaignId, setInviteCampaignId] = useState<number | null>(null)
     const [inviteSubmitting, setInviteSubmitting] = useState(false)
     const [inviteForm] = Form.useForm()
+    const [findIdModalOpen, setFindIdModalOpen] = useState(false)
+    const [influencerList, setInfluencerList] = useState<InfluencerSearchResult[]>([])
+    const [influencerListLoading, setInfluencerListLoading] = useState(false)
     const [sentInvitations, setSentInvitations] = useState<InvitationResponse[]>([])
     const [sentInvitationsLoading, setSentInvitationsLoading] = useState(false)
     const [editModalOpen, setEditModalOpen] = useState(false)
@@ -45,9 +50,10 @@ export const BrandDashboard = () => {
         getMyBrandProfile()
             .then((profile) => {
                 if (profile == null) {
-                    navigate('/brand/profile', { replace: true })
+                    navigate('/brand/profile/edit', { replace: true })
                     return
                 }
+                setBrandProfile(profile)
                 setProfileCheckDone(true)
             })
             .catch(() => {
@@ -89,6 +95,18 @@ export const BrandDashboard = () => {
         setInviteCampaignId(campaignId)
         inviteForm.resetFields()
         setInviteModalOpen(true)
+    }
+
+    const openFindIdModal = () => {
+        setFindIdModalOpen(true)
+        setInfluencerListLoading(true)
+        userService.listInfluencers()
+            .then(setInfluencerList)
+            .catch(() => {
+                message.error('Failed to load influencers')
+                setInfluencerList([])
+            })
+            .finally(() => setInfluencerListLoading(false))
     }
     const closeInviteModal = () => {
         setInviteModalOpen(false)
@@ -230,6 +248,12 @@ export const BrandDashboard = () => {
                                 onClick: () => navigate('/brand/influencers'),
                             },
                             {
+                                key: 'collaborations',
+                                icon: <TeamOutlined />,
+                                label: 'Collaborations',
+                                onClick: () => navigate('/brand/collaborations'),
+                            },
+                            {
                                 key: 'payments',
                                 icon: <DollarOutlined />,
                                 label: 'Payments',
@@ -253,14 +277,24 @@ export const BrandDashboard = () => {
                 </Sider>
                 <Layout>
                     <Header style={{ padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', background: pageBackgroundColor }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-
-                            <Avatar size="large" icon={<UserOutlined />} style={{ backgroundColor: primaryColor, color: '#000' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Text style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 500 }}>
+                                {(() => {
+                                    let handle = brandProfile?.instagramUrl ? brandProfile.instagramUrl.split('/').filter(Boolean).pop() : brandProfile?.name || user?.email;
+                                    if (handle && !handle.startsWith('@') && !handle.includes('@')) {
+                                        handle = `@${handle}`;
+                                    }
+                                    return handle;
+                                })()}
+                            </Text>
+                            {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.2rem' }} title="Verified Brand" />}
                         </div>
                     </Header>
                     <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
                         <div style={{ marginBottom: 30 }}>
-                            <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '3rem' }}>Welcome!</Title>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '3rem' }}>Welcome!</Title>
+                            </div>
                             <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>Overview of your improved brand performance.</Text>
                         </div>
 
@@ -303,7 +337,14 @@ export const BrandDashboard = () => {
                                     bordered={false}
                                     style={{ borderRadius: 12 }}
                                     extra={
-                                        <Button type="primary" icon={<PlusCircleOutlined />} onClick={() => navigate('/brand/campaigns/create')} style={{ color: '#000000' }}>
+                                        <Button 
+                                            type="primary" 
+                                            icon={<PlusCircleOutlined />} 
+                                            onClick={() => navigate('/brand/campaigns/create')} 
+                                            style={{ color: '#000000' }}
+                                            disabled={!user?.isVerified}
+                                            title={!user?.isVerified ? "Only verified brands can create campaigns" : ""}
+                                        >
                                             Create campaign
                                         </Button>
                                     }
@@ -417,7 +458,18 @@ export const BrandDashboard = () => {
 
             <Modal title="Invite influencer" open={inviteModalOpen} onCancel={closeInviteModal} footer={null} destroyOnClose width={520}>
                 <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>
-                    <Form.Item name="influencerId" label="Influencer user ID" rules={[{ required: true, message: 'Enter the influencer’s user ID' }]}>
+                    <Form.Item
+                        name="influencerId"
+                        label={
+                            <span>
+                                Influencer user ID
+                                <Button type="link" size="small" onClick={openFindIdModal} style={{ paddingLeft: 8 }}>
+                                    Find user ID
+                                </Button>
+                            </span>
+                        }
+                        rules={[{ required: true, message: 'Enter the influencer’s user ID' }]}
+                    >
                         <InputNumber min={1} step={1} style={{ width: '100%' }} placeholder="e.g. 2" />
                     </Form.Item>
                     <Form.Item name="message" label="Message (optional)">
@@ -443,6 +495,28 @@ export const BrandDashboard = () => {
                         <Button style={{ marginLeft: 8 }} onClick={closeInviteModal}>Cancel</Button>
                     </Form.Item>
                 </Form>
+            </Modal>
+
+            <Modal
+                title="Influencer user IDs"
+                open={findIdModalOpen}
+                onCancel={() => setFindIdModalOpen(false)}
+                footer={<Button onClick={() => setFindIdModalOpen(false)}>Close</Button>}
+                width={560}
+            >
+                <p style={{ color: '#666', marginBottom: 12 }}>Copy the ID and paste it into the invite form.</p>
+                <Table
+                    size="small"
+                    loading={influencerListLoading}
+                    dataSource={influencerList}
+                    rowKey="id"
+                    columns={[
+                        { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
+                        { title: 'Email', dataIndex: 'email', key: 'email' },
+                        { title: 'Name', dataIndex: 'displayName', key: 'displayName' },
+                    ]}
+                    pagination={influencerList.length <= 10 ? false : { pageSize: 10 }}
+                />
             </Modal>
 
             <Modal title="Edit invitation" open={editModalOpen} onCancel={closeEditModal} footer={null} destroyOnClose width={520}>

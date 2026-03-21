@@ -27,6 +27,16 @@ export interface InfluencerProfileRequest {
     saveAsDraft?: boolean;
 }
 
+export interface RatingResponse {
+    id: number;
+    invitationId: number;
+    brandId: number;
+    influencerId: number;
+    rating: number;
+    review?: string;
+    createdAt?: string;
+}
+
 export interface InfluencerProfileResponse {
     id: number;
     userId: number;
@@ -43,9 +53,12 @@ export interface InfluencerProfileResponse {
     followerCount?: number;
     engagementRate?: number;
     audienceInfo?: string;
-    isComplete: boolean;
+    complete: boolean;
     createdAt?: string;
     updatedAt?: string;
+    averageRating?: number;
+    totalRatings?: number;
+    recentReviews?: RatingResponse[];
 }
 
 export interface InfluencerSearchParams {

@@ -2,6 +2,7 @@ package com.group4.backend.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public class InfluencerProfileResponse {
 
@@ -23,6 +24,9 @@ public class InfluencerProfileResponse {
     private boolean isComplete;
     private Instant createdAt;
     private Instant updatedAt;
+    private Double averageRating;
+    private Integer totalRatings;
+    private List<RatingResponse> recentReviews;
 
     public InfluencerProfileResponse() {
     }
@@ -80,4 +84,11 @@ public class InfluencerProfileResponse {
 
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+
+    public Double getAverageRating() { return averageRating; }
+    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
+    public Integer getTotalRatings() { return totalRatings; }
+    public void setTotalRatings(Integer totalRatings) { this.totalRatings = totalRatings; }
+    public List<RatingResponse> getRecentReviews() { return recentReviews; }
+    public void setRecentReviews(List<RatingResponse> recentReviews) { this.recentReviews = recentReviews; }
 }

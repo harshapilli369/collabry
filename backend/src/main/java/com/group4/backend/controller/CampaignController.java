@@ -9,6 +9,8 @@ import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.service.CampaignService;
 import com.group4.backend.service.InvitationService;
+import com.group4.backend.service.AiRecommendationService;
+import com.group4.backend.dto.InfluencerRecommendationDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,20 +26,28 @@ import java.util.Map;
 @RequestMapping("/api/campaigns")
 public class CampaignController {
 
+    /** Test user allowed to create campaigns without verification. */
+    private static final String TEST_BRAND_EMAIL = "brand@collabry";
+
     private final CampaignService campaignService;
     private final InvitationService invitationService;
     private final UserRepository userRepository;
+    private final AiRecommendationService aiRecommendationService;
 
-    public CampaignController(CampaignService campaignService, InvitationService invitationService, UserRepository userRepository) {
+    public CampaignController(CampaignService campaignService, InvitationService invitationService, UserRepository userRepository, AiRecommendationService aiRecommendationService) {
         this.campaignService = campaignService;
         this.invitationService = invitationService;
         this.userRepository = userRepository;
+        this.aiRecommendationService = aiRecommendationService;
     }
 
     @PostMapping
     public ResponseEntity<CampaignResponse> create(@Valid @RequestBody CampaignRequest request) {
         User user = getCurrentUser();
         if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (!isAllowedToCreateCampaigns(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         CampaignResponse response = campaignService.create(user.getId(), request);
@@ -59,8 +69,24 @@ public class CampaignController {
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+        if (!isAllowedToCreateCampaigns(user)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         InvitationResponse response = invitationService.createInvitation(user.getId(), campaignId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{campaignId}/recommendations")
+    public ResponseEntity<List<InfluencerRecommendationDTO>> getRecommendations(@PathVariable Long campaignId) {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (!isAllowedToCreateCampaigns(user)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        List<InfluencerRecommendationDTO> recommendations = aiRecommendationService.getRecommendations(campaignId);
+        return ResponseEntity.ok(recommendations);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -75,6 +101,10 @@ public class CampaignController {
                 .reduce((a, b) -> a + "; " + b)
                 .orElse("Validation failed");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", message));
+    }
+
+    private boolean isAllowedToCreateCampaigns(User user) {
+        return user.isVerified() || TEST_BRAND_EMAIL.equalsIgnoreCase(user.getEmail());
     }
 
     private User getCurrentUser() {

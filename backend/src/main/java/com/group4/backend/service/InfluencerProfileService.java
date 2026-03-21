@@ -21,10 +21,14 @@ public class InfluencerProfileService {
 
     private final InfluencerProfileRepository influencerProfileRepository;
     private final UserRepository userRepository;
+    private final RatingService ratingService;
 
-    public InfluencerProfileService(InfluencerProfileRepository influencerProfileRepository, UserRepository userRepository) {
+    public InfluencerProfileService(InfluencerProfileRepository influencerProfileRepository,
+                                   UserRepository userRepository,
+                                   RatingService ratingService) {
         this.influencerProfileRepository = influencerProfileRepository;
         this.userRepository = userRepository;
+        this.ratingService = ratingService;
     }
 
     public Optional<InfluencerProfileResponse> getByUserId(Long userId) {
@@ -145,6 +149,10 @@ public class InfluencerProfileService {
         response.setComplete(profile.isComplete());
         response.setCreatedAt(profile.getCreatedAt());
         response.setUpdatedAt(profile.getUpdatedAt());
+        long influencerUserId = profile.getUserId();
+        response.setAverageRating(ratingService.getAverageRating(influencerUserId));
+        response.setTotalRatings(ratingService.getRatingsForInfluencer(influencerUserId).size());
+        response.setRecentReviews(ratingService.getRecentReviews(influencerUserId, 5));
         return response;
     }
 }

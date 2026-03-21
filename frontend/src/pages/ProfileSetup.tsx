@@ -8,6 +8,7 @@ import {
     type InfluencerProfileRequest,
     type InfluencerProfileResponse,
 } from '../services/influencerProfileService'
+import { userService } from '../services/userService'
 
 const { Title, Text } = Typography
 const { TextArea } = Input
@@ -22,6 +23,7 @@ export const ProfileSetup = () => {
     const [current, setCurrent] = useState(0)
     const [loading, setLoading] = useState(false)
     const [fetching, setFetching] = useState(true)
+    const [isEdit, setIsEdit] = useState(false)
     const [form] = Form.useForm<InfluencerProfileRequest & { saveAsDraft?: boolean }>()
     const navigate = useNavigate()
 
@@ -42,6 +44,7 @@ export const ProfileSetup = () => {
         getMyInfluencerProfile()
             .then((profile: InfluencerProfileResponse | null) => {
                 if (profile) {
+                    setIsEdit(true)
                     form.setFieldsValue({
                         name: profile.name,
                         age: profile.age,
@@ -98,8 +101,8 @@ export const ProfileSetup = () => {
                 audienceInfo: values.audienceInfo || undefined,
             }
             await updateMyInfluencerProfile(payload, saveAsDraft)
-            message.success(saveAsDraft ? 'Profile saved as draft' : 'Profile completed!')
-            navigate('/influencer/dashboard', { replace: true })
+            message.success(saveAsDraft ? 'Profile saved as draft' : 'Profile saved!')
+            navigate('/influencer/profile', { replace: true })
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Failed to save profile'
             message.error(msg)
@@ -126,6 +129,22 @@ export const ProfileSetup = () => {
         }
         const values = form.getFieldsValue()
         await onFinish(values, false)
+    }
+
+    const handleConnect = async (platform: string, handle: string | undefined) => {
+        if (!handle) {
+            message.warning(`Please enter a handle for ${platform}`)
+            return
+        }
+        try {
+            await userService.linkSocialAccount(platform, handle)
+            const u = JSON.parse(localStorage.getItem('user') || '{}')
+            u.isVerified = true
+            localStorage.setItem('user', JSON.stringify(u))
+            message.success(`Successfully connected ${platform}! Your profile is now verified. Remember to click "Save Changes" at the bottom to save your handles!`)
+        } catch (e) {
+            message.error(`Failed to connect ${platform}`)
+        }
     }
 
     const primaryColor = '#FFFD82'
@@ -173,9 +192,11 @@ export const ProfileSetup = () => {
                 >
                     <div style={{ textAlign: 'center', marginBottom: 32 }}>
                         <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, marginBottom: 16, borderRadius: 8 }} />
-                        <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>
-                            Complete your profile
-                        </Title>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '0 0 8px' }}>
+                            <Title level={2} style={{ margin: 0, color: textColor }}>
+                                {isEdit ? 'Edit your profile' : 'Complete your profile'}
+                            </Title>
+                        </div>
                         <Text type="secondary">
                             Add details so brands can find and evaluate you. Complete all steps to appear in search.
                         </Text>
@@ -240,13 +261,25 @@ export const ProfileSetup = () => {
                                 label="Instagram handle"
                                 help="At least one social handle is required to complete your profile"
                             >
-                                <Input addonBefore="@" placeholder="username" />
+                                <Input.Search 
+                                    addonBefore="@" 
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
+                                    onSearch={(val) => handleConnect('INSTAGRAM', val)}
+                                />
                             </Form.Item>
                             <Form.Item name="youtubeHandle" label="YouTube channel/handle">
-                                <Input addonBefore="@" placeholder="channel or username" />
+                                <Input.Search 
+                                    addonBefore="@" 
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
+                                    onSearch={(val) => handleConnect('YOUTUBE', val)}
+                                />
                             </Form.Item>
                             <Form.Item name="tiktokHandle" label="TikTok handle">
-                                <Input addonBefore="@" placeholder="username" />
+                                <Input.Search 
+                                    addonBefore="@" 
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
+                                    onSearch={(val) => handleConnect('TIKTOK', val)}
+                                />
                             </Form.Item>
                         </div>
 
@@ -302,7 +335,7 @@ export const ProfileSetup = () => {
                                             /* validation failed */
                                         }
                                     }}
-                                    style={{ color: textColor, fontWeight: 600 }}
+                                    style={{ color: '#000', fontWeight: 600 }}
                                 >
                                     Next
                                 </Button>
@@ -312,9 +345,9 @@ export const ProfileSetup = () => {
                                     size="large"
                                     loading={loading}
                                     onClick={handleComplete}
-                                    style={{ color: textColor, fontWeight: 600 }}
+                                    style={{ color: '#000', fontWeight: 600 }}
                                 >
-                                    Complete profile
+                                    {isEdit ? 'Save Changes' : 'Complete profile'}
                                 </Button>
                             )}
                         </div>

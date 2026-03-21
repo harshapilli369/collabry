@@ -23,6 +23,8 @@ import java.time.Instant;
 public class AuthService {
 
     private static final int CONFIRMATION_EXIRY_HOURS = 24;
+    /** Test brand user exempt from verification for campaigns. */
+    private static final String TEST_BRAND_EMAIL = "brand@collabry";
 
     private final UserRepository userRepository;
     private final PendingSignupRepository pendingSignupRepository;
@@ -108,7 +110,7 @@ public class AuthService {
         pendingSignupRepository.delete(pending);
 
         String jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), false);
-        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId(), isEffectivelyVerified(user));
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -122,7 +124,7 @@ public class AuthService {
 
         var jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), request.isRememberMe());
 
-        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId(), isEffectivelyVerified(user));
     }
 
     // New Google Login Method
@@ -160,7 +162,11 @@ public class AuthService {
         });
 
         var jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), false);
-        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId());
+        return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId(), isEffectivelyVerified(user));
+    }
+
+    private static boolean isEffectivelyVerified(User user) {
+        return user.isVerified() || TEST_BRAND_EMAIL.equalsIgnoreCase(user.getEmail());
     }
 
     private String fetchEmailFromGoogle(String accessToken) {

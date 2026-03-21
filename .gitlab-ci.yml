@@ -1,7 +1,10 @@
 # GitLab CI/CD - Collabry
-# develop branch: build, test, Designite/DCode, publish (dev tag), deploy to dev (port 8074).
+# develop branch: build, test, Designite/DCode, publish (dev tag), deploy to dev (port 8073).
 # main branch: build, test, Designite/DCode, publish (latest), deploy to production (port 8073).
 # MR pipelines: build, test, Designite/DCode (no publish/deploy unless branch rules match).
+#
+# Docker Hub rate limits: Uses CI variables DOCKERHUB_USER + DOCKERHUB_PASSWORD for authenticated pulls.
+# Required: Add DOCKERHUB_USER and DOCKERHUB_PASSWORD in Settings → CI/CD → Variables (mask DOCKERHUB_PASSWORD).
 #
 # Designite submit needs CI/CD variables: DCODE_PROJECT_ID, DCODE_API_KEY (masked).
 # Requires repo files: .quality/requirements.txt, .quality/push_to_dcode.py
@@ -21,9 +24,12 @@ stages:
     - if: $CI_COMMIT_BRANCH == "develop"
 
 # --- Build: compile backend and frontend ---
+# Use group04_Runner to avoid Docker Hub rate limits on shared autoscaler (runner may have cached images or auth)
 build-backend:
   stage: build
   image: eclipse-temurin:17
+  tags:
+    - group04_Runner
   script:
     - cd backend
     - chmod +x mvnw
@@ -33,13 +39,26 @@ build-backend:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "develop"
 
+# Uses docker+dind + docker login so node image pull is authenticated (avoids rate limit)
 build-frontend:
   stage: build
-  image: node:22-alpine
+  image: docker:24
+  tags:
+    - group04_Runner
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: "tcp://docker:2375"
+  services:
+    - docker:24-dind
+  before_script:
+    - |
+      if [ -z "${DOCKERHUB_PASSWORD:-}" ]; then
+        echo "ERROR: Set DOCKERHUB_PASSWORD in Settings → CI/CD → Variables to avoid Docker Hub rate limits."
+        exit 1
+      fi
+    - echo "$DOCKERHUB_PASSWORD" | docker login -u "${DOCKERHUB_USER:-hpilli369}" --password-stdin
   script:
-    - cd frontend
-    - npm ci
-    - npm run build
+    - docker run --rm -v "$CI_PROJECT_DIR:/app" -w /app/frontend node:20-alpine sh -c "npm ci && npm run build"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
@@ -49,6 +68,8 @@ build-frontend:
 test:
   stage: test
   image: eclipse-temurin:17
+  tags:
+    - group04_Runner
   script:
     - cd backend
     - chmod +x mvnw
@@ -125,6 +146,11 @@ publish:
   services:
     - docker:24-dind
   before_script:
+    - |
+      if [ -z "${DOCKERHUB_PASSWORD:-}" ]; then
+        echo "ERROR: Set DOCKERHUB_PASSWORD in Settings → CI/CD → Variables for authenticated Docker Hub pulls."
+        exit 1
+      fi
     - echo "$DOCKERHUB_PASSWORD" | docker login -u "${DOCKERHUB_USER:-hpilli369}" --password-stdin
   script:
     - |

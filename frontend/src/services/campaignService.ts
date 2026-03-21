@@ -83,11 +83,17 @@ export async function createCampaign(payload: CampaignRequest): Promise<Campaign
         headers: getAuthHeaders(),
         body: JSON.stringify(payload),
     });
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
+        if (response.status === 403) {
+            throw new Error(data.message || 'Only verified brands can create campaigns. Please complete verification.');
+        }
         throw new Error(data.message || 'Failed to create campaign');
     }
-    return response.json();
+    if (!data || typeof data.id !== 'number') {
+        throw new Error('Invalid response from server');
+    }
+    return data as CampaignResponse;
 }
 
 export async function getMyCampaigns(): Promise<CampaignResponse[]> {

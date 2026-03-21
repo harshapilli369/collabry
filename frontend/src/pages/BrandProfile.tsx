@@ -9,6 +9,7 @@ import {
     type BrandProfileRequest,
     type BrandProfileResponse,
 } from '../services/brandService'
+import { userService } from '../services/userService'
 
 const { Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -22,12 +23,14 @@ export const BrandProfile = () => {
     const [form] = Form.useForm<BrandProfileRequest>()
     const [loading, setLoading] = useState(false)
     const [fetching, setFetching] = useState(true)
+    const [isEdit, setIsEdit] = useState(false)
     const navigate = useNavigate()
 
     useEffect(() => {
         getMyBrandProfile()
             .then((profile: BrandProfileResponse | null) => {
                 if (profile) {
+                    setIsEdit(true)
                     form.setFieldsValue({
                         name: profile.name,
                         industry: profile.industry,
@@ -53,7 +56,7 @@ export const BrandProfile = () => {
             message.success('Profile saved successfully')
             // Short delay so success message is visible and backend commit is ready before dashboard loads
             setTimeout(() => {
-                navigate('/brand/dashboard', { replace: true })
+                navigate('/brand/profile', { replace: true })
             }, 300)
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Failed to save profile'
@@ -66,6 +69,22 @@ export const BrandProfile = () => {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
         navigate('/login', { replace: true })
+    }
+
+    const handleConnect = async (platform: string, handle: string | undefined) => {
+        if (!handle) {
+            message.warning(`Please enter a handle/URL for ${platform}`)
+            return
+        }
+        try {
+            await userService.linkSocialAccount(platform, handle)
+            const u = JSON.parse(localStorage.getItem('user') || '{}')
+            u.isVerified = true
+            localStorage.setItem('user', JSON.stringify(u))
+            message.success(`Successfully connected ${platform}! Your profile is now verified. Remember to click "Save profile" below!`)
+        } catch (e) {
+            message.error(`Failed to connect ${platform}`)
+        }
     }
 
     return (
@@ -134,14 +153,16 @@ export const BrandProfile = () => {
                             <Button
                                 type="link"
                                 icon={<ArrowLeftOutlined />}
-                                onClick={() => navigate('/brand/dashboard')}
+                                onClick={() => navigate('/brand/profile')}
                                 style={{ color: primaryColor, paddingLeft: 0, marginBottom: 16 }}
                             >
-                                Back to Dashboard
+                                Back to Profile
                             </Button>
-                            <Title level={1} style={{ color: primaryColor, margin: '0 0 8px', fontSize: '2rem' }}>
-                                Company Profile
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '0 0 8px' }}>
+                            <Title level={2} style={{ margin: 0, color: textColor }}>
+                                {isEdit ? 'Edit your brand profile' : 'Complete your brand profile'}
                             </Title>
+                        </div>
                             <Text style={{ color: '#aaa' }}>
                                 Manage your brand profile. This is visible to influencers you contact.
                             </Text>
@@ -198,13 +219,25 @@ export const BrandProfile = () => {
                                 <TextArea rows={4} placeholder="Tell influencers about your brand and campaigns" />
                             </Form.Item>
                             <Form.Item name="instagramUrl" label="Instagram">
-                                <Input placeholder="https://instagram.com/yourbrand" />
+                                <Input.Search 
+                                    placeholder="https://instagram.com/yourbrand" 
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
+                                    onSearch={(val) => handleConnect('INSTAGRAM', val)}
+                                />
                             </Form.Item>
                             <Form.Item name="linkedInUrl" label="LinkedIn">
-                                <Input placeholder="https://linkedin.com/company/yourbrand" />
+                                <Input.Search 
+                                    placeholder="https://linkedin.com/company/yourbrand" 
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
+                                    onSearch={(val) => handleConnect('LINKEDIN', val)}
+                                />
                             </Form.Item>
                             <Form.Item name="twitterUrl" label="Twitter / X">
-                                <Input placeholder="https://twitter.com/yourbrand" />
+                                <Input.Search 
+                                    placeholder="https://twitter.com/yourbrand" 
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
+                                    onSearch={(val) => handleConnect('TWITTER', val)}
+                                />
                             </Form.Item>
 
                             <Form.Item name="budgetRange" label="Budget range">
@@ -220,9 +253,9 @@ export const BrandProfile = () => {
                                     type="primary"
                                     htmlType="submit"
                                     loading={loading}
-                                    style={{ minWidth: 140, fontWeight: 600, color: textColor }}
+                                    style={{ color: '#000', fontWeight: 600 }}
                                 >
-                                    Save profile
+                                    {isEdit ? 'Save Changes' : 'Complete profile'}
                                 </Button>
                             </Form.Item>
                         </Form>

@@ -27,14 +27,14 @@ export const Login = () => {
             }
             console.log('Login success:', data);
             localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role }));
+            localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role, isVerified: data.isVerified }));
             message.success('Login successful!');
             alert('Login successful!');
 
             if (data.role === 'INFLUENCER') {
                 const profile = await getMyInfluencerProfile();
-                if (!profile?.isComplete) {
-                    navigate('/influencer/profile-setup', { replace: true });
+                if (!profile?.complete) {
+                    navigate('/influencer/profile/edit', { replace: true });
                 } else {
                     navigate('/influencer/dashboard', { replace: true });
                 }
@@ -64,13 +64,13 @@ export const Login = () => {
                 // Send access token to backend to verify and get JWT
                 const data = await googleLoginUser(tokenResponse.access_token);
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify({ email: data.email, role: data.role }));
+                localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role, isVerified: data.isVerified }));
                 alert("Google Login Successful! Redirecting...");
 
                 if (data.role === 'INFLUENCER') {
                     const profile = await getMyInfluencerProfile();
-                    if (!profile?.isComplete) {
-                        navigate('/influencer/profile-setup', { replace: true });
+                    if (!profile?.complete) {
+                        navigate('/influencer/profile/edit', { replace: true });
                     } else {
                         navigate('/influencer/dashboard', { replace: true });
                     }
