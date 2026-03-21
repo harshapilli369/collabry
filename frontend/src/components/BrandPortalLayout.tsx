@@ -82,7 +82,7 @@ export function BrandPortalLayout({
             const paths: Record<string, string> = {
                 dashboard: '/brand/dashboard',
                 'campaign-create': '/brand/campaigns/create',
-                'campaign-view': '/brand/dashboard#brand-my-campaigns',
+                'campaign-view': '/brand/campaigns',
                 influencers: '/brand/influencers',
                 collaborations: '/brand/collaborations',
                 payments: '/brand/payments',
