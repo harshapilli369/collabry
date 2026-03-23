@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Form, Input, Button, Typography, Select, message, InputNumber, Card, Alert, Table, Modal } from 'antd'
-import { ArrowLeftOutlined, MailOutlined } from '@ant-design/icons'
+import { Form, Input, Button, Typography, Select, message, InputNumber, Card, Alert, Drawer, Avatar, Empty } from 'antd'
+import { ArrowLeftOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import {
@@ -26,13 +26,13 @@ export const CreateCampaign = () => {
     const [createdCampaign, setCreatedCampaign] = useState<CampaignResponse | null>(null)
     const [inviteSubmitting, setInviteSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState<string | null>(null)
-    const [findIdModalOpen, setFindIdModalOpen] = useState(false)
+    const [findIdDrawerOpen, setFindIdDrawerOpen] = useState(false)
     const [influencerList, setInfluencerList] = useState<InfluencerSearchResult[]>([])
     const [influencerListLoading, setInfluencerListLoading] = useState(false)
     const navigate = useNavigate()
 
-    const openFindIdModal = () => {
-        setFindIdModalOpen(true)
+    const openFindIdDrawer = () => {
+        setFindIdDrawerOpen(true)
         setInfluencerListLoading(true)
         userService
             .listInfluencers()
@@ -42,6 +42,11 @@ export const CreateCampaign = () => {
                 setInfluencerList([])
             })
             .finally(() => setInfluencerListLoading(false))
+    }
+
+    const handleSelectInfluencer = (id: number) => {
+        inviteForm.setFieldValue('influencerId', id)
+        setFindIdDrawerOpen(false)
     }
 
     const onFinish = async (values: CampaignRequest & { preferredContentTypesList?: string[] }) => {
@@ -208,7 +213,7 @@ export const CreateCampaign = () => {
                                 label={
                                     <span>
                                         Influencer user ID
-                                        <Button type="link" size="small" onClick={openFindIdModal} style={{ paddingLeft: 8 }}>
+                                        <Button type="link" size="small" onClick={openFindIdDrawer} style={{ paddingLeft: 8 }}>
                                             Find user ID
                                         </Button>
                                     </span>
@@ -239,27 +244,46 @@ export const CreateCampaign = () => {
                 </div>
             )}
 
-            <Modal
-                title="Influencer user IDs"
-                open={findIdModalOpen}
-                onCancel={() => setFindIdModalOpen(false)}
-                footer={<Button onClick={() => setFindIdModalOpen(false)}>Close</Button>}
-                width={560}
+            <Drawer
+                title="Find influencer"
+                placement="right"
+                open={findIdDrawerOpen}
+                onClose={() => setFindIdDrawerOpen(false)}
+                width={440}
             >
-                <p style={{ color: '#666', marginBottom: 12 }}>Copy the ID and paste it into the invite form.</p>
-                <Table
-                    size="small"
-                    loading={influencerListLoading}
-                    dataSource={influencerList}
-                    rowKey="id"
-                    columns={[
-                        { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
-                        { title: 'Email', dataIndex: 'email', key: 'email' },
-                        { title: 'Name', dataIndex: 'displayName', key: 'displayName' },
-                    ]}
-                    pagination={influencerList.length <= 10 ? false : { pageSize: 10 }}
-                />
-            </Modal>
+                <p style={{ color: '#8c8c8c', marginBottom: 12 }}>
+                    Pick an influencer card to auto-fill the user ID in your invite form.
+                </p>
+                {influencerListLoading ? (
+                    <Text type="secondary">Loading influencers...</Text>
+                ) : influencerList.length === 0 ? (
+                    <Empty description="No influencers found" />
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {influencerList.map((inf) => (
+                            <Card
+                                key={inf.id}
+                                hoverable
+                                size="small"
+                                onClick={() => handleSelectInfluencer(inf.id)}
+                                style={{ borderColor: '#2a2a2a' }}
+                                styles={{ body: { padding: 12 } }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <Avatar icon={<UserOutlined />} />
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                                            <Text strong ellipsis>{inf.displayName || 'Influencer'}</Text>
+                                            <Text style={{ color: primaryColor, fontWeight: 600 }}>ID #{inf.id}</Text>
+                                        </div>
+                                        <Text type="secondary" ellipsis>{inf.email}</Text>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+            </Drawer>
         </BrandPortalLayout>
     )
 }
