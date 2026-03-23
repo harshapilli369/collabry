@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -141,6 +142,57 @@ class InfluencerProfileServiceTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getNiche()).isEqualTo("Fashion");
+    }
+
+    @Test
+    void search_withBlankNiche_skipsNichePredicate() {
+        when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search("   ", null, null, null, null);
+
+        assertThat(result).hasSize(1);
+        verify(influencerProfileRepository).findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt")));
+    }
+
+    @Test
+    void search_withBlankLocation_skipsLocationPredicate() {
+        when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(null, "   ", null, null, null);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void search_withOnlyMinFollowers_usesSpecification() {
+        when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(null, null, 1000L, null, null);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void search_withOnlyMaxFollowers_usesSpecification() {
+        when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(null, null, null, 200000L, null);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void search_withOnlyMinEngagementRate_usesSpecification() {
+        when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(null, null, null, null, BigDecimal.valueOf(1.5));
+
+        assertThat(result).hasSize(1);
     }
 
     @Test
@@ -330,6 +382,50 @@ class InfluencerProfileServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.isComplete()).isTrue();
         assertThat(response.getRate()).isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    void createOrUpdateForUser_whenNameBlank_keepsExistingProfileName() {
+        InfluencerProfileRequest request = completeRequest();
+        request.setSaveAsDraft(true);
+        request.setName("   ");
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(existingProfile));
+        when(influencerProfileRepository.save(any(InfluencerProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
+
+        assertThat(response.getName()).isEqualTo("Jane Doe");
+    }
+
+    @Test
+    void createOrUpdateForUser_whenAgeNull_keepsExistingProfileAge() {
+        InfluencerProfileRequest request = completeRequest();
+        request.setSaveAsDraft(true);
+        request.setAge(null);
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(existingProfile));
+        when(influencerProfileRepository.save(any(InfluencerProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
+
+        assertThat(response.getAge()).isEqualTo(25);
+    }
+
+    @Test
+    void createOrUpdateForUser_completeWhenHandlesAreWhitespaceOnly_throws() {
+        InfluencerProfileRequest request = completeRequest();
+        request.setSaveAsDraft(false);
+        request.setInstagramHandle("   ");
+        request.setYoutubeHandle("\t");
+        request.setTiktokHandle(" ");
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> influencerProfileService.createOrUpdateForUser(20L, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("At least one social media handle");
+        verify(influencerProfileRepository, never()).save(any(InfluencerProfile.class));
     }
 
     private static InfluencerProfileRequest completeRequest() {
