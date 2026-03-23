@@ -58,7 +58,8 @@ build-frontend:
       fi
     - echo "$DOCKERHUB_PASSWORD" | docker login -u "${DOCKERHUB_USER:-hpilli369}" --password-stdin
   script:
-    - docker run --rm -v "$CI_PROJECT_DIR:/app" -w /app/frontend node:20-alpine sh -c "npm ci && npm run build"
+    # Use /tmp for npm cache: default ~/.npm can hit EEXIST/rename races in docker run + bind mounts.
+    - docker run --rm -v "$CI_PROJECT_DIR:/app" -w /app/frontend node:20-alpine sh -c "mkdir -p /tmp/npm-cache && npm ci --cache /tmp/npm-cache && npm run build"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
