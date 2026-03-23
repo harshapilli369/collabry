@@ -351,12 +351,9 @@ export const CreateCampaign = () => {
                                             style={{ background: isSelected ? primaryColor : '#333', color: isSelected ? '#000' : '#fff', flexShrink: 0 }}
                                         />
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                                                <Text strong ellipsis style={{ maxWidth: 180 }}>
+                                            <div>
+                                                <Text strong ellipsis style={{ maxWidth: 240 }}>
                                                     {inf.displayName || 'Influencer'}
-                                                </Text>
-                                                <Text style={{ color: primaryColor, fontWeight: 600, fontSize: 12, flexShrink: 0 }}>
-                                                    ID #{inf.id}
                                                 </Text>
                                             </div>
                                             <Text type="secondary" style={{ fontSize: 12 }} ellipsis>
