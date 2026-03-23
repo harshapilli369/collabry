@@ -153,6 +153,22 @@ class RatingServiceTest {
     }
 
     @Test
+    void submitRating_whenReviewNull_savesNullReview() {
+        RatingRequest request = new RatingRequest();
+        request.setInvitationId(100L);
+        request.setRating(5);
+        request.setReview(null);
+
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(confirmedInvitation));
+        when(ratingRepository.findByInvitationId(100L)).thenReturn(Optional.empty());
+        when(ratingRepository.save(any(InfluencerRating.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        RatingResponse response = ratingService.submitRating(brandId, request);
+
+        assertThat(response.getReview()).isNull();
+    }
+
+    @Test
     void submitRating_whenExistingRatingForInvitation_updatesSameEntity() {
         InfluencerRating existing = new InfluencerRating();
         existing.setId(50L);
