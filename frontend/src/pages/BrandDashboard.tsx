@@ -17,6 +17,7 @@ import {
     Progress,
     Tag,
     Divider,
+    Slider,
 } from 'antd'
 import {
     PlusCircleOutlined,
@@ -66,7 +67,10 @@ export const BrandDashboard = () => {
     const [aiDrawerOpen, setAiDrawerOpen] = useState(false)
     const [aiDrawerCampaignId, setAiDrawerCampaignId] = useState<number | null>(null)
     const [aiRecommendations, setAiRecommendations] = useState<InfluencerRecommendationDTO[]>([])
+    const [aiAllRecommendations, setAiAllRecommendations] = useState<InfluencerRecommendationDTO[]>([])
     const [aiLoading, setAiLoading] = useState(false)
+    const [aiFilterNiche, setAiFilterNiche] = useState<string | null>(null)
+    const [aiFilterMinScore, setAiFilterMinScore] = useState<number>(0)
 
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
@@ -173,13 +177,39 @@ export const BrandDashboard = () => {
         }
     }
 
+    const normalizeNiche = (niche: string | undefined): string => {
+        if (!niche) return ''
+        const lower = niche.toLowerCase().trim()
+        if (lower === 'tech' || lower === 'technology') return 'Technology'
+        if (lower === 'fashion' || lower === 'style') return 'Fashion'
+        if (lower === 'gaming' || lower === 'games') return 'Gaming'
+        if (lower === 'fitness' || lower === 'health' || lower === 'health & fitness') return 'Fitness'
+        if (lower === 'food' || lower === 'cooking' || lower === 'food & cooking') return 'Food'
+        return niche.charAt(0).toUpperCase() + niche.slice(1)
+    }
+
+    const applyAiFilters = (all: InfluencerRecommendationDTO[], niche: string | null, minScore: number) => {
+        let filtered = all
+        if (niche) {
+            filtered = filtered.filter((r) => normalizeNiche(r.niche) === niche)
+        }
+        if (minScore > 0) {
+            filtered = filtered.filter((r) => r.matchScore >= minScore)
+        }
+        setAiRecommendations(filtered)
+    }
+
     const openAiDrawer = async (campaignId: number) => {
         setAiDrawerCampaignId(campaignId)
         setAiDrawerOpen(true)
         setAiLoading(true)
         setAiRecommendations([])
+        setAiAllRecommendations([])
+        setAiFilterNiche(null)
+        setAiFilterMinScore(0)
         try {
             const recs = await getCampaignRecommendations(campaignId)
+            setAiAllRecommendations(recs)
             setAiRecommendations(recs)
         } catch (e) {
             message.error(e instanceof Error ? e.message : 'Failed to load AI recommendations')
@@ -503,7 +533,7 @@ export const BrandDashboard = () => {
                             Analyzing campaign metrics, niche resonance, and engagement rates
                         </div>
                     </div>
-                ) : aiRecommendations.length === 0 ? (
+                ) : aiAllRecommendations.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '100px 0', color: '#aaa' }}>
                         <RobotOutlined style={{ fontSize: 40, opacity: 0.2, marginBottom: 16 }} />
                         <div>No optimal matches found for this campaign&apos;s criteria.</div>
@@ -513,6 +543,56 @@ export const BrandDashboard = () => {
                         <Text style={{ color: '#aaa', fontSize: 14 }}>
                             We analyzed your campaign metrics against available influencers. Here are your top algorithmic matches:
                         </Text>
+
+                        {/* Filter Controls */}
+                        <div style={{ background: '#161616', borderRadius: 12, padding: 16, border: '1px solid #2a2a2a' }}>
+                            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                                <div style={{ flex: 1, minWidth: 140 }}>
+                                    <Text style={{ color: '#888', fontSize: 12, display: 'block', marginBottom: 4 }}>Niche</Text>
+                                    <Select
+                                        placeholder="All niches"
+                                        value={aiFilterNiche ?? 'all'}
+                                        onChange={(val) => {
+                                            const selected = val === 'all' ? null : val
+                                            setAiFilterNiche(selected)
+                                            applyAiFilters(aiAllRecommendations, selected, aiFilterMinScore)
+                                        }}
+                                        style={{ width: '100%' }}
+                                        options={[
+                                            { label: 'All', value: 'all' },
+                                            ...[...new Set(aiAllRecommendations.map((r) => normalizeNiche(r.niche)).filter(Boolean))].map(
+                                                (n) => ({ label: n, value: n })
+                                            ),
+                                        ]}
+                                    />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 160 }}>
+                                    <Text style={{ color: '#888', fontSize: 12, display: 'block', marginBottom: 4 }}>
+                                        Min Match Score: {aiFilterMinScore}%
+                                    </Text>
+                                    <Slider
+                                        min={0}
+                                        max={100}
+                                        value={aiFilterMinScore}
+                                        onChange={(val) => {
+                                            setAiFilterMinScore(val)
+                                            applyAiFilters(aiAllRecommendations, aiFilterNiche, val)
+                                        }}
+                                        styles={{ track: { background: primaryColor }, rail: { background: '#333' } }}
+                                    />
+                                </div>
+                            </div>
+                            <Text style={{ color: '#555', fontSize: 11, marginTop: 4, display: 'block' }}>
+                                Showing {aiRecommendations.length} of {aiAllRecommendations.length} matches
+                            </Text>
+                        </div>
+
+                        {aiRecommendations.length === 0 && aiAllRecommendations.length > 0 ? (
+                            <div style={{ textAlign: 'center', padding: '40px 0', color: '#aaa' }}>
+                                <RobotOutlined style={{ fontSize: 32, opacity: 0.3, marginBottom: 12 }} />
+                                <div>No matches for the selected filters. Try adjusting your criteria.</div>
+                            </div>
+                        ) : null}
 
                         {aiRecommendations.map((rec, idx) => (
                             <Card
