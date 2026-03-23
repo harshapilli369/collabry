@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Typography, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Table, Tag, Button, Modal, Form, InputNumber, Input, DatePicker, Select, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, PlusCircleOutlined, AppstoreOutlined, FundProjectionScreenOutlined, DollarOutlined, DownloadOutlined } from '@ant-design/icons'
-import { useNavigate } from 'react-router-dom'
+import { Typography, Card, Row, Col, Table, Tag, Button, Modal, Form, InputNumber, Input, DatePicker, Select, message } from 'antd'
+import { PlusCircleOutlined, DownloadOutlined } from '@ant-design/icons'
+import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import { createPayment, getDelayedPayments, getInvoice, updatePaymentStatus, PAYMENT_STATUS_LABELS, PAYMENT_STATUS_COLORS, type PaymentResponse, type PaymentStatus, type PaymentRequest } from '../services/paymentService'
 import { getMyCampaigns, type CampaignResponse } from '../services/campaignService'
 
-const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
 
 export const BrandPayments = () => {
-    const navigate = useNavigate()
     const [payments, setPayments] = useState<PaymentResponse[]>([])
     const [delayedPayments, setDelayedPayments] = useState<PaymentResponse[]>([])
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
@@ -50,12 +48,6 @@ export const BrandPayments = () => {
     }
 
     useEffect(() => { loadData() }, [])
-
-    const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        navigate('/login', { replace: true })
-    }
 
     const handleCreate = async (values: { campaignId: number; influencerId: number; milestoneName: string; amount: number; dueDate?: unknown; notes?: string }) => {
         setCreating(true)
@@ -106,9 +98,7 @@ export const BrandPayments = () => {
         }
     }
 
-    const primaryColor = '#FFFD82'
-    const textColor = '#ffffff'
-    const pageBackgroundColor = '#000000'
+    const primaryColor = BRAND_PORTAL_PRIMARY
 
     const totalPaid = payments.filter(p => p.status === 'PAID').reduce((s, p) => s + p.amount, 0)
     const totalPending = payments.filter(p => p.status === 'PENDING' || p.status === 'DELAYED').reduce((s, p) => s + p.amount, 0)
@@ -137,40 +127,7 @@ export const BrandPayments = () => {
     ]
 
     return (
-        <ConfigProvider
-            theme={{
-                algorithm: theme.darkAlgorithm,
-                token: { colorPrimary: primaryColor, colorTextBase: textColor, fontFamily: 'Inter, sans-serif' },
-                components: {
-                    Layout: { bodyBg: '#000000', headerBg: '#000000', siderBg: '#000000' },
-                    Menu: { darkItemBg: '#000000', darkItemSelectedBg: '#333333' },
-                },
-            }}
-        >
-            <Layout style={{ minHeight: '100vh' }}>
-                <Sider width={250} theme="dark">
-                    <div style={{ padding: '20px', textAlign: 'center' }}>
-                        <Title level={4} style={{ color: '#fff', margin: 0 }}>Collabry</Title>
-                        <Text style={{ color: primaryColor }}>Brand Portal</Text>
-                    </div>
-                    <Menu
-                        theme="dark"
-                        mode="inline"
-                        defaultSelectedKeys={['payments']}
-                        items={[
-                            { key: 'dashboard', icon: <AppstoreOutlined />, label: 'Dashboard', onClick: () => navigate('/brand/dashboard') },
-                            { key: 'campaigns', icon: <FundProjectionScreenOutlined />, label: 'Create Campaign', onClick: () => navigate('/brand/campaigns/create') },
-                            { key: 'payments', icon: <DollarOutlined />, label: 'Payments', onClick: () => navigate('/brand/payments') },
-                            { key: 'profile', icon: <UserOutlined />, label: 'Profile', onClick: () => navigate('/brand/profile') },
-                            { key: 'logout', icon: <LogoutOutlined />, label: 'Logout', onClick: handleLogout, danger: true },
-                        ]}
-                    />
-                </Sider>
-                <Layout>
-                    <Header style={{ padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', background: pageBackgroundColor }}>
-                        <Avatar size="large" icon={<UserOutlined />} style={{ backgroundColor: primaryColor, color: '#000' }} />
-                    </Header>
-                    <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
+        <BrandPortalLayout activeMenuKey="payments">
                         <div style={{ marginBottom: 30, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '3rem' }}>Payments</Title>
@@ -219,9 +176,6 @@ export const BrandPayments = () => {
                                 locale={{ emptyText: 'No payments yet. Create one using the button above.' }}
                             />
                         </Card>
-                    </Content>
-                </Layout>
-            </Layout>
 
             <Modal
                 title="Create Milestone Payment"
@@ -257,6 +211,6 @@ export const BrandPayments = () => {
                     </Form.Item>
                 </Form>
             </Modal>
-        </ConfigProvider>
+        </BrandPortalLayout>
     )
 }

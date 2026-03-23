@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Card, Typography, Button, ConfigProvider, Layout, Menu, Descriptions, theme, Avatar, Spin, Space } from 'antd'
-import { UserOutlined, LogoutOutlined, AppstoreOutlined, ArrowLeftOutlined, EditOutlined, GlobalOutlined, InstagramOutlined, LinkedinOutlined, TwitterOutlined, CheckCircleFilled, FundProjectionScreenOutlined, DollarOutlined, PlusCircleOutlined, UnorderedListOutlined } from '@ant-design/icons'
+import { Card, Typography, Button, Descriptions, Avatar, Spin, Space } from 'antd'
+import { ArrowLeftOutlined, EditOutlined, GlobalOutlined, InstagramOutlined, LinkedinOutlined, TwitterOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile, type BrandProfileResponse, BUDGET_RANGE_OPTIONS } from '../services/brandService'
+import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 
-const { Content, Sider } = Layout
 const { Title, Text, Paragraph } = Typography
 
 export const ViewBrandProfile = () => {
@@ -27,15 +27,8 @@ export const ViewBrandProfile = () => {
             .finally(() => setLoading(false))
     }, [navigate])
 
-    const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        navigate('/login', { replace: true })
-    }
-
-    const primaryColor = '#FFFD82'
+    const primaryColor = BRAND_PORTAL_PRIMARY
     const textColor = '#ffffff'
-    const pageBackgroundColor = '#000000'
     const cardBackgroundColor = '#141414'
 
     const formatSocialHandle = (url: string | undefined) => {
@@ -52,96 +45,18 @@ export const ViewBrandProfile = () => {
 
     if (loading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: pageBackgroundColor }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000000' }}>
                 <Spin size="large" />
             </div>
         )
     }
 
+    if (!profile) {
+        return null
+    }
+
     return (
-        <ConfigProvider
-            theme={{
-                algorithm: theme.darkAlgorithm,
-                token: {
-                    colorPrimary: primaryColor,
-                    colorTextBase: textColor,
-                    fontFamily: 'Inter, sans-serif',
-                },
-                components: {
-                    Layout: {
-                        bodyBg: '#000000',
-                        headerBg: '#000000',
-                        siderBg: '#000000',
-                    },
-                    Menu: {
-                        darkItemBg: '#000000',
-                        darkItemSelectedBg: '#333333',
-                    },
-                    Descriptions: {
-                        colorTextSecondary: '#8c8c8c',
-                    }
-                },
-            }}
-        >
-            <Layout style={{ minHeight: '100vh' }}>
-                <Sider width={250} theme="dark">
-                    <div style={{ padding: '20px', textAlign: 'center' }}>
-                        <Title level={4} style={{ color: '#fff', margin: 0 }}>Collabry</Title>
-                        <Text style={{ color: primaryColor }}>Brand Portal</Text>
-                    </div>
-                    <Menu
-                        theme="dark"
-                        mode="inline"
-                        selectedKeys={['profile']}
-                        items={[
-                            {
-                                key: 'dashboard',
-                                icon: <AppstoreOutlined />,
-                                label: 'Dashboard',
-                                onClick: () => navigate('/brand/dashboard'),
-                            },
-                            {
-                                key: 'campaign',
-                                icon: <FundProjectionScreenOutlined />,
-                                label: 'Campaign',
-                                children: [
-                                    {
-                                        key: 'campaign-create',
-                                        icon: <PlusCircleOutlined />,
-                                        label: 'Create campaign',
-                                        onClick: () => navigate('/brand/campaigns/create'),
-                                    },
-                                    {
-                                        key: 'campaign-view',
-                                        icon: <UnorderedListOutlined />,
-                                        label: 'View my campaigns',
-                                    },
-                                ],
-                            },
-                            {
-                                key: 'payments',
-                                icon: <DollarOutlined />,
-                                label: 'Payments',
-                                onClick: () => navigate('/brand/payments'),
-                            },
-                            {
-                                key: 'profile',
-                                icon: <UserOutlined />,
-                                label: 'Profile',
-                                onClick: () => navigate('/brand/profile'),
-                            },
-                            {
-                                key: 'logout',
-                                icon: <LogoutOutlined />,
-                                label: 'Logout',
-                                onClick: handleLogout,
-                                danger: true,
-                            },
-                        ]}
-                    />
-                </Sider>
-                <Layout style={{ backgroundColor: pageBackgroundColor }}>
-                    <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
+        <BrandPortalLayout activeMenuKey="profile" brandProfileForHeader={profile}>
                         <Button
                             type="link"
                             icon={<ArrowLeftOutlined />}
@@ -231,9 +146,6 @@ export const ViewBrandProfile = () => {
                                 </div>
                             </Space>
                         </Card>
-                    </Content>
-                </Layout>
-            </Layout>
-        </ConfigProvider>
+        </BrandPortalLayout>
     )
 }
