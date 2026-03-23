@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message, theme } from 'antd'
-import { UserOutlined, LinkOutlined, DollarOutlined } from '@ant-design/icons'
+import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message, theme, Modal } from 'antd'
+import { UserOutlined, LinkOutlined, DollarOutlined, ArrowLeftOutlined, CheckCircleFilled, InstagramOutlined, YoutubeOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
     getMyInfluencerProfile,
@@ -12,6 +12,8 @@ import { userService } from '../services/userService'
 
 const { Title, Text } = Typography
 const { TextArea } = Input
+
+const PRIMARY = '#BD72EB'
 
 const STEPS = [
     { key: 'personal', title: 'Personal Info', icon: <UserOutlined /> },
@@ -33,7 +35,6 @@ export const ProfileSetup = () => {
 
     useEffect(() => {
         if (!isInfluencer) {
-            // Non-influencers should not be here; redirect to appropriate dashboard
             if (user?.role === 'BRAND') {
                 navigate('/brand/dashboard', { replace: true })
             } else {
@@ -131,9 +132,20 @@ export const ProfileSetup = () => {
         await onFinish(values, false)
     }
 
-    const handleConnect = async (platform: string, handle: string | undefined) => {
+    const platformLabels: Record<string, string> = { INSTAGRAM: 'Instagram', YOUTUBE: 'YouTube', TIKTOK: 'TikTok' }
+
+    const handleConnect = async (platform: string) => {
+        const fieldMap: Record<string, string> = { INSTAGRAM: 'instagramHandle', YOUTUBE: 'youtubeHandle', TIKTOK: 'tiktokHandle' }
+        const handle = (form.getFieldValue(fieldMap[platform] as any) as string | undefined)?.trim()
+        const label = platformLabels[platform] || platform
+
         if (!handle) {
-            message.warning(`Please enter a handle for ${platform}`)
+            Modal.warning({
+                title: 'Handle Required',
+                content: `Please enter your ${label} handle before connecting.`,
+                okText: 'Got it',
+                centered: true,
+            })
             return
         }
         try {
@@ -141,16 +153,27 @@ export const ProfileSetup = () => {
             const u = JSON.parse(localStorage.getItem('user') || '{}')
             u.isVerified = true
             localStorage.setItem('user', JSON.stringify(u))
-            message.success(`Successfully connected ${platform}! Your profile is now verified. Remember to click "Save Changes" at the bottom to save your handles!`)
-        } catch (e) {
-            message.error(`Failed to connect ${platform}`)
+            Modal.success({
+                title: `${label} Connected!`,
+                content: `@${handle} has been linked successfully. Your profile is now verified! Remember to click "Save Changes" to keep your handles.`,
+                okText: 'Awesome',
+                centered: true,
+            })
+        } catch {
+            Modal.error({
+                title: 'Connection Failed',
+                content: `We couldn't connect your ${label} account. Please try again.`,
+                okText: 'OK',
+                centered: true,
+            })
         }
     }
 
-    const primaryColor = '#FFFD82'
-    const textColor = '#ffffff'
-    const pageBackgroundColor = '#000000'
-    const cardBackgroundColor = '#141414'
+    const TiktokSvg = () => (
+        <svg viewBox="0 0 448 512" width="14px" height="14px" fill="currentColor" style={{ verticalAlign: '-0.125em' }}>
+            <path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.17h0A122.18,122.18,0,0,0,381,102.39a121.43,121.43,0,0,0,67,20.14Z"/>
+        </svg>
+    )
 
     if (!isInfluencer && !fetching) return null
 
@@ -159,13 +182,12 @@ export const ProfileSetup = () => {
             theme={{
                 algorithm: theme.darkAlgorithm,
                 token: {
-                    colorPrimary: primaryColor,
-                    colorText: textColor,
+                    colorPrimary: PRIMARY,
+                    colorText: '#ffffff',
                     borderRadius: 8,
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                 },
                 components: {
-                    Button: {},
                     Input: { paddingBlock: 10 },
                 },
             }}
@@ -176,37 +198,63 @@ export const ProfileSetup = () => {
                     justifyContent: 'center',
                     alignItems: 'flex-start',
                     minHeight: '100vh',
-                    backgroundColor: pageBackgroundColor,
+                    backgroundColor: '#000',
                     padding: '40px 20px',
                 }}
             >
                 <div
                     style={{
                         width: '100%',
-                        maxWidth: 520,
-                        padding: 40,
-                        backgroundColor: cardBackgroundColor,
-                        borderRadius: 16,
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                        maxWidth: 560,
+                        padding: '40px 44px',
+                        backgroundColor: '#0d0d0d',
+                        borderRadius: 20,
+                        border: `1px solid ${PRIMARY}15`,
+                        boxShadow: `0 8px 40px rgba(189, 114, 235, 0.06)`,
                     }}
                 >
-                    <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                        <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, marginBottom: 16, borderRadius: 8 }} />
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '0 0 8px' }}>
-                            <Title level={2} style={{ margin: 0, color: textColor }}>
-                                {isEdit ? 'Edit your profile' : 'Complete your profile'}
-                            </Title>
+                    {/* Back button */}
+                    {isEdit && (
+                        <Button
+                            type="text"
+                            icon={<ArrowLeftOutlined />}
+                            onClick={() => navigate('/influencer/profile')}
+                            style={{ color: '#888', marginBottom: 16, padding: 0 }}
+                        >
+                            Back to Profile
+                        </Button>
+                    )}
+
+                    {/* Header */}
+                    <div style={{ textAlign: 'center', marginBottom: 36 }}>
+                        <div
+                            style={{
+                                width: 56,
+                                height: 56,
+                                borderRadius: 16,
+                                background: `linear-gradient(135deg, ${PRIMARY}, #9b59b6)`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 16px',
+                            }}
+                        >
+                            <UserOutlined style={{ fontSize: 24, color: '#fff' }} />
                         </div>
-                        <Text type="secondary">
-                            Add details so brands can find and evaluate you. Complete all steps to appear in search.
+                        <Title level={2} style={{ margin: 0, color: '#fff' }}>
+                            {isEdit ? 'Edit your profile' : 'Complete your profile'}
+                        </Title>
+                        <Text style={{ color: '#666', fontSize: 14, marginTop: 8, display: 'block' }}>
+                            Add details so brands can find and evaluate you.
                         </Text>
                     </div>
 
+                    {/* Steps */}
                     <Steps
                         current={current}
                         onChange={setCurrent}
                         items={STEPS.map((s) => ({ key: s.key, title: s.title, icon: s.icon }))}
-                        style={{ marginBottom: 32 }}
+                        style={{ marginBottom: 36 }}
                     />
 
                     <Form
@@ -215,111 +263,165 @@ export const ProfileSetup = () => {
                         size="large"
                         initialValues={{ age: undefined, rate: undefined }}
                     >
+                        {/* Step 1: Personal Info */}
                         <div style={{ display: current === 0 ? 'block' : 'none' }}>
-                            <Form.Item
-                                name="name"
-                                label="Name"
-                                rules={[{ required: true, message: 'Name is required' }]}
-                            >
-                                <Input placeholder="Your full name" />
-                            </Form.Item>
-                            <Form.Item
-                                name="age"
-                                label="Age"
-                                rules={[
-                                    { required: true, message: 'Age is required' },
-                                    { type: 'number', min: 13, max: 120, message: 'Age must be 13–120' },
-                                ]}
-                            >
-                                <InputNumber placeholder="Your age" style={{ width: '100%' }} min={13} max={120} />
-                            </Form.Item>
-                            <Form.Item
-                                name="location"
-                                label="Location"
-                                rules={[{ required: true, message: 'Location is required' }]}
-                            >
-                                <Input placeholder="City, Country" />
-                            </Form.Item>
-                            <Form.Item
-                                name="niche"
-                                label="Niche"
-                                rules={[{ required: true, message: 'Niche is required' }]}
-                            >
-                                <Input placeholder="e.g. Fashion, Tech, Fitness" />
-                            </Form.Item>
-                            <Form.Item name="bio" label="Bio (optional)">
-                                <TextArea rows={4} placeholder="Tell brands about yourself..." />
-                            </Form.Item>
-                            <Form.Item name="profilePictureUrl" label="Profile picture URL (optional)">
-                                <Input placeholder="https://..." />
-                            </Form.Item>
+                            <div style={{ padding: '20px 24px', background: '#111', borderRadius: 12, border: '1px solid #1a1a1a', marginBottom: 8 }}>
+                                <Text style={{ color: PRIMARY, fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
+                                    Basic Information
+                                </Text>
+                                <Form.Item
+                                    name="name"
+                                    label="Name"
+                                    rules={[{ required: true, message: 'Name is required' }]}
+                                >
+                                    <Input placeholder="Your full name" />
+                                </Form.Item>
+                                <Form.Item
+                                    name="age"
+                                    label="Age"
+                                    rules={[
+                                        { required: true, message: 'Age is required' },
+                                        { type: 'number', min: 13, max: 120, message: 'Age must be 13-120' },
+                                    ]}
+                                >
+                                    <InputNumber placeholder="Your age" style={{ width: '100%' }} min={13} max={120} />
+                                </Form.Item>
+                                <Form.Item
+                                    name="location"
+                                    label="Location"
+                                    rules={[{ required: true, message: 'Location is required' }]}
+                                >
+                                    <Input placeholder="City, Country" />
+                                </Form.Item>
+                                <Form.Item
+                                    name="niche"
+                                    label="Niche"
+                                    rules={[{ required: true, message: 'Niche is required' }]}
+                                >
+                                    <Input placeholder="e.g. Fashion, Tech, Fitness" />
+                                </Form.Item>
+                            </div>
+                            <div style={{ padding: '20px 24px', background: '#111', borderRadius: 12, border: '1px solid #1a1a1a', marginTop: 16 }}>
+                                <Text style={{ color: '#666', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
+                                    Optional
+                                </Text>
+                                <Form.Item name="bio" label="Bio">
+                                    <TextArea rows={4} placeholder="Tell brands about yourself..." />
+                                </Form.Item>
+                                <Form.Item name="profilePictureUrl" label="Profile picture URL">
+                                    <Input placeholder="https://..." />
+                                </Form.Item>
+                            </div>
                         </div>
 
+                        {/* Step 2: Social Media */}
                         <div style={{ display: current === 1 ? 'block' : 'none' }}>
-                            <Form.Item
-                                name="instagramHandle"
-                                label="Instagram handle"
-                                help="At least one social handle is required to complete your profile"
-                            >
-                                <Input.Search 
-                                    addonBefore="@" 
-                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
-                                    onSearch={(val) => handleConnect('INSTAGRAM', val)}
-                                />
-                            </Form.Item>
-                            <Form.Item name="youtubeHandle" label="YouTube channel/handle">
-                                <Input.Search 
-                                    addonBefore="@" 
-                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
-                                    onSearch={(val) => handleConnect('YOUTUBE', val)}
-                                />
-                            </Form.Item>
-                            <Form.Item name="tiktokHandle" label="TikTok handle">
-                                <Input.Search 
-                                    addonBefore="@" 
-                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
-                                    onSearch={(val) => handleConnect('TIKTOK', val)}
-                                />
-                            </Form.Item>
+                            <div style={{ padding: '20px 24px', background: '#111', borderRadius: 12, border: '1px solid #1a1a1a' }}>
+                                <Text style={{ color: PRIMARY, fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 8 }}>
+                                    Connect Your Accounts
+                                </Text>
+                                <Text style={{ color: '#555', fontSize: 12, display: 'block', marginBottom: 20 }}>
+                                    At least one handle is required. Connecting verifies your profile.
+                                </Text>
+
+                                <div style={{ marginBottom: 20 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                        <InstagramOutlined style={{ color: '#E1306C', fontSize: 18 }} />
+                                        <Text style={{ color: '#fff', fontWeight: 500 }}>Instagram</Text>
+                                    </div>
+                                    <Form.Item name="instagramHandle" style={{ marginBottom: 0 }}>
+                                        <Input.Search
+                                            addonBefore="@"
+                                            enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
+                                            onSearch={() => handleConnect('INSTAGRAM')}
+                                        />
+                                    </Form.Item>
+                                </div>
+
+                                <div style={{ marginBottom: 20 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                        <YoutubeOutlined style={{ color: '#FF0000', fontSize: 18 }} />
+                                        <Text style={{ color: '#fff', fontWeight: 500 }}>YouTube</Text>
+                                    </div>
+                                    <Form.Item name="youtubeHandle" style={{ marginBottom: 0 }}>
+                                        <Input.Search
+                                            addonBefore="@"
+                                            enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
+                                            onSearch={() => handleConnect('YOUTUBE')}
+                                        />
+                                    </Form.Item>
+                                </div>
+
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                        <TiktokSvg />
+                                        <Text style={{ color: '#fff', fontWeight: 500 }}>TikTok</Text>
+                                    </div>
+                                    <Form.Item name="tiktokHandle" style={{ marginBottom: 0 }}>
+                                        <Input.Search
+                                            addonBefore="@"
+                                            enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
+                                            onSearch={() => handleConnect('TIKTOK')}
+                                        />
+                                    </Form.Item>
+                                </div>
+                            </div>
+
+                            <div style={{ marginTop: 16, padding: '12px 16px', background: `${PRIMARY}10`, borderRadius: 8, border: `1px solid ${PRIMARY}20` }}>
+                                <CheckCircleFilled style={{ color: PRIMARY, marginRight: 8 }} />
+                                <Text style={{ color: '#aaa', fontSize: 12 }}>Connecting a social account verifies your profile and makes you visible to brands.</Text>
+                            </div>
                         </div>
 
+                        {/* Step 3: Pricing */}
                         <div style={{ display: current === 2 ? 'block' : 'none' }}>
-                            <Form.Item
-                                name="rate"
-                                label="Rate (per post/collab)"
-                                rules={[
-                                    { required: true, message: 'Rate is required to complete profile' },
-                                    { type: 'number', min: 0, message: 'Rate must be 0 or greater' },
-                                ]}
-                                help="Required to appear in brand search"
-                            >
-                                <InputNumber
-                                    prefix="$"
-                                    placeholder="0"
-                                    style={{ width: '100%' }}
-                                    min={0}
-                                    precision={2}
-                                />
-                            </Form.Item>
-                            <Form.Item name="followerCount" label="Follower count (optional)" help="Helps brands filter by reach">
-                                <InputNumber placeholder="e.g. 50000" style={{ width: '100%' }} min={0} />
-                            </Form.Item>
-                            <Form.Item name="engagementRate" label="Engagement rate % (optional)" help="e.g. 3.5">
-                                <InputNumber placeholder="e.g. 3.5" style={{ width: '100%' }} min={0} max={100} step={0.1} />
-                            </Form.Item>
-                            <Form.Item name="audienceInfo" label="Audience info (optional)">
-                                <TextArea rows={4} placeholder="e.g. Demographics, engagement metrics, reach..." />
-                            </Form.Item>
+                            <div style={{ padding: '20px 24px', background: '#111', borderRadius: 12, border: '1px solid #1a1a1a' }}>
+                                <Text style={{ color: PRIMARY, fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
+                                    Your Rates
+                                </Text>
+                                <Form.Item
+                                    name="rate"
+                                    label="Rate (per post/collab)"
+                                    rules={[
+                                        { required: true, message: 'Rate is required to complete profile' },
+                                        { type: 'number', min: 0, message: 'Rate must be 0 or greater' },
+                                    ]}
+                                >
+                                    <InputNumber
+                                        prefix="$"
+                                        placeholder="0"
+                                        style={{ width: '100%' }}
+                                        min={0}
+                                        precision={2}
+                                    />
+                                </Form.Item>
+                            </div>
+
+                            <div style={{ padding: '20px 24px', background: '#111', borderRadius: 12, border: '1px solid #1a1a1a', marginTop: 16 }}>
+                                <Text style={{ color: '#666', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
+                                    Audience Details (Optional)
+                                </Text>
+                                <Form.Item name="followerCount" label="Follower count">
+                                    <InputNumber placeholder="e.g. 50000" style={{ width: '100%' }} min={0} />
+                                </Form.Item>
+                                <Form.Item name="engagementRate" label="Engagement rate %">
+                                    <InputNumber placeholder="e.g. 3.5" style={{ width: '100%' }} min={0} max={100} step={0.1} />
+                                </Form.Item>
+                                <Form.Item name="audienceInfo" label="Audience info">
+                                    <TextArea rows={4} placeholder="e.g. Demographics, engagement metrics, reach..." />
+                                </Form.Item>
+                            </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
-                            {current > 0 ? (
-                                <Button size="large" onClick={() => setCurrent(current - 1)}>
+                        {/* Action Buttons */}
+                        <div style={{ display: 'flex', gap: 12, marginTop: 28 }}>
+                            {current > 0 && (
+                                <Button size="large" onClick={() => setCurrent(current - 1)} style={{ borderRadius: 10 }}>
                                     Back
                                 </Button>
-                            ) : null}
+                            )}
                             <div style={{ flex: 1 }} />
-                            <Button size="large" loading={loading} onClick={handleSaveDraft}>
+                            <Button size="large" loading={loading} onClick={handleSaveDraft} style={{ borderRadius: 10 }}>
                                 Save as draft
                             </Button>
                             {current < STEPS.length - 1 ? (
@@ -335,7 +437,7 @@ export const ProfileSetup = () => {
                                             /* validation failed */
                                         }
                                     }}
-                                    style={{ color: '#000', fontWeight: 600 }}
+                                    style={{ color: '#000', fontWeight: 600, borderRadius: 10 }}
                                 >
                                     Next
                                 </Button>
@@ -345,7 +447,7 @@ export const ProfileSetup = () => {
                                     size="large"
                                     loading={loading}
                                     onClick={handleComplete}
-                                    style={{ color: '#000', fontWeight: 600 }}
+                                    style={{ color: '#000', fontWeight: 600, borderRadius: 10 }}
                                 >
                                     {isEdit ? 'Save Changes' : 'Complete profile'}
                                 </Button>
