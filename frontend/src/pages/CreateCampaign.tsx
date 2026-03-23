@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Form, Input, Button, Typography, Select, message, InputNumber, Card, Alert, Table, Modal } from 'antd'
-import { ArrowLeftOutlined, MailOutlined } from '@ant-design/icons'
+import { Form, Input, Button, Typography, Select, message, InputNumber, Card, Alert, Drawer, Avatar, Empty, Tag } from 'antd'
+import { ArrowLeftOutlined, MailOutlined, UserOutlined, SearchOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import {
@@ -21,28 +21,52 @@ const primaryColor = BRAND_PORTAL_PRIMARY
 
 export const CreateCampaign = () => {
     const [form] = Form.useForm<CampaignRequest & { preferredContentTypesList?: string[] }>()
-    const [inviteForm] = Form.useForm<{ influencerId: number; message?: string }>()
+    const [inviteForm] = Form.useForm<{ message?: string }>()
     const [loading, setLoading] = useState(false)
     const [createdCampaign, setCreatedCampaign] = useState<CampaignResponse | null>(null)
     const [inviteSubmitting, setInviteSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState<string | null>(null)
-    const [findIdModalOpen, setFindIdModalOpen] = useState(false)
+    const [drawerOpen, setDrawerOpen] = useState(false)
     const [influencerList, setInfluencerList] = useState<InfluencerSearchResult[]>([])
     const [influencerListLoading, setInfluencerListLoading] = useState(false)
+    const [influencerSearch, setInfluencerSearch] = useState('')
+    const [selectedInfluencer, setSelectedInfluencer] = useState<InfluencerSearchResult | null>(null)
     const navigate = useNavigate()
 
-    const openFindIdModal = () => {
-        setFindIdModalOpen(true)
-        setInfluencerListLoading(true)
-        userService
-            .listInfluencers()
-            .then(setInfluencerList)
-            .catch(() => {
-                message.error('Failed to load influencers')
-                setInfluencerList([])
-            })
-            .finally(() => setInfluencerListLoading(false))
+    const openDrawer = () => {
+        setDrawerOpen(true)
+        setInfluencerSearch('')
+        if (influencerList.length === 0) {
+            setInfluencerListLoading(true)
+            userService
+                .listInfluencers()
+                .then(setInfluencerList)
+                .catch(() => {
+                    message.error('Failed to load influencers')
+                    setInfluencerList([])
+                })
+                .finally(() => setInfluencerListLoading(false))
+        }
     }
+
+    const handleSelectInfluencer = (inf: InfluencerSearchResult) => {
+        setSelectedInfluencer(inf)
+        setDrawerOpen(false)
+    }
+
+    const clearSelectedInfluencer = () => {
+        setSelectedInfluencer(null)
+    }
+
+    const filteredInfluencers = influencerList.filter((inf) => {
+        const q = influencerSearch.trim().toLowerCase()
+        if (!q) return true
+        return (
+            inf.displayName?.toLowerCase().includes(q) ||
+            inf.email?.toLowerCase().includes(q) ||
+            String(inf.id).includes(q)
+        )
+    })
 
     const onFinish = async (values: CampaignRequest & { preferredContentTypesList?: string[] }) => {
         setLoading(true)
@@ -65,6 +89,7 @@ export const CreateCampaign = () => {
                 setCreatedCampaign(campaign)
                 message.success('Campaign created successfully')
                 inviteForm.resetFields()
+                setSelectedInfluencer(null)
             } else {
                 const err = 'Invalid response from server. Please try again.'
                 setSubmitError(err)
@@ -79,15 +104,15 @@ export const CreateCampaign = () => {
         }
     }
 
-    const onInviteSubmit = async (values: { influencerId: number; message?: string }) => {
-        if (!createdCampaign) return
+    const onInviteSubmit = async (values: { message?: string }) => {
+        if (!createdCampaign || !selectedInfluencer) return
         setInviteSubmitting(true)
         try {
             await createInvitation(createdCampaign.id, {
-                influencerId: values.influencerId,
+                influencerId: selectedInfluencer.id,
                 message: values.message?.trim() || undefined,
             })
-            message.success('Invitation sent to influencer')
+            message.success(`Invitation sent to ${selectedInfluencer.displayName || 'influencer'}`)
             inviteForm.resetFields()
             navigate('/brand/collaborations', { replace: true })
         } catch (e) {
@@ -198,33 +223,70 @@ export const CreateCampaign = () => {
                             Campaign &quot;{createdCampaign.name}&quot; created
                         </Title>
                         <Text style={{ color: '#aaa', display: 'block', marginBottom: 24 }}>
-                            You can invite an influencer now, or go to the Dashboard and use the Invite button on your
-                            campaign card anytime.
+                            Search for an influencer to invite, or skip and invite later from the Dashboard.
                         </Text>
 
                         <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>
-                            <Form.Item
-                                name="influencerId"
-                                label={
-                                    <span>
-                                        Influencer user ID
-                                        <Button type="link" size="small" onClick={openFindIdModal} style={{ paddingLeft: 8 }}>
-                                            Find user ID
-                                        </Button>
-                                    </span>
-                                }
-                                rules={[{ required: true, message: 'Enter the influencer’s user ID' }]}
-                            >
-                                <InputNumber min={1} step={1} placeholder="e.g. 2" style={{ width: '100%' }} />
+                            {/* Influencer selector */}
+                            <Form.Item label="Invite influencer" required style={{ marginBottom: 16 }}>
+                                {selectedInfluencer ? (
+                                    <Card
+                                        size="small"
+                                        style={{ borderColor: primaryColor, borderWidth: 1.5 }}
+                                        styles={{ body: { padding: 12 } }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                            <Avatar icon={<UserOutlined />} style={{ background: '#333' }} />
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                    <Text strong>{selectedInfluencer.displayName || 'Influencer'}</Text>
+                                                    <Tag color="gold" style={{ fontSize: 11 }}>Selected</Tag>
+                                                </div>
+                                                <Text type="secondary" style={{ fontSize: 12 }}>{selectedInfluencer.email}</Text>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                                                <Button
+                                                    size="small"
+                                                    icon={<SearchOutlined />}
+                                                    onClick={openDrawer}
+                                                >
+                                                    Change
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    danger
+                                                    icon={<CloseCircleOutlined />}
+                                                    onClick={clearSelectedInfluencer}
+                                                />
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ) : (
+                                    <Button
+                                        icon={<SearchOutlined />}
+                                        onClick={openDrawer}
+                                        style={{ width: '100%', height: 48, borderStyle: 'dashed', color: '#aaa' }}
+                                    >
+                                        Search and select an influencer
+                                    </Button>
+                                )}
+                                {!selectedInfluencer && (
+                                    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
+                                        Required to send an invitation
+                                    </Text>
+                                )}
                             </Form.Item>
+
                             <Form.Item name="message" label="Message (optional)">
                                 <TextArea rows={3} placeholder="Personal message to the influencer" />
                             </Form.Item>
+
                             <Form.Item style={{ marginBottom: 0 }}>
                                 <Button
                                     type="primary"
                                     htmlType="submit"
                                     loading={inviteSubmitting}
+                                    disabled={!selectedInfluencer}
                                     icon={<MailOutlined />}
                                     style={{ marginRight: 8, color: '#000000' }}
                                 >
@@ -239,27 +301,75 @@ export const CreateCampaign = () => {
                 </div>
             )}
 
-            <Modal
-                title="Influencer user IDs"
-                open={findIdModalOpen}
-                onCancel={() => setFindIdModalOpen(false)}
-                footer={<Button onClick={() => setFindIdModalOpen(false)}>Close</Button>}
-                width={560}
+            <Drawer
+                title={
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <SearchOutlined />
+                        Search users
+                    </span>
+                }
+                placement="right"
+                open={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                width={440}
             >
-                <p style={{ color: '#666', marginBottom: 12 }}>Copy the ID and paste it into the invite form.</p>
-                <Table
-                    size="small"
-                    loading={influencerListLoading}
-                    dataSource={influencerList}
-                    rowKey="id"
-                    columns={[
-                        { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
-                        { title: 'Email', dataIndex: 'email', key: 'email' },
-                        { title: 'Name', dataIndex: 'displayName', key: 'displayName' },
-                    ]}
-                    pagination={influencerList.length <= 10 ? false : { pageSize: 10 }}
+                <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+                    Click a card to select the influencer and invite them to your campaign.
+                </Text>
+                <Input
+                    value={influencerSearch}
+                    onChange={(e) => setInfluencerSearch(e.target.value)}
+                    prefix={<SearchOutlined style={{ color: '#666' }} />}
+                    placeholder="Search by name, email, or ID"
+                    allowClear
+                    style={{ marginBottom: 16 }}
                 />
-            </Modal>
+                {influencerListLoading ? (
+                    <Text type="secondary">Loading influencers...</Text>
+                ) : filteredInfluencers.length === 0 ? (
+                    <Empty description={influencerSearch ? `No results for "${influencerSearch}"` : 'No influencers found'} />
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {filteredInfluencers.map((inf) => {
+                            const isSelected = selectedInfluencer?.id === inf.id
+                            return (
+                                <Card
+                                    key={inf.id}
+                                    hoverable
+                                    size="small"
+                                    onClick={() => handleSelectInfluencer(inf)}
+                                    style={{
+                                        borderColor: isSelected ? primaryColor : '#2a2a2a',
+                                        borderWidth: isSelected ? 1.5 : 1,
+                                        cursor: 'pointer',
+                                    }}
+                                    styles={{ body: { padding: 12 } }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                        <Avatar
+                                            icon={<UserOutlined />}
+                                            style={{ background: isSelected ? primaryColor : '#333', color: isSelected ? '#000' : '#fff', flexShrink: 0 }}
+                                        />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div>
+                                                <Text strong ellipsis style={{ maxWidth: 240 }}>
+                                                    {inf.displayName || 'Influencer'}
+                                                </Text>
+                                            </div>
+                                            <Text type="secondary" style={{ fontSize: 12 }} ellipsis>
+                                                {inf.email}
+                                            </Text>
+                                        </div>
+                                        {isSelected && (
+                                            <Tag color="gold" style={{ flexShrink: 0, fontSize: 11 }}>Selected</Tag>
+                                        )}
+                                    </div>
+                                </Card>
+                            )
+                        })}
+                    </div>
+                )}
+            </Drawer>
         </BrandPortalLayout>
     )
 }
