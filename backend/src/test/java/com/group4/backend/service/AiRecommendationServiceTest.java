@@ -56,7 +56,8 @@ class AiRecommendationServiceTest {
         dummyInfluencer.setId(10L);
         dummyInfluencer.setName("Alex");
         when(influencerProfileRepository.findAll()).thenReturn(List.of(dummyInfluencer));
-        
+
+        when(groqApiClient.isConfigured()).thenReturn(true);
         String mockGroqResponse = "{\"recommendations\": [{\"influencerId\": 10, \"matchScore\": 95, \"reason\": \"Perfect match.\"}]}";
         when(groqApiClient.getChatCompletion(anyString())).thenReturn(mockGroqResponse);
 
