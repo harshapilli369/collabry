@@ -21,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -97,6 +98,141 @@ class RatingServiceTest {
         assertThatThrownBy(() -> ratingService.submitRating(brandId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("only rate after the collaboration is completed");
+    }
+
+    @Test
+    void submitRating_whenInvitationNotFound_throws() {
+        RatingRequest request = new RatingRequest();
+        request.setInvitationId(999L);
+        request.setRating(5);
+        when(invitationRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> ratingService.submitRating(brandId, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invitation not found");
+        verify(ratingRepository, never()).save(any());
+    }
+
+    @Test
+    void submitRating_whenInvitationAccepted_succeeds() {
+        confirmedInvitation.setStatus(InvitationStatus.ACCEPTED);
+        RatingRequest request = new RatingRequest();
+        request.setInvitationId(100L);
+        request.setRating(4);
+        request.setReview("Good work");
+
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(confirmedInvitation));
+        when(ratingRepository.findByInvitationId(100L)).thenReturn(Optional.empty());
+        when(ratingRepository.save(any(InfluencerRating.class))).thenAnswer(inv -> {
+            InfluencerRating r = inv.getArgument(0);
+            r.setId(2L);
+            r.setCreatedAt(Instant.now());
+            return r;
+        });
+
+        RatingResponse response = ratingService.submitRating(brandId, request);
+
+        assertThat(response.getRating()).isEqualTo(4);
+        assertThat(response.getReview()).isEqualTo("Good work");
+    }
+
+    @Test
+    void submitRating_trimsReviewAndSetsNullWhenBlank() {
+        RatingRequest request = new RatingRequest();
+        request.setInvitationId(100L);
+        request.setRating(5);
+        request.setReview("   ");
+
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(confirmedInvitation));
+        when(ratingRepository.findByInvitationId(100L)).thenReturn(Optional.empty());
+        when(ratingRepository.save(any(InfluencerRating.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        RatingResponse response = ratingService.submitRating(brandId, request);
+
+        assertThat(response.getReview()).isNull();
+    }
+
+    @Test
+    void submitRating_whenReviewNull_savesNullReview() {
+        RatingRequest request = new RatingRequest();
+        request.setInvitationId(100L);
+        request.setRating(5);
+        request.setReview(null);
+
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(confirmedInvitation));
+        when(ratingRepository.findByInvitationId(100L)).thenReturn(Optional.empty());
+        when(ratingRepository.save(any(InfluencerRating.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        RatingResponse response = ratingService.submitRating(brandId, request);
+
+        assertThat(response.getReview()).isNull();
+    }
+
+    @Test
+    void submitRating_whenExistingRatingForInvitation_updatesSameEntity() {
+        InfluencerRating existing = new InfluencerRating();
+        existing.setId(50L);
+        existing.setInvitationId(100L);
+        existing.setRating(3);
+        existing.setReview("Old");
+
+        RatingRequest request = new RatingRequest();
+        request.setInvitationId(100L);
+        request.setRating(5);
+        request.setReview("Updated review");
+
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(confirmedInvitation));
+        when(ratingRepository.findByInvitationId(100L)).thenReturn(Optional.of(existing));
+        when(ratingRepository.save(any(InfluencerRating.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        RatingResponse response = ratingService.submitRating(brandId, request);
+
+        assertThat(response.getRating()).isEqualTo(5);
+        assertThat(response.getReview()).isEqualTo("Updated review");
+        assertThat(existing.getId()).isEqualTo(50L);
+    }
+
+    @Test
+    void getRatingsForInfluencer_returnsMappedListNewestFirst() {
+        InfluencerRating r1 = new InfluencerRating();
+        r1.setId(1L);
+        r1.setInvitationId(100L);
+        r1.setBrandId(brandId);
+        r1.setInfluencerId(influencerId);
+        r1.setRating(5);
+        r1.setReview("A");
+        r1.setCreatedAt(Instant.parse("2025-01-02T10:00:00Z"));
+
+        when(ratingRepository.findByInfluencerIdOrderByCreatedAtDesc(influencerId)).thenReturn(List.of(r1));
+
+        List<RatingResponse> list = ratingService.getRatingsForInfluencer(influencerId);
+
+        assertThat(list).hasSize(1);
+        assertThat(list.get(0).getId()).isEqualTo(1L);
+        assertThat(list.get(0).getInvitationId()).isEqualTo(100L);
+        assertThat(list.get(0).getRating()).isEqualTo(5);
+        assertThat(list.get(0).getReview()).isEqualTo("A");
+    }
+
+    @Test
+    void getRecentReviews_limitsResults() {
+        InfluencerRating r1 = ratingWithRating(5);
+        InfluencerRating r2 = ratingWithRating(4);
+        InfluencerRating r3 = ratingWithRating(3);
+        when(ratingRepository.findByInfluencerIdOrderByCreatedAtDesc(influencerId))
+                .thenReturn(List.of(r1, r2, r3));
+
+        List<RatingResponse> list = ratingService.getRecentReviews(influencerId, 2);
+
+        assertThat(list).hasSize(2);
+        assertThat(list.get(0).getRating()).isEqualTo(5);
+        assertThat(list.get(1).getRating()).isEqualTo(4);
+    }
+
+    private static InfluencerRating ratingWithRating(int value) {
+        InfluencerRating r = new InfluencerRating();
+        r.setRating(value);
+        return r;
     }
 
     @Test
