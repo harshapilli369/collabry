@@ -20,13 +20,14 @@ import { CreateCampaign } from './pages/CreateCampaign'
 import { BrandMyCampaigns } from './pages/BrandMyCampaigns'
 import { InfluencerSearch } from './pages/InfluencerSearch'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { LandingPage } from './pages/LandingPage'
 import './App.css'
 // This is the main App component that renders the routes for the application.
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
 
         {/* Protected Routes */}
