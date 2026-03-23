@@ -29,10 +29,12 @@ export const CreateCampaign = () => {
     const [findIdDrawerOpen, setFindIdDrawerOpen] = useState(false)
     const [influencerList, setInfluencerList] = useState<InfluencerSearchResult[]>([])
     const [influencerListLoading, setInfluencerListLoading] = useState(false)
+    const [influencerSearch, setInfluencerSearch] = useState('')
     const navigate = useNavigate()
 
     const openFindIdDrawer = () => {
         setFindIdDrawerOpen(true)
+        setInfluencerSearch('')
         setInfluencerListLoading(true)
         userService
             .listInfluencers()
@@ -48,6 +50,16 @@ export const CreateCampaign = () => {
         inviteForm.setFieldValue('influencerId', id)
         setFindIdDrawerOpen(false)
     }
+
+    const filteredInfluencers = influencerList.filter((inf) => {
+        const q = influencerSearch.trim().toLowerCase()
+        if (!q) return true
+        return (
+            inf.displayName?.toLowerCase().includes(q) ||
+            inf.email?.toLowerCase().includes(q) ||
+            String(inf.id).includes(q)
+        )
+    })
 
     const onFinish = async (values: CampaignRequest & { preferredContentTypesList?: string[] }) => {
         setLoading(true)
@@ -254,13 +266,20 @@ export const CreateCampaign = () => {
                 <p style={{ color: '#8c8c8c', marginBottom: 12 }}>
                     Pick an influencer card to auto-fill the user ID in your invite form.
                 </p>
+                <Input
+                    value={influencerSearch}
+                    onChange={(e) => setInfluencerSearch(e.target.value)}
+                    placeholder="Search by name, email, or ID"
+                    allowClear
+                    style={{ marginBottom: 12 }}
+                />
                 {influencerListLoading ? (
                     <Text type="secondary">Loading influencers...</Text>
-                ) : influencerList.length === 0 ? (
+                ) : filteredInfluencers.length === 0 ? (
                     <Empty description="No influencers found" />
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        {influencerList.map((inf) => (
+                        {filteredInfluencers.map((inf) => (
                             <Card
                                 key={inf.id}
                                 hoverable
