@@ -19,8 +19,21 @@ public class GroqApiClient {
     @Value("${spring.ai.groq.api-key:dummy}")
     private String apiKey;
 
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+
+    /** Default for Spring: real HTTP client. */
+    public GroqApiClient() {
+        this(new RestTemplate(), new ObjectMapper());
+    }
+
+    /**
+     * Package-private for tests: inject a mock {@link RestTemplate} to avoid network calls.
+     */
+    GroqApiClient(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
+    }
 
     public boolean isConfigured() {
         return apiKey != null && !"dummy".equals(apiKey) && !apiKey.isBlank();
