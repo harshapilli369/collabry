@@ -100,20 +100,23 @@ public class AiRecommendationService {
         List<InfluencerRecommendationDTO> recs = new java.util.ArrayList<>();
         
         // Find best matches via pure Java filtering
+        String campaignName = campaign.getName() != null ? campaign.getName().toLowerCase() : "";
+        String campaignDesc = campaign.getDescription() != null ? campaign.getDescription().toLowerCase() : "";
         for (InfluencerProfile p : allInfluencers) {
             int score = 30 + (int)(Math.random() * 20); // Baseline score
             String reason = "This influencer has a steady following but their primary focus differs from your campaign.";
-            
-            if (p.getNiche().toLowerCase().contains("gaming") && campaign.getName().toLowerCase().contains("gaming")) {
+            String niche = p.getNiche() != null ? p.getNiche().toLowerCase() : "";
+
+            if (niche.contains("gaming") && campaignName.contains("gaming")) {
                 score = 90 + (int)(Math.random() * 8);
                 reason = "Perfect alignment. Ranked in the top 5% for Gaming audiences with extremely high engagement expected for this launch.";
-            } else if (p.getNiche().toLowerCase().contains("technology") && campaign.getName().toLowerCase().contains("tech")) {
+            } else if (niche.contains("technology") && campaignName.contains("tech")) {
                 score = 85 + (int)(Math.random() * 10);
                 reason = "Strong match due to heavy overlap in the Technology sector. Their audience converts highly on gadgets and electronics.";
-            } else if (p.getNiche().toLowerCase().contains("fashion") && campaign.getName().toLowerCase().contains("apparel")) {
+            } else if (niche.contains("fashion") && campaignName.contains("apparel")) {
                 score = 88 + (int)(Math.random() * 11);
                 reason = "Excellent aesthetic overlap. Their highly curated styling feeds align natively with your campaign goals.";
-            } else if (campaign.getDescription() != null && campaign.getDescription().toLowerCase().contains(p.getNiche().toLowerCase())) {
+            } else if (!niche.isEmpty() && campaignDesc.contains(niche)) {
                 score = 75 + (int)(Math.random() * 15);
                 reason = "Solid secondary match. The campaign mentions their specialty, making them a great crossover candidate.";
             }
