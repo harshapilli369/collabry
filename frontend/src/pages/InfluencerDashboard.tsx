@@ -7,6 +7,7 @@ import { getMyInfluencerProfile } from '../services/influencerProfileService'
 import { getMyPayments, type PaymentResponse } from '../services/paymentService'
 import { InfluencerPortalLayout, INFLUENCER_PORTAL_PRIMARY } from '../components/InfluencerPortalLayout'
 import { InfluencerPerformanceCharts } from '../components/InfluencerPerformanceCharts'
+import { InfluencerCampaignCharts } from '../components/InfluencerCampaignCharts'
 
 const { Title, Text } = Typography
 
@@ -125,6 +126,11 @@ export const InfluencerDashboard = () => {
                 {/* Performance Charts */}
                 <Col span={24}>
                     <InfluencerPerformanceCharts invitations={invitations} payments={payments} />
+                </Col>
+
+                {/* Campaign Charts */}
+                <Col span={24}>
+                    <InfluencerCampaignCharts invitations={invitations} />
                 </Col>
 
                 {/* Active Campaigns */}
