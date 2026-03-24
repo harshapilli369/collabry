@@ -77,6 +77,13 @@ class InvitationControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "brand@test.com")
+    void getInvitationById_asBrand_returns403() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        mockMvc.perform(get("/api/invitations/100")).andExpect(status().isForbidden());
+    }
+
+    @Test
     @WithMockUser(username = "influencer@test.com")
     void getInvitationById_asInfluencer_returns200WithCampaignDetails() throws Exception {
         when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
@@ -113,6 +120,30 @@ class InvitationControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "brand@test.com")
+    void respond_asBrand_returns403() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        RespondRequest request = new RespondRequest();
+        request.setAction("ACCEPT");
+        mockMvc.perform(post("/api/invitations/100/respond").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void negotiate_asBrand_returns403() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        NegotiationRequest request = new NegotiationRequest();
+        request.setProposedAmount(java.math.BigDecimal.valueOf(500));
+        mockMvc.perform(put("/api/invitations/100/negotiate").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @WithMockUser(username = "influencer@test.com")
     void negotiate_asInfluencer_returns200() throws Exception {
         when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
@@ -127,6 +158,14 @@ class InvitationControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("NEGOTIATING"));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void confirmTerms_asInfluencer_returns403() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        mockMvc.perform(post("/api/invitations/100/confirm-terms").with(csrf()))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -166,6 +205,26 @@ class InvitationControllerTest {
     void getSentInvitations_asInfluencer_returns403() throws Exception {
         when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
         mockMvc.perform(get("/api/invitations/sent")).andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void getMyInvitationsAsBrand_returns200() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        InvitationResponse resp = new InvitationResponse();
+        resp.setId(2L);
+        when(invitationService.getInvitationsForBrand(10L)).thenReturn(List.of(resp));
+
+        mockMvc.perform(get("/api/invitations/brand/me"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(2));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void getMyInvitationsAsBrand_asInfluencer_returns403() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        mockMvc.perform(get("/api/invitations/brand/me")).andExpect(status().isForbidden());
     }
 
     @Test

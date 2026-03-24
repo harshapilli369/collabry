@@ -157,6 +157,86 @@ class PaymentControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "brand@test.com")
+    void updateStatus_missingStatusKey_returns400() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+
+        mockMvc.perform(put("/api/payments/5/status").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void updateStatus_lowercaseStatus_parsesWithValueOf() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        PaymentResponse resp = new PaymentResponse();
+        resp.setId(5L);
+        resp.setStatus(PaymentStatus.PAID);
+        when(paymentService.updatePaymentStatus(5L, PaymentStatus.PAID, 10L)).thenReturn(resp);
+
+        mockMvc.perform(put("/api/payments/5/status").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("status", "paid"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PAID"));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void updateStatus_asInfluencer_returns403() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+
+        mockMvc.perform(put("/api/payments/5/status").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("status", "PAID"))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void getPaymentsForCampaign_asBrand_returns200() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        PaymentResponse resp = new PaymentResponse();
+        resp.setId(1L);
+        when(paymentService.getPaymentsForCampaign(3L, 10L)).thenReturn(List.of(resp));
+
+        mockMvc.perform(get("/api/payments/campaign/3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void getPaymentsForCampaign_asInfluencer_returns403() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+
+        mockMvc.perform(get("/api/payments/campaign/3"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void getDelayedPayments_asBrand_returns200() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(paymentService.getDelayedPayments(10L)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/payments/delayed"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void getDelayedPayments_asInfluencer_returns403() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+
+        mockMvc.perform(get("/api/payments/delayed"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @WithMockUser(username = "influencer@test.com")
     void getInvoice_isAllowed() throws Exception {
         when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
