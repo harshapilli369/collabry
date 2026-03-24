@@ -81,17 +81,21 @@ function ChartCard({
                 <Button
                     type="text"
                     icon={<FullscreenOutlined />}
-                    onClick={onExpand}
-                    style={{ color: '#555' }}
+                    onClick={(e) => { e.stopPropagation(); onExpand() }}
+                    style={{ color: '#888' }}
                     title="View fullscreen"
                 />
             }
+            onClick={onExpand}
             style={{
                 borderRadius: 16,
                 background: DARK_BG,
                 border: `1px solid ${CARD_BORDER}`,
                 height: '100%',
+                cursor: 'pointer',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
             }}
+            className="chart-card-hover"
             styles={{ body: { paddingTop: 8 } }}
         >
             {children}
