@@ -131,7 +131,23 @@ export const Login = () => {
                     {/* Logo Section */}
                     <div style={{ textAlign: 'center', marginBottom: 30 }}>
                         <div style={{ marginBottom: 20 }}>
-                            <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, borderRadius: 8 }} />
+                            <div
+                                style={{
+                                    width: 64,
+                                    height: 64,
+                                    borderRadius: 16,
+                                    background: 'linear-gradient(135deg, #FFFD82, #BD72EB)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    margin: '0 auto',
+                                    fontWeight: 900,
+                                    fontSize: 28,
+                                    color: '#000',
+                                }}
+                            >
+                                C
+                            </div>
                         </div>
 
                         <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>Collabry</Title>

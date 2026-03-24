@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Typography, Card, Button, message, Modal, Form, Input, Rate } from 'antd'
-import { StarOutlined, CheckOutlined } from '@ant-design/icons'
+import { StarOutlined, CheckOutlined, TeamOutlined } from '@ant-design/icons'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import {
     getMyInvitationsAsBrand,
@@ -101,19 +101,20 @@ export const BrandCollaborations = () => {
     return (
         <BrandPortalLayout activeMenuKey="collaborations">
             <div style={{ marginBottom: 30 }}>
-                <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '3rem' }}>
+                <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '2.5rem' }}>
                     My Collaborations
                 </Title>
-                <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>
-                    Invitations you’ve sent. Rate influencers after a collaboration is accepted or confirmed.
+                <Text style={{ color: '#aaa', fontSize: '1.1rem' }}>
+                    Invitations you have sent. Rate influencers after a collaboration is accepted or confirmed.
                 </Text>
             </div>
 
             {loading ? (
-                <Text type="secondary">Loading…</Text>
+                <Text type="secondary">Loading...</Text>
             ) : invitations.length === 0 ? (
-                <Card bordered={false} style={{ borderRadius: 12, background: '#1c1c1c', border: '1px solid #333' }}>
-                    <Text type="secondary">
+                <Card style={{ borderRadius: 16, background: '#0d0d0d', border: '1px solid #1a1a1a', textAlign: 'center', padding: '40px 0' }}>
+                    <TeamOutlined style={{ fontSize: 40, opacity: 0.2, color: primaryColor, marginBottom: 16, display: 'block' }} />
+                    <Text type="secondary" style={{ fontSize: 16 }}>
                         You have no invitations yet. Create a campaign and invite influencers from the Dashboard.
                     </Text>
                 </Card>
@@ -121,20 +122,19 @@ export const BrandCollaborations = () => {
                 <>
                     {rateableInvitations.length > 0 && (
                         <Card
-                            bordered={false}
-                            style={{ marginBottom: 24, borderRadius: 12, background: '#1c1c1c', border: '1px solid #333' }}
+                            style={{ marginBottom: 24, borderRadius: 16, background: '#0d0d0d', border: `1px solid ${primaryColor}20` }}
                         >
                             <Title level={5} style={{ color: primaryColor, marginBottom: 12 }}>
                                 <StarOutlined style={{ marginRight: 8 }} />
                                 Rate completed collaborations
                             </Title>
                             <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-                                Help other brands by rating influencers you’ve worked with. Your rating and optional
+                                Help other brands by rating influencers you've worked with. Your rating and optional
                                 review will appear on their profile.
                             </Text>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 {rateableInvitations.map((inv) => (
-                                    <Card key={inv.id} size="small" style={{ background: '#0d0d0d', borderRadius: 8, borderColor: '#333' }}>
+                                    <Card key={inv.id} size="small" className="brand-invitation-item" style={{ background: '#141414', borderRadius: 12, borderColor: '#1a1a1a', borderLeft: `3px solid ${primaryColor}` }}>
                                         <div
                                             style={{
                                                 display: 'flex',
@@ -172,8 +172,10 @@ export const BrandCollaborations = () => {
                         All invitations
                     </Title>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        {invitations.map((inv) => (
-                            <Card key={inv.id} size="small" style={{ background: '#1c1c1c', borderRadius: 8, borderColor: '#333' }}>
+                        {invitations.map((inv) => {
+                            const statusColor = (inv.status === 'CONFIRMED' || inv.status === 'ACCEPTED') ? '#52c41a' : inv.status === 'NEGOTIATING' ? '#faad14' : '#888'
+                            return (
+                            <Card key={inv.id} size="small" className="brand-invitation-item" style={{ background: '#141414', borderRadius: 12, borderColor: '#1a1a1a', borderLeft: `3px solid ${statusColor}` }}>
                                 <div
                                     style={{
                                         display: 'flex',
@@ -244,7 +246,7 @@ export const BrandCollaborations = () => {
                                     </div>
                                 </div>
                             </Card>
-                        ))}
+                        )})}
                     </div>
                 </>
             )}

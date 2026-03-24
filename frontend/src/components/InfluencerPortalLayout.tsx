@@ -150,7 +150,7 @@ export function InfluencerPortalLayout({
                 },
             }}
         >
-            <Layout style={{ minHeight: '100vh' }}>
+            <Layout style={{ minHeight: '100vh' }} className="influencer-portal">
                 <Sider
                     width={250}
                     theme="dark"
@@ -188,19 +188,19 @@ export function InfluencerPortalLayout({
 
                     {/* User avatar section */}
                     {headerProfile && (
-                        <div style={{ padding: '16px 20px', margin: '8px 16px', background: '#0d0d0d', borderRadius: 12, border: '1px solid #1a1a1a' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ padding: '10px 14px', margin: '6px 16px', background: '#0d0d0d', borderRadius: 10, border: '1px solid #1a1a1a' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <Avatar
-                                    size={40}
+                                    size={32}
                                     src={headerProfile.profilePictureUrl || undefined}
                                     icon={!headerProfile.profilePictureUrl ? <UserOutlined /> : undefined}
                                     style={{ border: `2px solid ${INFLUENCER_PORTAL_PRIMARY}40`, flexShrink: 0 }}
                                 />
                                 <div style={{ overflow: 'hidden' }}>
-                                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: 600, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    <Text style={{ color: '#fff', fontSize: 13, fontWeight: 600, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                         {headerProfile.name || 'Influencer'}
                                     </Text>
-                                    <Text style={{ color: '#666', fontSize: 12, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    <Text style={{ color: '#666', fontSize: 11, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                         {headerProfile.niche || user?.email}
                                     </Text>
                                 </div>

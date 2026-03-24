@@ -94,8 +94,11 @@ export const InfluencerSearch = () => {
                             Search and filter by niche, followers, engagement rate, and location. Send collaboration invitations with clear campaign details.
                         </Text>
 
-                        <Card bordered={false} style={{ background: cardBg, borderRadius: 12, marginBottom: 24 }}>
-                            <Title level={5} style={{ color: '#ccc', marginTop: 0 }}>Filters</Title>
+                        <Card style={{ background: '#0d0d0d', borderRadius: 16, border: '1px solid #1a1a1a', marginBottom: 24 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                                <SearchOutlined style={{ color: primaryColor }} />
+                                <Text style={{ color: '#fff', fontWeight: 600, fontSize: 15 }}>Filters</Text>
+                            </div>
                             <Form form={form} layout="vertical" onFinish={onSearch}>
                                 <Row gutter={16}>
                                     <Col span={6}>
@@ -124,40 +127,63 @@ export const InfluencerSearch = () => {
                                         </Form.Item>
                                     </Col>
                                 </Row>
-                                <Form.Item>
-                                    <Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={loading} style={{ color: '#000000' }}>Search</Button>
+                                <Form.Item style={{ marginBottom: 0 }}>
+                                    <Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={loading} style={{ borderRadius: 10 }}>Search</Button>
                                 </Form.Item>
                             </Form>
                         </Card>
 
-                        <Title level={5} style={{ color: '#ccc', marginBottom: 12 }}>Results</Title>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                            <Text style={{ color: '#888', fontWeight: 600, fontSize: 15 }}>Results</Text>
+                            {results.length > 0 && <Text style={{ color: '#555', fontSize: 13 }}>{results.length} influencer{results.length !== 1 ? 's' : ''} found</Text>}
+                        </div>
                         {results.length === 0 && !loading && (
-                            <Text type="secondary">Use filters above and click Search to find influencers.</Text>
+                            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                                <SearchOutlined style={{ fontSize: 40, opacity: 0.2, color: primaryColor, marginBottom: 16, display: 'block' }} />
+                                <Text type="secondary" style={{ fontSize: 15 }}>Use filters above and click Search to find influencers.</Text>
+                            </div>
                         )}
                         <Row gutter={[16, 16]}>
-                            {results.map((inf) => (
-                                <Col key={inf.id} xs={24} sm={12} lg={8}>
-                                    <Card size="small" style={{ background: cardBg, borderRadius: 8, borderColor: '#333' }}>
-                                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                                            <Avatar size={48} icon={<UserOutlined />} src={inf.profilePictureUrl} style={{ backgroundColor: primaryColor, color: '#000' }} />
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <Text strong style={{ color: '#fff', fontSize: 15 }}>{inf.name}</Text>
-                                                <div style={{ marginTop: 4 }}>
-                                                    <Text type="secondary" style={{ fontSize: 12 }}>{inf.niche} · {inf.location}</Text>
-                                                </div>
-                                                {(inf.followerCount != null || inf.engagementRate != null || inf.rate != null) && (
+                            {results.map((inf) => {
+                                const engColor = inf.engagementRate != null ? (Number(inf.engagementRate) >= 5 ? '#52c41a' : Number(inf.engagementRate) >= 2 ? '#faad14' : '#ff4d4f') : '#888'
+                                return (
+                                    <Col key={inf.id} xs={24} sm={12} lg={8}>
+                                        <Card
+                                            size="small"
+                                            className="brand-campaign-card"
+                                            style={{ background: '#141414', borderRadius: 12, borderColor: '#1a1a1a' }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                                <Avatar size={48} icon={<UserOutlined />} src={inf.profilePictureUrl} style={{ backgroundColor: primaryColor, color: '#000', flexShrink: 0 }} />
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <Text strong style={{ color: '#fff', fontSize: 15 }}>{inf.name}</Text>
                                                     <div style={{ marginTop: 4 }}>
-                                                        {inf.followerCount != null && <Text type="secondary" style={{ fontSize: 12 }}>{inf.followerCount.toLocaleString()} followers</Text>}
-                                                        {inf.engagementRate != null && <Text type="secondary" style={{ fontSize: 12 }}> · {Number(inf.engagementRate).toFixed(1)}% engagement</Text>}
-                                                        {inf.rate != null && <Text type="secondary" style={{ fontSize: 12 }}> · ${Number(inf.rate).toLocaleString()} rate</Text>}
+                                                        <Text type="secondary" style={{ fontSize: 12 }}>{inf.niche} &middot; {inf.location}</Text>
                                                     </div>
-                                                )}
-                                                <Button type="primary" size="small" style={{ marginTop: 8, color: '#000000' }} onClick={() => openInviteModal(inf)}>Invite</Button>
+                                                    <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                                        {inf.followerCount != null && (
+                                                            <span style={{ fontSize: 11, color: '#aaa', background: '#1a1a1a', padding: '2px 8px', borderRadius: 6 }}>
+                                                                {inf.followerCount >= 1000 ? `${(inf.followerCount / 1000).toFixed(1)}K` : inf.followerCount} followers
+                                                            </span>
+                                                        )}
+                                                        {inf.engagementRate != null && (
+                                                            <span style={{ fontSize: 11, color: engColor, background: '#1a1a1a', padding: '2px 8px', borderRadius: 6 }}>
+                                                                {Number(inf.engagementRate).toFixed(1)}% eng.
+                                                            </span>
+                                                        )}
+                                                        {inf.rate != null && (
+                                                            <span style={{ fontSize: 11, color: '#aaa', background: '#1a1a1a', padding: '2px 8px', borderRadius: 6 }}>
+                                                                ${Number(inf.rate).toLocaleString()}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <Button type="primary" size="small" style={{ marginTop: 10, borderRadius: 8 }} onClick={() => openInviteModal(inf)}>Invite</Button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Card>
-                                </Col>
-                            ))}
+                                        </Card>
+                                    </Col>
+                                )
+                            })}
                         </Row>
 
             <Modal

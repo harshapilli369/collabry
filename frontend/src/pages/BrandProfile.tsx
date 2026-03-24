@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, Button, Typography, Select, message } from 'antd'
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Form, Input, Button, Typography, Select, message, Modal } from 'antd'
+import { ArrowLeftOutlined, InstagramOutlined, LinkedinOutlined, TwitterOutlined, CheckCircleFilled, GlobalOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import {
@@ -15,8 +15,7 @@ import { userService } from '../services/userService'
 const { Title, Text } = Typography
 const { TextArea } = Input
 
-const primaryColor = BRAND_PORTAL_PRIMARY
-const textColor = '#ffffff'
+const PRIMARY = BRAND_PORTAL_PRIMARY
 
 export const BrandProfile = () => {
     const [form] = Form.useForm<BrandProfileRequest>()
@@ -53,7 +52,6 @@ export const BrandProfile = () => {
         try {
             await updateMyBrandProfile(values)
             message.success('Profile saved successfully')
-            // Short delay so success message is visible and backend commit is ready before dashboard loads
             setTimeout(() => {
                 navigate('/brand/profile', { replace: true })
             }, 300)
@@ -64,9 +62,20 @@ export const BrandProfile = () => {
         }
     }
 
-    const handleConnect = async (platform: string, handle: string | undefined) => {
+    const platformLabels: Record<string, string> = { INSTAGRAM: 'Instagram', LINKEDIN: 'LinkedIn', TWITTER: 'Twitter / X' }
+
+    const handleConnect = async (platform: string) => {
+        const fieldMap: Record<string, string> = { INSTAGRAM: 'instagramUrl', LINKEDIN: 'linkedInUrl', TWITTER: 'twitterUrl' }
+        const handle = (form.getFieldValue(fieldMap[platform] as any) as string | undefined)?.trim()
+        const label = platformLabels[platform] || platform
+
         if (!handle) {
-            message.warning(`Please enter a handle/URL for ${platform}`)
+            Modal.warning({
+                title: 'URL Required',
+                content: `Please enter your ${label} URL before connecting.`,
+                okText: 'Got it',
+                centered: true,
+            })
             return
         }
         try {
@@ -74,124 +83,158 @@ export const BrandProfile = () => {
             const u = JSON.parse(localStorage.getItem('user') || '{}')
             u.isVerified = true
             localStorage.setItem('user', JSON.stringify(u))
-            message.success(`Successfully connected ${platform}! Your profile is now verified. Remember to click "Save profile" below!`)
-        } catch (e) {
-            message.error(`Failed to connect ${platform}`)
+            Modal.success({
+                title: `${label} Connected!`,
+                content: `Your ${label} account has been linked successfully. Your brand is now verified! Remember to click "Save Changes" to keep your links.`,
+                okText: 'Awesome',
+                centered: true,
+            })
+        } catch {
+            Modal.error({
+                title: 'Connection Failed',
+                content: `We couldn't connect your ${label} account. Please try again.`,
+                okText: 'OK',
+                centered: true,
+            })
         }
     }
 
     return (
         <BrandPortalLayout activeMenuKey="profile">
-                        <div style={{ marginBottom: 24 }}>
-                            <Button
-                                type="link"
-                                icon={<ArrowLeftOutlined />}
-                                onClick={() => navigate('/brand/profile')}
-                                style={{ color: primaryColor, paddingLeft: 0, marginBottom: 16 }}
-                            >
-                                Back to Profile
-                            </Button>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '0 0 8px' }}>
-                            <Title level={2} style={{ margin: 0, color: textColor }}>
-                                {isEdit ? 'Edit your brand profile' : 'Complete your brand profile'}
-                            </Title>
+            <Button
+                type="link"
+                icon={<ArrowLeftOutlined />}
+                onClick={() => navigate('/brand/profile')}
+                style={{ color: PRIMARY, paddingLeft: 0, marginBottom: 16 }}
+            >
+                Back to Profile
+            </Button>
+
+            <div style={{ maxWidth: 600, margin: '0 auto' }}>
+                {/* Header */}
+                <div style={{ textAlign: 'center', marginBottom: 36 }}>
+                    <div
+                        style={{
+                            width: 56,
+                            height: 56,
+                            borderRadius: 16,
+                            background: `linear-gradient(135deg, ${PRIMARY}, #e6d800)`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 16px',
+                        }}
+                    >
+                        <GlobalOutlined style={{ fontSize: 24, color: '#000' }} />
+                    </div>
+                    <Title level={2} style={{ margin: 0, color: '#fff' }}>
+                        {isEdit ? 'Edit your brand profile' : 'Complete your brand profile'}
+                    </Title>
+                    <Text style={{ color: '#666', fontSize: 14, marginTop: 8, display: 'block' }}>
+                        This is visible to influencers you contact.
+                    </Text>
+                </div>
+
+                <Form form={form} layout="vertical" onFinish={onFinish} disabled={fetching} size="large">
+                    {/* Required Section */}
+                    <div style={{ padding: '20px 24px', background: '#0d0d0d', borderRadius: 12, border: '1px solid #1a1a1a', marginBottom: 16 }}>
+                        <Text style={{ color: PRIMARY, fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
+                            Company Information
+                        </Text>
+                        <Form.Item name="name" label="Company name" rules={[{ required: true, message: 'Company name is required' }]}>
+                            <Input placeholder="Your company or brand name" />
+                        </Form.Item>
+                        <Form.Item name="industry" label="Industry" rules={[{ required: true, message: 'Industry is required' }]}>
+                            <Input placeholder="e.g. Fashion, Technology, Food & Beverage" />
+                        </Form.Item>
+                        <Form.Item name="website" label="Website" rules={[{ required: true, message: 'Website is required' }, { type: 'url', message: 'Enter a valid URL' }]}>
+                            <Input placeholder="https://www.example.com" />
+                        </Form.Item>
+                        <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Email is required' }, { type: 'email', message: 'Enter a valid email' }]}>
+                            <Input placeholder="contact@company.com" />
+                        </Form.Item>
+                    </div>
+
+                    {/* Optional Section */}
+                    <div style={{ padding: '20px 24px', background: '#0d0d0d', borderRadius: 12, border: '1px solid #1a1a1a', marginBottom: 16 }}>
+                        <Text style={{ color: '#666', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
+                            Brand Details
+                        </Text>
+                        <Form.Item name="logoUrl" label="Logo URL">
+                            <Input placeholder="https://example.com/logo.png" />
+                        </Form.Item>
+                        <Form.Item name="description" label="Description">
+                            <TextArea rows={4} placeholder="Tell influencers about your brand and campaigns" />
+                        </Form.Item>
+                        <Form.Item name="budgetRange" label="Budget range">
+                            <Select placeholder="Select your typical campaign budget range" allowClear options={BUDGET_RANGE_OPTIONS} />
+                        </Form.Item>
+                    </div>
+
+                    {/* Social Section */}
+                    <div style={{ padding: '20px 24px', background: '#0d0d0d', borderRadius: 12, border: '1px solid #1a1a1a', marginBottom: 16 }}>
+                        <Text style={{ color: PRIMARY, fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 8 }}>
+                            Social Accounts
+                        </Text>
+                        <Text style={{ color: '#555', fontSize: 12, display: 'block', marginBottom: 20 }}>
+                            Connecting a social account verifies your brand profile.
+                        </Text>
+
+                        <div style={{ marginBottom: 16 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                <InstagramOutlined style={{ color: '#E1306C', fontSize: 18 }} />
+                                <Text style={{ color: '#fff', fontWeight: 500 }}>Instagram</Text>
+                            </div>
+                            <Form.Item name="instagramUrl" style={{ marginBottom: 0 }}>
+                                <Input.Search
+                                    placeholder="https://instagram.com/yourbrand"
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
+                                    onSearch={() => handleConnect('INSTAGRAM')}
+                                />
+                            </Form.Item>
                         </div>
-                            <Text style={{ color: '#aaa' }}>
-                                Manage your brand profile. This is visible to influencers you contact.
-                            </Text>
+
+                        <div style={{ marginBottom: 16 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                <LinkedinOutlined style={{ color: '#0077B5', fontSize: 18 }} />
+                                <Text style={{ color: '#fff', fontWeight: 500 }}>LinkedIn</Text>
+                            </div>
+                            <Form.Item name="linkedInUrl" style={{ marginBottom: 0 }}>
+                                <Input.Search
+                                    placeholder="https://linkedin.com/company/yourbrand"
+                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
+                                    onSearch={() => handleConnect('LINKEDIN')}
+                                />
+                            </Form.Item>
                         </div>
 
-                        <Form
-                            form={form}
-                            layout="vertical"
-                            onFinish={onFinish}
-                            style={{ maxWidth: 640 }}
-                            disabled={fetching}
-                        >
-                            <Title level={5} style={{ color: '#ccc', marginTop: 24 }}>Required</Title>
-                            <Form.Item
-                                name="name"
-                                label="Company name"
-                                rules={[{ required: true, message: 'Company name is required' }]}
-                            >
-                                <Input placeholder="Your company or brand name" />
-                            </Form.Item>
-                            <Form.Item
-                                name="industry"
-                                label="Industry"
-                                rules={[{ required: true, message: 'Industry is required' }]}
-                            >
-                                <Input placeholder="e.g. Fashion, Technology, Food & Beverage" />
-                            </Form.Item>
-                            <Form.Item
-                                name="website"
-                                label="Website"
-                                rules={[
-                                    { required: true, message: 'Website is required' },
-                                    { type: 'url', message: 'Enter a valid URL (e.g. https://example.com)' },
-                                ]}
-                            >
-                                <Input placeholder="https://www.example.com" />
-                            </Form.Item>
-                            <Form.Item
-                                name="email"
-                                label="Email"
-                                rules={[
-                                    { required: true, message: 'Email is required' },
-                                    { type: 'email', message: 'Enter a valid email' },
-                                ]}
-                            >
-                                <Input placeholder="contact@company.com" />
-                            </Form.Item>
-
-                            <Title level={5} style={{ color: '#ccc', marginTop: 24 }}>Optional</Title>
-                            <Form.Item name="logoUrl" label="Logo URL">
-                                <Input placeholder="https://example.com/logo.png" />
-                            </Form.Item>
-                            <Form.Item name="description" label="Description">
-                                <TextArea rows={4} placeholder="Tell influencers about your brand and campaigns" />
-                            </Form.Item>
-                            <Form.Item name="instagramUrl" label="Instagram">
-                                <Input.Search 
-                                    placeholder="https://instagram.com/yourbrand" 
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                <TwitterOutlined style={{ color: '#1DA1F2', fontSize: 18 }} />
+                                <Text style={{ color: '#fff', fontWeight: 500 }}>Twitter / X</Text>
+                            </div>
+                            <Form.Item name="twitterUrl" style={{ marginBottom: 0 }}>
+                                <Input.Search
+                                    placeholder="https://twitter.com/yourbrand"
                                     enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
-                                    onSearch={(val) => handleConnect('INSTAGRAM', val)}
+                                    onSearch={() => handleConnect('TWITTER')}
                                 />
                             </Form.Item>
-                            <Form.Item name="linkedInUrl" label="LinkedIn">
-                                <Input.Search 
-                                    placeholder="https://linkedin.com/company/yourbrand" 
-                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
-                                    onSearch={(val) => handleConnect('LINKEDIN', val)}
-                                />
-                            </Form.Item>
-                            <Form.Item name="twitterUrl" label="Twitter / X">
-                                <Input.Search 
-                                    placeholder="https://twitter.com/yourbrand" 
-                                    enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
-                                    onSearch={(val) => handleConnect('TWITTER', val)}
-                                />
-                            </Form.Item>
+                        </div>
+                    </div>
 
-                            <Form.Item name="budgetRange" label="Budget range">
-                                <Select
-                                    placeholder="Select your typical campaign budget range"
-                                    allowClear
-                                    options={BUDGET_RANGE_OPTIONS}
-                                />
-                            </Form.Item>
+                    <div style={{ marginTop: 16, padding: '12px 16px', background: `${PRIMARY}10`, borderRadius: 8, border: `1px solid ${PRIMARY}20`, marginBottom: 24 }}>
+                        <CheckCircleFilled style={{ color: PRIMARY, marginRight: 8 }} />
+                        <Text style={{ color: '#aaa', fontSize: 12 }}>Connecting a social account verifies your brand and builds trust with influencers.</Text>
+                    </div>
 
-                            <Form.Item style={{ marginTop: 32 }}>
-                                <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    loading={loading}
-                                    style={{ color: '#000', fontWeight: 600 }}
-                                >
-                                    {isEdit ? 'Save Changes' : 'Complete profile'}
-                                </Button>
-                            </Form.Item>
-                        </Form>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" loading={loading} size="large" style={{ color: '#000', fontWeight: 600, borderRadius: 10, width: '100%' }}>
+                            {isEdit ? 'Save Changes' : 'Complete profile'}
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </div>
         </BrandPortalLayout>
     )
 }

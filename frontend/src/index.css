@@ -100,6 +100,19 @@ body {
   transform: translateX(8px);
 }
 
+/* Influencer Portal - Purple Gradient Buttons */
+.influencer-portal .ant-btn-primary {
+  background: linear-gradient(135deg, #d98eff, #8e44ad) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+.influencer-portal .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #8e44ad, #d98eff) !important;
+  box-shadow: 0 4px 16px rgba(189, 114, 235, 0.4) !important;
+}
+
 /* Influencer Portal Hover Effects */
 .influencer-stat-card:hover {
   transform: translateY(-4px) !important;
@@ -133,4 +146,51 @@ body {
 /* Table row hover for influencer portal */
 .influencer-table .ant-table-tbody > tr:hover > td {
   background: #1a0a2e !important;
+}
+
+/* Brand Portal - Gradient Yellow Buttons */
+.ant-btn-primary {
+  background: linear-gradient(135deg, #FFFD82, #e6d800) !important;
+  border: none !important;
+  color: #000 !important;
+  font-weight: 600 !important;
+}
+
+.ant-btn-primary:hover {
+  background: linear-gradient(135deg, #e6d800, #FFFD82) !important;
+  box-shadow: 0 4px 16px rgba(255, 253, 130, 0.3) !important;
+}
+
+/* Brand Portal Hover Effects */
+.brand-stat-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 30px rgba(255, 253, 130, 0.08) !important;
+}
+
+.brand-stat-card {
+  transition: all 0.3s ease !important;
+}
+
+.brand-invitation-item:hover {
+  border-color: #FFFD8240 !important;
+  transform: translateX(4px);
+  box-shadow: 0 4px 20px rgba(255, 253, 130, 0.06);
+}
+
+.brand-invitation-item {
+  transition: all 0.3s ease !important;
+}
+
+.brand-campaign-card:hover {
+  border-color: #FFFD8230 !important;
+  box-shadow: 0 4px 20px rgba(255, 253, 130, 0.06);
+}
+
+.brand-campaign-card {
+  transition: all 0.3s ease !important;
+}
+
+/* Brand table row hover */
+.brand-table .ant-table-tbody > tr:hover > td {
+  background: #1a1a08 !important;
 }
