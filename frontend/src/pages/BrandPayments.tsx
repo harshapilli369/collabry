@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Typography, Card, Row, Col, Table, Tag, Button, Modal, Form, InputNumber, Input, DatePicker, Select, message } from 'antd'
-import { PlusCircleOutlined, DownloadOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined, DownloadOutlined, DollarOutlined, ClockCircleOutlined, WarningOutlined } from '@ant-design/icons'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import { createPayment, getDelayedPayments, getInvoice, updatePaymentStatus, PAYMENT_STATUS_LABELS, PAYMENT_STATUS_COLORS, type PaymentResponse, type PaymentStatus, type PaymentRequest } from '../services/paymentService'
 import { getMyCampaigns, type CampaignResponse } from '../services/campaignService'
@@ -130,43 +130,46 @@ export const BrandPayments = () => {
         <BrandPortalLayout activeMenuKey="payments">
                         <div style={{ marginBottom: 30, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
-                                <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '3rem' }}>Payments</Title>
-                                <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>Manage milestone payments for your campaigns.</Text>
+                                <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '2.5rem' }}>Payments</Title>
+                                <Text style={{ color: '#aaa', fontSize: '1.1rem' }}>Manage milestone payments for your campaigns.</Text>
                             </div>
-                            <Button type="primary" icon={<PlusCircleOutlined />} size="large" style={{ color: '#000000' }} onClick={() => setModalOpen(true)}>
+                            <Button type="primary" icon={<PlusCircleOutlined />} size="large" style={{ color: '#000', fontWeight: 600, borderRadius: 10 }} onClick={() => setModalOpen(true)}>
                                 Create Payment
                             </Button>
                         </div>
 
-                        <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
+                        <Row gutter={[20, 20]} style={{ marginBottom: 24 }}>
                             <Col span={8}>
-                                <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>
-                                    <Text type="secondary">Total Disbursed</Text>
-                                    <Title level={2} style={{ margin: '10px 0 0', color: '#52c41a' }}>${totalPaid.toLocaleString('en-US', { minimumFractionDigits: 2 })}</Title>
+                                <Card className="brand-stat-card" style={{ borderRadius: 16, textAlign: 'center', background: '#0d0d0d', border: '1px solid #52c41a20' }}>
+                                    <DollarOutlined style={{ fontSize: 24, color: '#52c41a', marginBottom: 8 }} />
+                                    <Text type="secondary" style={{ display: 'block' }}>Total Disbursed</Text>
+                                    <Title level={2} style={{ margin: '8px 0 0', color: '#52c41a' }}>${totalPaid.toLocaleString('en-US', { minimumFractionDigits: 2 })}</Title>
                                 </Card>
                             </Col>
                             <Col span={8}>
-                                <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>
-                                    <Text type="secondary">Pending / Delayed</Text>
-                                    <Title level={2} style={{ margin: '10px 0 0', color: '#fa8c16' }}>${totalPending.toLocaleString('en-US', { minimumFractionDigits: 2 })}</Title>
+                                <Card className="brand-stat-card" style={{ borderRadius: 16, textAlign: 'center', background: '#0d0d0d', border: '1px solid #fa8c1620' }}>
+                                    <ClockCircleOutlined style={{ fontSize: 24, color: '#fa8c16', marginBottom: 8 }} />
+                                    <Text type="secondary" style={{ display: 'block' }}>Pending / Delayed</Text>
+                                    <Title level={2} style={{ margin: '8px 0 0', color: '#fa8c16' }}>${totalPending.toLocaleString('en-US', { minimumFractionDigits: 2 })}</Title>
                                 </Card>
                             </Col>
                             <Col span={8}>
-                                <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>
-                                    <Text type="secondary">Delayed Payments</Text>
-                                    <Title level={2} style={{ margin: '10px 0 0', color: '#ff4d4f' }}>{delayedPayments.length}</Title>
+                                <Card className="brand-stat-card" style={{ borderRadius: 16, textAlign: 'center', background: '#0d0d0d', border: '1px solid #ff4d4f20' }}>
+                                    <WarningOutlined style={{ fontSize: 24, color: '#ff4d4f', marginBottom: 8 }} />
+                                    <Text type="secondary" style={{ display: 'block' }}>Delayed Payments</Text>
+                                    <Title level={2} style={{ margin: '8px 0 0', color: '#ff4d4f' }}>{delayedPayments.length}</Title>
                                 </Card>
                             </Col>
                         </Row>
 
                         {delayedPayments.length > 0 && (
-                            <Card bordered={false} style={{ borderRadius: 12, marginBottom: 24, borderLeft: '4px solid #ff4d4f' }}>
-                                <Title level={5} style={{ color: '#ff4d4f', margin: 0 }}>⚠ Payment Reminders</Title>
+                            <Card style={{ borderRadius: 12, marginBottom: 24, borderLeft: '4px solid #ff4d4f', background: '#1a0a0a', border: '1px solid #ff4d4f20' }}>
+                                <Title level={5} style={{ color: '#ff4d4f', margin: 0 }}>Payment Reminders</Title>
                                 <Text type="secondary">{delayedPayments.length} payment(s) are overdue. Please process them as soon as possible.</Text>
                             </Card>
                         )}
 
-                        <Card bordered={false} style={{ borderRadius: 12 }}>
+                        <Card style={{ borderRadius: 16, background: '#0d0d0d', border: '1px solid #1a1a1a' }}>
                             <Table
                                 dataSource={payments}
                                 columns={columns}
@@ -174,6 +177,7 @@ export const BrandPayments = () => {
                                 loading={loading}
                                 pagination={{ pageSize: 10 }}
                                 locale={{ emptyText: 'No payments yet. Create one using the button above.' }}
+                                className="brand-table"
                             />
                         </Card>
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Form, Input, Button, Typography, Select, message, InputNumber, Card, Alert, Table, Modal } from 'antd'
-import { ArrowLeftOutlined, MailOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, MailOutlined, FundProjectionScreenOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import {
@@ -17,7 +17,7 @@ import { userService, type InfluencerSearchResult } from '../services/userServic
 const { Title, Text } = Typography
 const { TextArea } = Input
 
-const primaryColor = BRAND_PORTAL_PRIMARY
+const PRIMARY = BRAND_PORTAL_PRIMARY
 
 export const CreateCampaign = () => {
     const [form] = Form.useForm<CampaignRequest & { preferredContentTypesList?: string[] }>()
@@ -97,147 +97,144 @@ export const CreateCampaign = () => {
         }
     }
 
-    const goToDashboard = () => {
-        navigate('/brand/dashboard', { replace: true })
-    }
-
     return (
         <BrandPortalLayout activeMenuKey="campaign-create">
-            <div style={{ marginBottom: 24 }}>
-                <Button
-                    type="link"
-                    icon={<ArrowLeftOutlined />}
-                    onClick={() => navigate('/brand/dashboard')}
-                    style={{ color: primaryColor, paddingLeft: 0, marginBottom: 16 }}
-                >
-                    Back to Dashboard
-                </Button>
-                <Title level={1} style={{ color: primaryColor, margin: '0 0 8px', fontSize: '2rem' }}>
-                    Create Campaign
-                </Title>
-                <Text style={{ color: '#aaa' }}>
-                    Set up a new influencer campaign with budget, goals, and content preferences.
-                </Text>
-            </div>
+            <Button
+                type="link"
+                icon={<ArrowLeftOutlined />}
+                onClick={() => navigate('/brand/dashboard')}
+                style={{ color: PRIMARY, paddingLeft: 0, marginBottom: 16 }}
+            >
+                Back to Dashboard
+            </Button>
 
-            {!createdCampaign ? (
-                <Form form={form} layout="vertical" onFinish={onFinish} style={{ maxWidth: 640 }}>
-                    {submitError && (
-                        <Alert
-                            type="error"
-                            message={submitError}
-                            showIcon
-                            closable
-                            onClose={() => setSubmitError(null)}
-                            style={{ marginBottom: 16 }}
-                        />
-                    )}
-                    <Title level={5} style={{ color: '#ccc', marginTop: 0 }}>
-                        Required
-                    </Title>
-                    <Form.Item
-                        name="name"
-                        label="Campaign name"
-                        rules={[{ required: true, message: 'Campaign name is required' }]}
+            <div style={{ maxWidth: 600, margin: '0 auto' }}>
+                {/* Header */}
+                <div style={{ textAlign: 'center', marginBottom: 36 }}>
+                    <div
+                        style={{
+                            width: 56,
+                            height: 56,
+                            borderRadius: 16,
+                            background: `linear-gradient(135deg, ${PRIMARY}, #e6d800)`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 16px',
+                        }}
                     >
-                        <Input placeholder="e.g. Spring Collection Launch 2025" />
-                    </Form.Item>
-                    <Form.Item
-                        name="budgetRange"
-                        label="Budget range"
-                        rules={[{ required: true, message: 'Budget range is required' }]}
-                    >
-                        <Select placeholder="Select campaign budget range" options={BUDGET_RANGE_OPTIONS} />
-                    </Form.Item>
+                        <FundProjectionScreenOutlined style={{ fontSize: 24, color: '#000' }} />
+                    </div>
+                    <Title level={2} style={{ margin: 0, color: '#fff' }}>Create Campaign</Title>
+                    <Text style={{ color: '#666', fontSize: 14, marginTop: 8, display: 'block' }}>
+                        Set up a new influencer campaign with budget, goals, and content preferences.
+                    </Text>
+                </div>
 
-                    <Title level={5} style={{ color: '#ccc', marginTop: 24 }}>
-                        Optional
-                    </Title>
-                    <Form.Item name="description" label="Description">
-                        <TextArea rows={4} placeholder="Describe the campaign, deliverables, and key messages" />
-                    </Form.Item>
-                    <Form.Item name="campaignGoal" label="Campaign goal">
-                        <Select placeholder="Select primary goal" allowClear options={CAMPAIGN_GOAL_OPTIONS} />
-                    </Form.Item>
-                    <Form.Item name="preferredContentTypesList" label="Preferred content types">
-                        <Select
-                            mode="multiple"
-                            placeholder="Select content types (e.g. Reels, YouTube)"
-                            allowClear
-                            options={PREFERRED_CONTENT_OPTIONS}
-                        />
-                    </Form.Item>
-                    <Form.Item name="startDate" label="Start date">
-                        <Input type="date" />
-                    </Form.Item>
-                    <Form.Item name="endDate" label="End date">
-                        <Input type="date" />
-                    </Form.Item>
-                    <Form.Item name="numberOfInfluencers" label="Number of influencers">
-                        <InputNumber min={1} placeholder="e.g. 5" style={{ width: '100%' }} />
-                    </Form.Item>
+                {!createdCampaign ? (
+                    <Form form={form} layout="vertical" onFinish={onFinish} size="large">
+                        {submitError && (
+                            <Alert type="error" message={submitError} showIcon closable onClose={() => setSubmitError(null)} style={{ marginBottom: 16, borderRadius: 10 }} />
+                        )}
 
-                    <Form.Item style={{ marginTop: 32 }}>
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            loading={loading}
-                            style={{ minWidth: 160, fontWeight: 600, color: '#000000' }}
-                        >
-                            Create campaign
+                        {/* Required */}
+                        <div style={{ padding: '20px 24px', background: '#0d0d0d', borderRadius: 12, border: '1px solid #1a1a1a', marginBottom: 16 }}>
+                            <Text style={{ color: PRIMARY, fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
+                                Campaign Basics
+                            </Text>
+                            <Form.Item name="name" label="Campaign name" rules={[{ required: true, message: 'Campaign name is required' }]}>
+                                <Input placeholder="e.g. Spring Collection Launch 2025" />
+                            </Form.Item>
+                            <Form.Item name="budgetRange" label="Budget range" rules={[{ required: true, message: 'Budget range is required' }]}>
+                                <Select placeholder="Select campaign budget range" options={BUDGET_RANGE_OPTIONS} />
+                            </Form.Item>
+                        </div>
+
+                        {/* Optional */}
+                        <div style={{ padding: '20px 24px', background: '#0d0d0d', borderRadius: 12, border: '1px solid #1a1a1a', marginBottom: 16 }}>
+                            <Text style={{ color: '#666', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
+                                Campaign Details
+                            </Text>
+                            <Form.Item name="description" label="Description">
+                                <TextArea rows={4} placeholder="Describe the campaign, deliverables, and key messages" />
+                            </Form.Item>
+                            <Form.Item name="campaignGoal" label="Campaign goal">
+                                <Select placeholder="Select primary goal" allowClear options={CAMPAIGN_GOAL_OPTIONS} />
+                            </Form.Item>
+                            <Form.Item name="preferredContentTypesList" label="Preferred content types">
+                                <Select mode="multiple" placeholder="Select content types" allowClear options={PREFERRED_CONTENT_OPTIONS} />
+                            </Form.Item>
+                        </div>
+
+                        {/* Timeline */}
+                        <div style={{ padding: '20px 24px', background: '#0d0d0d', borderRadius: 12, border: '1px solid #1a1a1a', marginBottom: 24 }}>
+                            <Text style={{ color: '#666', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
+                                Timeline & Scale
+                            </Text>
+                            <Form.Item name="startDate" label="Start date">
+                                <Input type="date" />
+                            </Form.Item>
+                            <Form.Item name="endDate" label="End date">
+                                <Input type="date" />
+                            </Form.Item>
+                            <Form.Item name="numberOfInfluencers" label="Number of influencers">
+                                <InputNumber min={1} placeholder="e.g. 5" style={{ width: '100%' }} />
+                            </Form.Item>
+                        </div>
+
+                        <Button type="primary" htmlType="submit" loading={loading} size="large" block style={{ fontWeight: 600, color: '#000', borderRadius: 10 }}>
+                            Create Campaign
                         </Button>
-                    </Form.Item>
-                </Form>
-            ) : (
-                <div style={{ maxWidth: 640 }}>
+                    </Form>
+                ) : (
                     <Card
-                        style={{ marginBottom: 24, borderColor: primaryColor, borderWidth: 1 }}
-                        styles={{ body: { padding: 24 } }}
+                        style={{
+                            borderRadius: 16,
+                            background: '#0d0d0d',
+                            border: `1px solid ${PRIMARY}30`,
+                            boxShadow: `0 4px 20px ${PRIMARY}08`,
+                        }}
                     >
-                        <Title level={5} style={{ color: primaryColor, marginTop: 0 }}>
-                            Campaign &quot;{createdCampaign.name}&quot; created
-                        </Title>
-                        <Text style={{ color: '#aaa', display: 'block', marginBottom: 24 }}>
-                            You can invite an influencer now, or go to the Dashboard and use the Invite button on your
-                            campaign card anytime.
-                        </Text>
+                        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                            <CheckCircleFilled style={{ fontSize: 48, color: PRIMARY, marginBottom: 12 }} />
+                            <Title level={3} style={{ color: PRIMARY, margin: 0 }}>
+                                "{createdCampaign.name}" created!
+                            </Title>
+                            <Text style={{ color: '#888', display: 'block', marginTop: 8 }}>
+                                Invite an influencer now, or do it later from the Dashboard.
+                            </Text>
+                        </div>
 
-                        <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>
+                        <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit} size="large">
                             <Form.Item
                                 name="influencerId"
                                 label={
                                     <span>
-                                        Influencer user ID
+                                        Influencer user ID{' '}
                                         <Button type="link" size="small" onClick={openFindIdModal} style={{ paddingLeft: 8 }}>
                                             Find user ID
                                         </Button>
                                     </span>
                                 }
-                                rules={[{ required: true, message: 'Enter the influencer’s user ID' }]}
+                                rules={[{ required: true, message: 'Enter the influencer user ID' }]}
                             >
                                 <InputNumber min={1} step={1} placeholder="e.g. 2" style={{ width: '100%' }} />
                             </Form.Item>
                             <Form.Item name="message" label="Message (optional)">
                                 <TextArea rows={3} placeholder="Personal message to the influencer" />
                             </Form.Item>
-                            <Form.Item style={{ marginBottom: 0 }}>
-                                <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    loading={inviteSubmitting}
-                                    icon={<MailOutlined />}
-                                    style={{ marginRight: 8, color: '#000000' }}
-                                >
-                                    Send invitation
+                            <div style={{ display: 'flex', gap: 12 }}>
+                                <Button type="primary" htmlType="submit" loading={inviteSubmitting} icon={<MailOutlined />} style={{ color: '#000', fontWeight: 600, borderRadius: 10, flex: 1 }}>
+                                    Send Invitation
                                 </Button>
-                                <Button type="default" onClick={goToDashboard}>
-                                    Skip — go to Dashboard
+                                <Button onClick={() => navigate('/brand/dashboard', { replace: true })} style={{ borderRadius: 10 }}>
+                                    Skip to Dashboard
                                 </Button>
-                            </Form.Item>
+                            </div>
                         </Form>
                     </Card>
-                </div>
-            )}
+                )}
+            </div>
 
             <Modal
                 title="Influencer user IDs"

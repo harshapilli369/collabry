@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ConfigProvider, Layout, Menu, Typography, theme } from 'antd'
+import { Avatar, ConfigProvider, Layout, Menu, Typography, theme } from 'antd'
 import type { MenuProps } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -33,12 +33,7 @@ export type BrandPortalMenuKey =
 type BrandPortalLayoutProps = {
     children: ReactNode
     activeMenuKey: BrandPortalMenuKey
-    /** Force open submenu keys (defaults include `campaign` when active key is a campaign sub-item). */
     menuOpenKeys?: string[]
-    /**
-     * When provided (including `null`), used for the header and no extra /me fetch runs.
-     * Omit to load profile for the header inside the layout.
-     */
     brandProfileForHeader?: BrandProfileResponse | null
 }
 
@@ -72,7 +67,6 @@ export function BrandPortalLayout({
         navigate('/login', { replace: true })
     }, [navigate])
 
-    /** Submenu item `onClick` is unreliable in Ant Design Menu; navigation is handled here. */
     const onMenuClick = useCallback<NonNullable<MenuProps['onClick']>>(
         ({ key }) => {
             if (key === 'logout') {
@@ -183,7 +177,7 @@ export function BrandPortalLayout({
                     },
                     Menu: {
                         darkItemBg: '#000000',
-                        darkItemSelectedBg: '#333333',
+                        darkItemSelectedBg: '#2a2a10',
                     },
                     Descriptions: {
                         colorTextSecondary: '#8c8c8c',
@@ -192,13 +186,70 @@ export function BrandPortalLayout({
             }}
         >
             <Layout style={{ minHeight: '100vh' }}>
-                <Sider width={250} theme="dark">
-                    <div style={{ padding: '20px', textAlign: 'center' }}>
+                <Sider
+                    width={250}
+                    theme="dark"
+                    style={{
+                        borderRight: `1px solid ${BRAND_PORTAL_PRIMARY}15`,
+                        boxShadow: `1px 0 20px ${BRAND_PORTAL_PRIMARY}05`,
+                    }}
+                >
+                    {/* Logo */}
+                    <div style={{ padding: '24px 20px 8px', textAlign: 'center' }}>
+                        <div
+                            style={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 12,
+                                background: `linear-gradient(135deg, ${BRAND_PORTAL_PRIMARY}, #e6d800)`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 8px',
+                                fontWeight: 900,
+                                fontSize: 20,
+                                color: '#000',
+                            }}
+                        >
+                            C
+                        </div>
                         <Title level={4} style={{ color: '#fff', margin: 0 }}>
                             Collabry
                         </Title>
-                        <Text style={{ color: BRAND_PORTAL_PRIMARY }}>Brand Portal</Text>
+                        <Text style={{ color: BRAND_PORTAL_PRIMARY, fontSize: 12, letterSpacing: 1, textTransform: 'uppercase' }}>
+                            Brand Portal
+                        </Text>
                     </div>
+
+                    {/* Brand profile card in sidebar */}
+                    {headerProfile && (
+                        <div style={{ padding: '16px 20px', margin: '8px 16px', background: '#0d0d0d', borderRadius: 12, border: '1px solid #1a1a1a' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <Avatar
+                                    size={40}
+                                    src={headerProfile.logoUrl || undefined}
+                                    style={{
+                                        border: `2px solid ${BRAND_PORTAL_PRIMARY}40`,
+                                        flexShrink: 0,
+                                        backgroundColor: !headerProfile.logoUrl ? BRAND_PORTAL_PRIMARY : undefined,
+                                        color: !headerProfile.logoUrl ? '#000' : undefined,
+                                        fontWeight: 700,
+                                    }}
+                                >
+                                    {!headerProfile.logoUrl && (headerProfile.name?.charAt(0) || 'B')}
+                                </Avatar>
+                                <div style={{ overflow: 'hidden' }}>
+                                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: 600, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {headerProfile.name || 'Brand'}
+                                    </Text>
+                                    <Text style={{ color: '#666', fontSize: 12, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {headerProfile.industry || user?.email}
+                                    </Text>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <Menu
                         theme="dark"
                         mode="inline"
@@ -206,6 +257,7 @@ export function BrandPortalLayout({
                         defaultOpenKeys={computedOpenKeys}
                         items={menuItems}
                         onClick={onMenuClick}
+                        style={{ marginTop: 8 }}
                     />
                 </Sider>
                 <Layout>
@@ -216,13 +268,26 @@ export function BrandPortalLayout({
                             alignItems: 'center',
                             justifyContent: 'flex-end',
                             background: pageBackgroundColor,
+                            borderBottom: '1px solid #111',
                         }}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Text style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 500 }}>{headerHandle}</Text>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Text style={{ color: '#888', fontSize: '0.95rem', fontWeight: 500 }}>{headerHandle}</Text>
                             {user?.isVerified && (
-                                <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.2rem' }} title="Verified Brand" />
+                                <CheckCircleFilled style={{ color: BRAND_PORTAL_PRIMARY, fontSize: '1.2rem' }} title="Verified Brand" />
                             )}
+                            <Avatar
+                                size={36}
+                                src={headerProfile?.logoUrl || undefined}
+                                style={{
+                                    border: `2px solid ${BRAND_PORTAL_PRIMARY}40`,
+                                    backgroundColor: !headerProfile?.logoUrl ? BRAND_PORTAL_PRIMARY : undefined,
+                                    color: !headerProfile?.logoUrl ? '#000' : undefined,
+                                    fontWeight: 700,
+                                }}
+                            >
+                                {!headerProfile?.logoUrl && (headerProfile?.name?.charAt(0) || 'B')}
+                            </Avatar>
                         </div>
                     </Header>
                     <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>{children}</Content>

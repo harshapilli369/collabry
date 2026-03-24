@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Typography, Button, ConfigProvider, Spin, theme } from 'antd'
+import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { confirmEmail } from '../services/authService'
 
 const { Title, Text } = Typography
+const PRIMARY = '#FFFD82'
+const PURPLE = '#BD72EB'
 
 export const ConfirmEmail = () => {
     const [searchParams] = useSearchParams()
@@ -23,11 +26,13 @@ export const ConfirmEmail = () => {
                 localStorage.setItem('token', data.token)
                 localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role }))
                 setStatus('success')
-                if (data.role === 'INFLUENCER') {
-                    navigate('/influencer/profile/edit', { replace: true })
-                } else {
-                    navigate('/brand/dashboard', { replace: true })
-                }
+                setTimeout(() => {
+                    if (data.role === 'INFLUENCER') {
+                        navigate('/influencer/profile/edit', { replace: true })
+                    } else {
+                        navigate('/brand/dashboard', { replace: true })
+                    }
+                }, 2000)
             })
             .catch((err) => {
                 setStatus('error')
@@ -35,65 +40,44 @@ export const ConfirmEmail = () => {
             })
     }, [token])
 
-    const primaryColor = '#FFFD82'
-    const textColor = '#ffffff'
-    const pageBackgroundColor = '#000000'
-    const cardBackgroundColor = '#141414'
-
     return (
         <ConfigProvider
             theme={{
                 algorithm: theme.darkAlgorithm,
-                token: {
-                    colorPrimary: primaryColor,
-                    colorText: textColor,
-                    borderRadius: 8,
-                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-                },
-                components: {
-                    Button: {},
-                },
+                token: { colorPrimary: PRIMARY, colorText: '#ffffff', borderRadius: 8, fontFamily: 'Inter, sans-serif' },
             }}
         >
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: '100vh',
-                backgroundColor: pageBackgroundColor,
-            }}>
-                <div style={{
-                    width: '100%',
-                    maxWidth: 400,
-                    padding: 40,
-                    backgroundColor: cardBackgroundColor,
-                    borderRadius: 16,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                    textAlign: 'center',
-                }}>
-                    <div style={{ marginBottom: 24 }}>
-                        <img src="/logo.png" alt="Collabry Logo" style={{ height: 60, borderRadius: 8 }} />
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#000', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '20%', left: '30%', width: 400, height: 400, borderRadius: '50%', background: `radial-gradient(circle, ${PRIMARY}06 0%, transparent 70%)`, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '25%', right: '25%', width: 300, height: 300, borderRadius: '50%', background: `radial-gradient(circle, ${PURPLE}06 0%, transparent 70%)`, pointerEvents: 'none' }} />
+
+                <div style={{ width: '100%', maxWidth: 420, padding: '48px 40px', backgroundColor: '#0d0d0d', borderRadius: 20, border: `1px solid ${PRIMARY}10`, boxShadow: '0 8px 40px rgba(0,0,0,0.4)', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+                    <div style={{ width: 52, height: 52, borderRadius: 14, background: `linear-gradient(135deg, ${PRIMARY}, ${PURPLE})`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontWeight: 900, fontSize: 24, color: '#000' }}>
+                        C
                     </div>
+
                     {status === 'loading' && (
                         <>
-                            <Spin size="large" style={{ marginBottom: 16 }} />
-                            <Title level={4} style={{ color: textColor }}>Confirming your email...</Title>
-                            <Text type="secondary">Please wait.</Text>
+                            <Spin size="large" style={{ marginBottom: 20 }} />
+                            <Title level={3} style={{ color: '#fff', margin: 0 }}>Confirming your email...</Title>
+                            <Text style={{ color: '#666', display: 'block', marginTop: 8 }}>Please wait a moment.</Text>
                         </>
                     )}
+
                     {status === 'success' && (
                         <>
-                            <Title level={4} style={{ color: textColor }}>Email confirmed</Title>
-                            <Text type="secondary">Redirecting...</Text>
+                            <CheckCircleFilled style={{ fontSize: 48, color: '#52c41a', marginBottom: 16 }} />
+                            <Title level={3} style={{ color: '#fff', margin: 0 }}>Email Confirmed!</Title>
+                            <Text style={{ color: '#666', display: 'block', marginTop: 8 }}>Redirecting you to your dashboard...</Text>
                         </>
                     )}
+
                     {status === 'error' && (
                         <>
-                            <Title level={4} style={{ color: textColor }}>Confirmation failed</Title>
-                            <Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
-                                {errorMessage}
-                            </Text>
-                            <Button type="primary" size="large" style={{ color: '#000000' }} onClick={() => navigate('/signup')}>
+                            <CloseCircleFilled style={{ fontSize: 48, color: '#ff4d4f', marginBottom: 16 }} />
+                            <Title level={3} style={{ color: '#fff', margin: 0 }}>Confirmation Failed</Title>
+                            <Text style={{ color: '#666', display: 'block', marginTop: 8, marginBottom: 24 }}>{errorMessage}</Text>
+                            <Button type="primary" size="large" onClick={() => navigate('/signup')} style={{ color: '#000', fontWeight: 600, borderRadius: 12 }}>
                                 Sign up again
                             </Button>
                         </>

@@ -61,18 +61,18 @@ export const ViewInfluencerProfile = () => {
                     <Card
                         style={{ backgroundColor: cardBackgroundColor, borderRadius: 12, height: '100%' }}
                         title={
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 16, paddingTop: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 4 }}>
                                 {profile?.profilePictureUrl ? (
-                                    <Avatar size={80} src={profile.profilePictureUrl} style={{ border: `2px solid ${INFLUENCER_PORTAL_PRIMARY}` }} />
+                                    <Avatar size={48} src={profile.profilePictureUrl} style={{ border: `2px solid ${INFLUENCER_PORTAL_PRIMARY}` }} />
                                 ) : (
-                                    <Avatar size={80} icon={<UserOutlined />} style={{ backgroundColor: INFLUENCER_PORTAL_PRIMARY, color: '#000' }} />
+                                    <Avatar size={48} icon={<UserOutlined />} style={{ backgroundColor: INFLUENCER_PORTAL_PRIMARY, color: '#000' }} />
                                 )}
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <Title level={2} style={{ margin: 0, color: '#fff' }}>{profile?.name}</Title>
-                                        {user?.isVerified && <CheckCircleFilled style={{ color: INFLUENCER_PORTAL_PRIMARY, fontSize: '1.5rem' }} />}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <Title level={4} style={{ margin: 0, color: '#fff' }}>{profile?.name}</Title>
+                                        {user?.isVerified && <CheckCircleFilled style={{ color: INFLUENCER_PORTAL_PRIMARY, fontSize: '1rem' }} />}
                                     </div>
-                                    <Text type="secondary" style={{ fontSize: '1.1rem' }}>{profile?.niche} &bull; {profile?.location}</Text>
+                                    <Text type="secondary" style={{ fontSize: '0.9rem' }}>{profile?.niche} &bull; {profile?.location}</Text>
                                 </div>
                             </div>
                         }
