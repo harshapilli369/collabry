@@ -59,6 +59,22 @@ describe('InfluencerSearch', () => {
     expect(mockSearchInfluencers).toHaveBeenCalledWith(
       expect.objectContaining({
         niche: 'Fashion',
+        availableOnly: false,
+      })
+    )
+  })
+
+  it('passes availableOnly true when availability filter switch is on', async () => {
+    const user = userEvent.setup()
+    mockSearchInfluencers.mockResolvedValue([])
+    renderWithRouter()
+
+    await user.click(screen.getByTestId('influencer-search-available-only'))
+    await user.click(screen.getByRole('button', { name: /search/i }))
+
+    expect(mockSearchInfluencers).toHaveBeenCalledWith(
+      expect.objectContaining({
+        availableOnly: true,
       })
     )
   })
@@ -86,6 +102,25 @@ describe('InfluencerSearch', () => {
     expect(await screen.findByText('Jane Doe')).toBeInTheDocument()
     const inviteButtons = screen.getAllByRole('button', { name: /invite/i })
     expect(inviteButtons.length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText('Open to collaborations')).toBeInTheDocument()
+  })
+
+  it('shows not accepting tag when influencer is not open to collaborations', async () => {
+    mockSearchInfluencers.mockResolvedValue([
+      {
+        id: 2,
+        userId: 11,
+        name: 'Closed Inf',
+        age: 30,
+        location: 'LA',
+        niche: 'Tech',
+        complete: true,
+        openToCollaborations: false,
+      },
+    ])
+    renderWithRouter()
+    await userEvent.click(screen.getByRole('button', { name: /search/i }))
+    expect(await screen.findByText('Not accepting new collabs')).toBeInTheDocument()
   })
 
   it('opens invite modal with campaign select when Invite is clicked', async () => {

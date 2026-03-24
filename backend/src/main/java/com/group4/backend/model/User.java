@@ -19,8 +19,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(nullable = false)
-    private boolean isVerified = false;
+    /**
+     * Nullable so Hibernate can add the column to existing DBs; null treated as unverified.
+     */
+    @Column(name = "is_verified")
+    private Boolean verified;
 
     public User() {
     }
@@ -64,10 +67,10 @@ public class User {
     }
 
     public boolean isVerified() {
-        return isVerified;
+        return Boolean.TRUE.equals(verified);
     }
 
     public void setVerified(boolean verified) {
-        isVerified = verified;
+        this.verified = verified;
     }
 }

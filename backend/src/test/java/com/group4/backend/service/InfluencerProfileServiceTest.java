@@ -83,6 +83,7 @@ class InfluencerProfileServiceTest {
         completeProfile.setFollowerCount(50000L);
         completeProfile.setEngagementRate(BigDecimal.valueOf(3.5));
         completeProfile.setRate(BigDecimal.valueOf(500));
+        completeProfile.setOpenToCollaborations(true);
     }
 
     @Test
@@ -90,7 +91,7 @@ class InfluencerProfileServiceTest {
         when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
                 .thenReturn(List.of(completeProfile));
 
-        List<InfluencerProfileResponse> result = influencerProfileService.search(null, null, null, null, null);
+        List<InfluencerProfileResponse> result = influencerProfileService.search(null, null, null, null, null, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getName()).isEqualTo("Jane");
@@ -107,7 +108,7 @@ class InfluencerProfileServiceTest {
                 .thenReturn(List.of(completeProfile));
 
         List<InfluencerProfileResponse> result = influencerProfileService.search(
-                "Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5));
+                "Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5), null);
 
         assertThat(result).hasSize(1);
         ArgumentCaptor<Specification<InfluencerProfile>> specCaptor = ArgumentCaptor.forClass(Specification.class);
@@ -120,14 +121,14 @@ class InfluencerProfileServiceTest {
         when(influencerProfileRepository.findAll(any(Specification.class), any(Sort.class)))
                 .thenReturn(List.of());
 
-        List<InfluencerProfileResponse> result = influencerProfileService.search("Tech", null, null, null, null);
+        List<InfluencerProfileResponse> result = influencerProfileService.search("Tech", null, null, null, null, null);
 
         assertThat(result).isEmpty();
     }
 
     @Test
     void search_whenMinFollowersGreaterThanMaxFollowers_throws() {
-        assertThatThrownBy(() -> influencerProfileService.search(null, null, 10000L, 1000L, null))
+        assertThatThrownBy(() -> influencerProfileService.search(null, null, 10000L, 1000L, null, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("minFollowers cannot be greater than maxFollowers");
     }
@@ -137,7 +138,7 @@ class InfluencerProfileServiceTest {
         when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
                 .thenReturn(List.of(completeProfile));
 
-        List<InfluencerProfileResponse> result = influencerProfileService.search("Fash", null, null, null, null);
+        List<InfluencerProfileResponse> result = influencerProfileService.search("Fash", null, null, null, null, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getNiche()).isEqualTo("Fashion");
@@ -186,6 +187,52 @@ class InfluencerProfileServiceTest {
         assertThat(result.get().getRecentReviews()).hasSize(2);
         assertThat(result.get().getRecentReviews().get(0).getRating()).isEqualTo(5);
         assertThat(result.get().getRecentReviews().get(0).getReview()).isEqualTo("Great!");
+    }
+
+    @Test
+    void search_withAvailableOnlyTrue_stillInvokesRepository() {
+        when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(null, null, null, null, null, true);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).isOpenToCollaborations()).isTrue();
+        verify(influencerProfileRepository).findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt")));
+    }
+
+    @Test
+    void updateCollaborationAvailability_whenProfileExists_updatesAndReturns() {
+        completeProfile.setOpenToCollaborations(true);
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(completeProfile));
+        when(influencerProfileRepository.save(any(InfluencerProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InfluencerProfileResponse response = influencerProfileService.updateCollaborationAvailability(20L, false);
+
+        assertThat(response.isOpenToCollaborations()).isFalse();
+        verify(influencerProfileRepository).save(any(InfluencerProfile.class));
+    }
+
+    @Test
+    void updateCollaborationAvailability_whenProfileMissing_throws() {
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> influencerProfileService.updateCollaborationAvailability(20L, true))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("profile not found");
+    }
+
+    @Test
+    void updateCollaborationAvailability_whenUserNotInfluencer_throws() {
+        User brandUser = new User("brand@test.com", "pass", Role.BRAND);
+        brandUser.setId(20L);
+        when(userRepository.findById(20L)).thenReturn(Optional.of(brandUser));
+
+        assertThatThrownBy(() -> influencerProfileService.updateCollaborationAvailability(20L, true))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Only influencer users");
     }
 
     @Test

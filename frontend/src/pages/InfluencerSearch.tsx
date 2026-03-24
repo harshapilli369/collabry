@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Card, Col, Form, Input, InputNumber, Row, Select, Typography, Avatar, Modal, message } from 'antd'
+import { Button, Card, Col, Form, Input, InputNumber, Row, Select, Typography, Avatar, Modal, message, Switch, Tag, Space } from 'antd'
 import { UserOutlined, SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
@@ -23,6 +23,7 @@ export const InfluencerSearch = () => {
     const [selectedInfluencer, setSelectedInfluencer] = useState<InfluencerProfileResponse | null>(null)
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
     const [inviteSubmitting, setInviteSubmitting] = useState(false)
+    const [availableOnlyFilter, setAvailableOnlyFilter] = useState(false)
 
     const onSearch = async () => {
         const values = form.getFieldsValue()
@@ -34,6 +35,7 @@ export const InfluencerSearch = () => {
                 minFollowers: values.minFollowers,
                 maxFollowers: values.maxFollowers,
                 minEngagementRate: values.minEngagementRate,
+                availableOnly: availableOnlyFilter,
             })
             setResults(list)
             if (list.length === 0) message.info('No influencers match your filters.')
@@ -123,6 +125,23 @@ export const InfluencerSearch = () => {
                                             <InputNumber min={0} max={100} step={0.1} placeholder="0" style={{ width: '100%' }} />
                                         </Form.Item>
                                     </Col>
+                                    <Col span={24}>
+                                        <div style={{ marginBottom: 8 }}>
+                                            <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+                                                Availability
+                                            </Text>
+                                            <Space>
+                                                <Switch
+                                                    data-testid="influencer-search-available-only"
+                                                    checked={availableOnlyFilter}
+                                                    onChange={setAvailableOnlyFilter}
+                                                />
+                                                <Text type="secondary" style={{ fontSize: 13 }}>
+                                                    Only show influencers open to new collaborations
+                                                </Text>
+                                            </Space>
+                                        </div>
+                                    </Col>
                                 </Row>
                                 <Form.Item>
                                     <Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={loading} style={{ color: '#000000' }}>Search</Button>
@@ -145,6 +164,13 @@ export const InfluencerSearch = () => {
                                                 <div style={{ marginTop: 4 }}>
                                                     <Text type="secondary" style={{ fontSize: 12 }}>{inf.niche} · {inf.location}</Text>
                                                 </div>
+                                                <div style={{ marginTop: 6 }}>
+                                                    {inf.openToCollaborations !== false ? (
+                                                        <Tag color="green">Open to collaborations</Tag>
+                                                    ) : (
+                                                        <Tag>Not accepting new collabs</Tag>
+                                                    )}
+                                                </div>
                                                 {(inf.followerCount != null || inf.engagementRate != null || inf.rate != null) && (
                                                     <div style={{ marginTop: 4 }}>
                                                         {inf.followerCount != null && <Text type="secondary" style={{ fontSize: 12 }}>{inf.followerCount.toLocaleString()} followers</Text>}
@@ -161,7 +187,17 @@ export const InfluencerSearch = () => {
                         </Row>
 
             <Modal
-                title={`Invite ${selectedInfluencer?.name ?? ''}`}
+                title={
+                    <Space wrap>
+                        <span>Invite {selectedInfluencer?.name ?? ''}</span>
+                        {selectedInfluencer &&
+                            (selectedInfluencer.openToCollaborations !== false ? (
+                                <Tag color="green">Open to collaborations</Tag>
+                            ) : (
+                                <Tag>Not accepting new collabs</Tag>
+                            ))}
+                    </Space>
+                }
                 open={inviteModalOpen}
                 onCancel={closeInviteModal}
                 footer={null}

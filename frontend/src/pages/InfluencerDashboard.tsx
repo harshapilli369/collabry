@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, theme } from 'antd'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, theme, Switch, Space, message } from 'antd'
 import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyInvitations } from '../services/invitationService'
-import { getMyInfluencerProfile } from '../services/influencerProfileService'
+import { getMyInfluencerProfile, updateCollaborationAvailability, type InfluencerProfileResponse } from '../services/influencerProfileService'
 
 const { Header, Content, Sider } = Layout
 const { Title, Text } = Typography
@@ -11,7 +11,8 @@ const { Title, Text } = Typography
 export const InfluencerDashboard = () => {
     const navigate = useNavigate()
     const [invitations, setInvitations] = useState<Awaited<ReturnType<typeof getMyInvitations>>>([])
-    const [profile, setProfile] = useState<any>(null)
+    const [profile, setProfile] = useState<InfluencerProfileResponse | null>(null)
+    const [availabilityLoading, setAvailabilityLoading] = useState(false)
 
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
@@ -25,6 +26,25 @@ export const InfluencerDashboard = () => {
             .then(setProfile)
             .catch(() => {})
     }, [])
+
+    const openToCollaborations = profile?.openToCollaborations !== false
+
+    const onAvailabilityChange = async (checked: boolean) => {
+        if (!profile) {
+            message.warning('Complete your profile first to set collaboration availability.')
+            return
+        }
+        setAvailabilityLoading(true)
+        try {
+            const updated = await updateCollaborationAvailability(checked)
+            setProfile(updated)
+            message.success(checked ? 'You are open to new collaborations.' : 'Brands will see you as not accepting new collaborations.')
+        } catch (e) {
+            message.error(e instanceof Error ? e.message : 'Could not update availability')
+        } finally {
+            setAvailabilityLoading(false)
+        }
+    }
 
     const handleLogout = () => {
         localStorage.removeItem('token')
@@ -134,6 +154,28 @@ export const InfluencerDashboard = () => {
                         </div>
 
                         <Row gutter={[24, 24]}>
+                            <Col span={24}>
+                                <Card bordered={false} style={{ borderRadius: 12, marginBottom: 8 }}>
+                                    <Space align="center" wrap>
+                                        <Text strong style={{ color: '#fff' }}>Open to collaborations</Text>
+                                        <Switch
+                                            checked={openToCollaborations}
+                                            loading={availabilityLoading}
+                                            disabled={!profile}
+                                            onChange={onAvailabilityChange}
+                                            checkedChildren="On"
+                                            unCheckedChildren="Off"
+                                        />
+                                        <Text type="secondary" style={{ fontSize: 13 }}>
+                                            {profile
+                                                ? openToCollaborations
+                                                    ? 'Brands can see you as available in search.'
+                                                    : 'Brands can still find you unless they filter by “open only”.'
+                                                : 'Load or complete your profile to enable this setting.'}
+                                        </Text>
+                                    </Space>
+                                </Card>
+                            </Col>
                             {/* Stats Row */}
                             <Col span={8}>
                                 <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>

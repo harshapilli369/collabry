@@ -52,6 +52,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             brandProfile.setDescription("Premium electronics & lifestyle accessories for the modern world.");
             brandProfile.setIndustry("Technology");
             brandProfile.setWebsite("https://techhaven.com");
+            brandProfile.setVerified(true);
             brandProfileRepository.save(brandProfile);
             System.out.println(" => Seeded Brand: admin@brand.com");
         }
@@ -121,6 +122,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 p.setAudienceInfo(m.audienceInfo);
                 p.setRate(BigDecimal.valueOf(m.rate));
                 p.setProfilePictureUrl(m.picUrl);
+                p.setOpenToCollaborations(true);
                 influencerProfileRepository.save(p);
                 System.out.println(" => Seeded Influencer: " + m.email + " (" + m.niche + ")");
             }

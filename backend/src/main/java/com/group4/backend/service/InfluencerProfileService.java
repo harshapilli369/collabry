@@ -39,15 +39,24 @@ public class InfluencerProfileService {
     /**
      * Search discoverable (complete) influencer profiles by niche, location, followers, engagement rate.
      * For use by brands to find influencers.
+     *
+     * @param availableOnly when {@link Boolean#TRUE}, only influencers with {@code openToCollaborations == true} are returned
      */
     public List<InfluencerProfileResponse> search(String niche, String location, Long minFollowers, Long maxFollowers,
-                                                   java.math.BigDecimal minEngagementRate) {
+                                                   java.math.BigDecimal minEngagementRate, Boolean availableOnly) {
         if (minFollowers != null && maxFollowers != null && minFollowers > maxFollowers) {
             throw new IllegalArgumentException("minFollowers cannot be greater than maxFollowers");
         }
         Specification<InfluencerProfile> spec = (root, query, cb) -> {
             var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
             predicates.add(cb.isTrue(root.get("isComplete")));
+            if (Boolean.TRUE.equals(availableOnly)) {
+                // Match entity: null means legacy row → treat as open to collaborations
+                predicates.add(cb.or(
+                        cb.isTrue(root.get("openToCollaborations")),
+                        cb.isNull(root.get("openToCollaborations"))
+                ));
+            }
             if (niche != null && !niche.isBlank()) {
                 String nicheTerm = "%" + niche.trim().toLowerCase() + "%";
                 predicates.add(cb.like(cb.lower(root.get("niche")), nicheTerm));
@@ -116,6 +125,20 @@ public class InfluencerProfileService {
         return toResponse(profile);
     }
 
+    @Transactional
+    public InfluencerProfileResponse updateCollaborationAvailability(Long userId, boolean openToCollaborations) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (user.getRole() != Role.INFLUENCER) {
+            throw new IllegalArgumentException("Only influencer users can update collaboration availability");
+        }
+        InfluencerProfile profile = influencerProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Influencer profile not found"));
+        profile.setOpenToCollaborations(openToCollaborations);
+        profile = influencerProfileRepository.save(profile);
+        return toResponse(profile);
+    }
+
     private static boolean hasAny(String... values) {
         for (String v : values) {
             if (v != null && !v.trim().isEmpty()) return true;
@@ -147,6 +170,7 @@ public class InfluencerProfileService {
         response.setEngagementRate(profile.getEngagementRate());
         response.setAudienceInfo(profile.getAudienceInfo());
         response.setComplete(profile.isComplete());
+        response.setOpenToCollaborations(profile.isOpenToCollaborations());
         response.setCreatedAt(profile.getCreatedAt());
         response.setUpdatedAt(profile.getUpdatedAt());
         long influencerUserId = profile.getUserId();

@@ -172,6 +172,13 @@ export const ViewInfluencerProfile = () => {
                                                     {user?.isVerified && <CheckCircleFilled style={{ color: '#1890ff', fontSize: '1.5rem' }} />}
                                                 </div>
                                                 <Text type="secondary" style={{ fontSize: '1.1rem' }}>{profile?.niche} • {profile?.location}</Text>
+                                                <div style={{ marginTop: 8 }}>
+                                                    {profile?.openToCollaborations !== false ? (
+                                                        <Tag color="green">Open to collaborations</Tag>
+                                                    ) : (
+                                                        <Tag>Not accepting new collabs</Tag>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     }

@@ -1,5 +1,6 @@
 package com.group4.backend.controller;
 
+import com.group4.backend.dto.CollaborationAvailabilityRequest;
 import com.group4.backend.dto.InfluencerProfileRequest;
 import com.group4.backend.dto.InfluencerProfileResponse;
 import com.group4.backend.model.Role;
@@ -52,7 +53,23 @@ public class InfluencerProfileController {
     }
 
     /**
+     * Toggle whether the influencer is open to new collaborations (persisted).
+     */
+    @PutMapping("/me/collaboration-availability")
+    public ResponseEntity<InfluencerProfileResponse> updateCollaborationAvailability(
+            @Valid @RequestBody CollaborationAvailabilityRequest request) {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.INFLUENCER) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        InfluencerProfileResponse response = influencerProfileService.updateCollaborationAvailability(
+                user.getId(), Boolean.TRUE.equals(request.getOpenToCollaborations()));
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Search influencers by niche, followers, engagement rate, location. Brands only.
+     * When {@code availableOnly=true}, only influencers open to collaborations are returned.
      */
     @GetMapping("/search")
     public ResponseEntity<List<InfluencerProfileResponse>> search(
@@ -60,12 +77,14 @@ public class InfluencerProfileController {
             @RequestParam(required = false) String location,
             @RequestParam(required = false) Long minFollowers,
             @RequestParam(required = false) Long maxFollowers,
-            @RequestParam(required = false) BigDecimal minEngagementRate) {
+            @RequestParam(required = false) BigDecimal minEngagementRate,
+            @RequestParam(required = false) Boolean availableOnly) {
         User user = getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        List<InfluencerProfileResponse> list = influencerProfileService.search(niche, location, minFollowers, maxFollowers, minEngagementRate);
+        List<InfluencerProfileResponse> list = influencerProfileService.search(
+                niche, location, minFollowers, maxFollowers, minEngagementRate, availableOnly);
         return ResponseEntity.ok(list);
     }
 
