@@ -1,4 +1,6 @@
-import { Card, Col, Row, Typography } from 'antd'
+import { useState } from 'react'
+import { Card, Col, Modal, Row, Typography, Button } from 'antd'
+import { FullscreenOutlined } from '@ant-design/icons'
 import {
     PieChart,
     Pie,
@@ -22,6 +24,8 @@ interface Props {
     sentInvitations: InvitationResponse[]
     payments: PaymentResponse[]
 }
+
+type ExpandedChart = 'status' | 'invitation' | 'payment' | null
 
 const DARK_BG = '#0d0d0d'
 const CARD_BORDER = '#1a1a1a'
@@ -48,10 +52,49 @@ const PAYMENT_COLORS: Record<string, string> = {
     Delayed: '#ff4d4f',
 }
 
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+const MODAL_STYLES = {
+    mask: {
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        background: 'rgba(0, 0, 0, 0.65)',
+    },
+    content: {
+        background: 'rgba(10, 10, 20, 0.92)',
+        backdropFilter: 'blur(30px)',
+        WebkitBackdropFilter: 'blur(30px)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: 20,
+        boxShadow: '0 40px 80px rgba(0, 0, 0, 0.85)',
+    },
+    header: {
+        background: 'transparent',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+        paddingBottom: 12,
+    },
+    body: { padding: '24px 24px 16px' },
+}
+
+function ChartCard({
+    title,
+    children,
+    onExpand,
+}: {
+    title: string
+    children: React.ReactNode
+    onExpand: () => void
+}) {
     return (
         <Card
             title={<span style={{ color: '#fff', fontSize: 14 }}>{title}</span>}
+            extra={
+                <Button
+                    type="text"
+                    icon={<FullscreenOutlined />}
+                    onClick={onExpand}
+                    style={{ color: '#555' }}
+                    title="View fullscreen"
+                />
+            }
             style={{
                 borderRadius: 16,
                 background: DARK_BG,
@@ -74,6 +117,8 @@ function EmptyChart() {
 }
 
 export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments }: Props) {
+    const [expanded, setExpanded] = useState<ExpandedChart>(null)
+
     // --- Campaign Status Data ---
     const campaignStatusData = [
         { name: 'Draft', value: campaigns.filter((c) => c.status === 'DRAFT').length },
@@ -86,9 +131,7 @@ export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments
     const accepted = sentInvitations.filter((i) => i.status === 'ACCEPTED' || i.status === 'CONFIRMED').length
     const rejected = sentInvitations.filter((i) => i.status === 'REJECTED').length
     const pending = sentInvitations.filter((i) => i.status === 'PENDING' || i.status === 'NEGOTIATING').length
-    const other = sentInvitations.filter(
-        (i) => i.status === 'EXPIRED' || i.status === 'WITHDRAWN'
-    ).length
+    const other = sentInvitations.filter((i) => i.status === 'EXPIRED' || i.status === 'WITHDRAWN').length
 
     const invitationData = [
         { name: 'Accepted', value: accepted },
@@ -105,120 +148,125 @@ export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments
         { name: 'Delayed', value: payments.filter((p) => p.status === 'DELAYED').length },
     ].filter((d) => d.value > 0)
 
-    const renderCustomLabel = ({ name, percent }: { name: string; percent: number }) =>
+    const renderPieLabel = ({ name, percent }: { name: string; percent: number }) =>
         percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
 
+    // --- Chart renderers ---
+    const renderStatusChart = (height: number, isModal = false) =>
+        campaignStatusData.length === 0 ? (
+            <EmptyChart />
+        ) : (
+            <ResponsiveContainer width="100%" height={height}>
+                <PieChart>
+                    <Pie
+                        data={campaignStatusData}
+                        cx="50%"
+                        cy={isModal ? '48%' : '58%'}
+                        innerRadius={isModal ? 70 : 50}
+                        outerRadius={isModal ? 120 : 75}
+                        dataKey="value"
+                        label={renderPieLabel}
+                        labelLine={false}
+                    >
+                        {campaignStatusData.map((entry) => (
+                            <Cell key={entry.name} fill={STATUS_COLORS[entry.name] ?? '#888'} />
+                        ))}
+                    </Pie>
+                    <Tooltip
+                        contentStyle={TOOLTIP_STYLE}
+                        itemStyle={{ color: '#ccc' }}
+                        formatter={(value: number, name: string) => [value, name]}
+                    />
+                    <Legend
+                        formatter={(value) => (
+                            <Text style={{ color: '#aaa', fontSize: isModal ? 13 : 12 }}>{value}</Text>
+                        )}
+                    />
+                </PieChart>
+            </ResponsiveContainer>
+        )
+
+    const renderInvitationChart = (height: number, isModal = false) =>
+        invitationData.length === 0 ? (
+            <EmptyChart />
+        ) : (
+            <ResponsiveContainer width="100%" height={height}>
+                <BarChart data={invitationData} margin={{ top: 8, right: 8, left: isModal ? 0 : -20, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
+                    <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={{ color: '#ccc' }} cursor={{ fill: '#ffffff08' }} />
+                    <Bar dataKey="value" name="Invitations" radius={[6, 6, 0, 0]}>
+                        {invitationData.map((entry) => (
+                            <Cell key={entry.name} fill={INVITATION_COLORS[entry.name] ?? '#888'} />
+                        ))}
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
+        )
+
+    const renderPaymentChart = (height: number, isModal = false) =>
+        paymentData.length === 0 ? (
+            <EmptyChart />
+        ) : (
+            <ResponsiveContainer width="100%" height={height}>
+                <BarChart data={paymentData} margin={{ top: 8, right: 8, left: isModal ? 0 : -20, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
+                    <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={{ color: '#ccc' }} cursor={{ fill: '#ffffff08' }} />
+                    <Bar dataKey="value" name="Payments" radius={[6, 6, 0, 0]}>
+                        {paymentData.map((entry) => (
+                            <Cell key={entry.name} fill={PAYMENT_COLORS[entry.name] ?? '#888'} />
+                        ))}
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
+        )
+
+    const CHART_META: Record<NonNullable<ExpandedChart>, { title: string; render: () => React.ReactNode }> = {
+        status: { title: 'Campaigns by Status', render: () => renderStatusChart(420, true) },
+        invitation: { title: 'Invitation Response Rate', render: () => renderInvitationChart(380, true) },
+        payment: { title: 'Payment Overview', render: () => renderPaymentChart(380, true) },
+    }
+
     return (
-        <Row gutter={[20, 20]}>
-            {/* Campaign Status Chart */}
-            <Col xs={24} md={8}>
-                <ChartCard title="Campaigns by Status">
-                    {campaignStatusData.length === 0 ? (
-                        <EmptyChart />
-                    ) : (
-                        <ResponsiveContainer width="100%" height={220}>
-                            <PieChart>
-                                <Pie
-                                    data={campaignStatusData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={50}
-                                    outerRadius={80}
-                                    dataKey="value"
-                                    label={renderCustomLabel}
-                                    labelLine={false}
-                                >
-                                    {campaignStatusData.map((entry) => (
-                                        <Cell key={entry.name} fill={STATUS_COLORS[entry.name] ?? '#888'} />
-                                    ))}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={TOOLTIP_STYLE}
-                                    itemStyle={{ color: '#ccc' }}
-                                    formatter={(value: number, name: string) => [value, name]}
-                                />
-                                <Legend
-                                    formatter={(value) => (
-                                        <Text style={{ color: '#aaa', fontSize: 12 }}>{value}</Text>
-                                    )}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    )}
-                </ChartCard>
-            </Col>
+        <>
+            <Row gutter={[20, 20]}>
+                <Col xs={24} md={8}>
+                    <ChartCard title="Campaigns by Status" onExpand={() => setExpanded('status')}>
+                        {renderStatusChart(220)}
+                    </ChartCard>
+                </Col>
 
-            {/* Invitation Rate Chart */}
-            <Col xs={24} md={8}>
-                <ChartCard title="Invitation Response Rate">
-                    {invitationData.length === 0 ? (
-                        <EmptyChart />
-                    ) : (
-                        <ResponsiveContainer width="100%" height={220}>
-                            <BarChart data={invitationData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                                <XAxis
-                                    dataKey="name"
-                                    tick={{ fill: '#888', fontSize: 11 }}
-                                    axisLine={{ stroke: '#333' }}
-                                    tickLine={false}
-                                />
-                                <YAxis
-                                    allowDecimals={false}
-                                    tick={{ fill: '#888', fontSize: 11 }}
-                                    axisLine={{ stroke: '#333' }}
-                                    tickLine={false}
-                                />
-                                <Tooltip
-                                    contentStyle={TOOLTIP_STYLE}
-                                    itemStyle={{ color: '#ccc' }}
-                                    cursor={{ fill: '#ffffff08' }}
-                                />
-                                <Bar dataKey="value" name="Invitations" radius={[6, 6, 0, 0]}>
-                                    {invitationData.map((entry) => (
-                                        <Cell key={entry.name} fill={INVITATION_COLORS[entry.name] ?? '#888'} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    )}
-                </ChartCard>
-            </Col>
+                <Col xs={24} md={8}>
+                    <ChartCard title="Invitation Response Rate" onExpand={() => setExpanded('invitation')}>
+                        {renderInvitationChart(220)}
+                    </ChartCard>
+                </Col>
 
-            {/* Payment Overview Chart */}
-            <Col xs={24} md={8}>
-                <ChartCard title="Payment Overview">
-                    {paymentData.length === 0 ? (
-                        <EmptyChart />
-                    ) : (
-                        <ResponsiveContainer width="100%" height={220}>
-                            <BarChart data={paymentData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                                <XAxis
-                                    dataKey="name"
-                                    tick={{ fill: '#888', fontSize: 11 }}
-                                    axisLine={{ stroke: '#333' }}
-                                    tickLine={false}
-                                />
-                                <YAxis
-                                    allowDecimals={false}
-                                    tick={{ fill: '#888', fontSize: 11 }}
-                                    axisLine={{ stroke: '#333' }}
-                                    tickLine={false}
-                                />
-                                <Tooltip
-                                    contentStyle={TOOLTIP_STYLE}
-                                    itemStyle={{ color: '#ccc' }}
-                                    cursor={{ fill: '#ffffff08' }}
-                                />
-                                <Bar dataKey="value" name="Payments" radius={[6, 6, 0, 0]}>
-                                    {paymentData.map((entry) => (
-                                        <Cell key={entry.name} fill={PAYMENT_COLORS[entry.name] ?? '#888'} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    )}
-                </ChartCard>
-            </Col>
-        </Row>
+                <Col xs={24} md={8}>
+                    <ChartCard title="Payment Overview" onExpand={() => setExpanded('payment')}>
+                        {renderPaymentChart(220)}
+                    </ChartCard>
+                </Col>
+            </Row>
+
+            <Modal
+                open={expanded !== null}
+                onCancel={() => setExpanded(null)}
+                footer={null}
+                width="68vw"
+                destroyOnClose
+                title={
+                    expanded ? (
+                        <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>
+                            {CHART_META[expanded].title}
+                        </span>
+                    ) : null
+                }
+                styles={MODAL_STYLES}
+            >
+                {expanded && CHART_META[expanded].render()}
+            </Modal>
+        </>
     )
 }

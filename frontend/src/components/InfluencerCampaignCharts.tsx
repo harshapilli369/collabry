@@ -1,4 +1,6 @@
-import { Card, Col, Row, Typography } from 'antd'
+import { useState } from 'react'
+import { Card, Col, Modal, Row, Typography, Button } from 'antd'
+import { FullscreenOutlined } from '@ant-design/icons'
 import {
     PieChart,
     Pie,
@@ -18,6 +20,8 @@ const { Text } = Typography
 interface Props {
     invitations: InvitationResponse[]
 }
+
+type ExpandedChart = 'platform' | 'trend' | 'involvement' | null
 
 const DARK_BG = '#0d0d0d'
 const CARD_BORDER = '#1a1a1a'
@@ -39,10 +43,49 @@ const INVOLVEMENT_COLORS: Record<string, string> = {
     Pending: '#faad14',
 }
 
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+const MODAL_STYLES = {
+    mask: {
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        background: 'rgba(0, 0, 0, 0.65)',
+    },
+    content: {
+        background: 'rgba(10, 10, 20, 0.92)',
+        backdropFilter: 'blur(30px)',
+        WebkitBackdropFilter: 'blur(30px)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: 20,
+        boxShadow: '0 40px 80px rgba(0, 0, 0, 0.85)',
+    },
+    header: {
+        background: 'transparent',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+        paddingBottom: 12,
+    },
+    body: { padding: '24px 24px 16px' },
+}
+
+function ChartCard({
+    title,
+    children,
+    onExpand,
+}: {
+    title: string
+    children: React.ReactNode
+    onExpand: () => void
+}) {
     return (
         <Card
             title={<span style={{ color: '#fff', fontSize: 14 }}>{title}</span>}
+            extra={
+                <Button
+                    type="text"
+                    icon={<FullscreenOutlined />}
+                    onClick={onExpand}
+                    style={{ color: '#555' }}
+                    title="View fullscreen"
+                />
+            }
             style={{
                 borderRadius: 16,
                 background: DARK_BG,
@@ -65,6 +108,8 @@ function EmptyChart() {
 }
 
 export function InfluencerCampaignCharts({ invitations }: Props) {
+    const [expanded, setExpanded] = useState<ExpandedChart>(null)
+
     // --- Platform Distribution ---
     const platformCounts: Record<string, number> = {}
     for (const inv of invitations) {
@@ -91,7 +136,7 @@ export function InfluencerCampaignCharts({ invitations }: Props) {
     const monthlyCounts: Record<string, number> = {}
     for (const inv of invitations) {
         if (inv.createdAt) {
-            const key = inv.createdAt.slice(0, 7) // "YYYY-MM"
+            const key = inv.createdAt.slice(0, 7)
             if (monthlyCounts[key] !== undefined || months.some((m) => m.key === key)) {
                 monthlyCounts[key] = (monthlyCounts[key] ?? 0) + 1
             }
@@ -126,133 +171,136 @@ export function InfluencerCampaignCharts({ invitations }: Props) {
         { name: 'Rejected', value: rejectedCampaigns.size },
     ].filter((d) => d.value > 0)
 
-    const renderCustomLabel = ({ name, percent }: { name: string; percent: number }) =>
-        percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
-
     const hasTrendData = trendData.some((d) => d.value > 0)
 
+    const renderPieLabel = ({ name, percent }: { name: string; percent: number }) =>
+        percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+
+    // --- Chart renderers ---
+    const renderPlatformChart = (height: number, isModal = false) =>
+        platformData.length === 0 ? (
+            <EmptyChart />
+        ) : (
+            <ResponsiveContainer width="100%" height={height}>
+                <PieChart>
+                    <Pie
+                        data={platformData}
+                        cx="50%"
+                        cy={isModal ? '48%' : '58%'}
+                        innerRadius={isModal ? 70 : 50}
+                        outerRadius={isModal ? 120 : 75}
+                        dataKey="value"
+                        label={renderPieLabel}
+                        labelLine={false}
+                    >
+                        {platformData.map((entry, idx) => (
+                            <Cell key={entry.name} fill={PLATFORM_COLORS[idx % PLATFORM_COLORS.length]} />
+                        ))}
+                    </Pie>
+                    <Tooltip
+                        contentStyle={TOOLTIP_STYLE}
+                        itemStyle={{ color: '#ccc' }}
+                        formatter={(value: number, name: string) => [value, name]}
+                    />
+                    <Legend
+                        formatter={(value) => (
+                            <Text style={{ color: '#aaa', fontSize: isModal ? 13 : 12 }}>{value}</Text>
+                        )}
+                    />
+                </PieChart>
+            </ResponsiveContainer>
+        )
+
+    const renderTrendChart = (height: number, isModal = false) =>
+        !hasTrendData ? (
+            <EmptyChart />
+        ) : (
+            <ResponsiveContainer width="100%" height={height}>
+                <BarChart data={trendData} margin={{ top: 8, right: 8, left: isModal ? 0 : -20, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
+                    <Tooltip
+                        contentStyle={TOOLTIP_STYLE}
+                        itemStyle={{ color: '#ccc' }}
+                        cursor={{ fill: '#ffffff08' }}
+                        formatter={(value: number) => [value, 'Invitations']}
+                    />
+                    <Bar dataKey="value" name="Invitations" fill="#7c3aed" radius={[6, 6, 0, 0]} />
+                </BarChart>
+            </ResponsiveContainer>
+        )
+
+    const renderInvolvementChart = (height: number, isModal = false) =>
+        involvementData.length === 0 ? (
+            <EmptyChart />
+        ) : (
+            <ResponsiveContainer width="100%" height={height}>
+                <BarChart data={involvementData} margin={{ top: 8, right: 8, left: isModal ? 0 : -20, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
+                    <Tooltip
+                        contentStyle={TOOLTIP_STYLE}
+                        itemStyle={{ color: '#ccc' }}
+                        cursor={{ fill: '#ffffff08' }}
+                        formatter={(value: number, name: string) => [value, name]}
+                    />
+                    <Bar dataKey="value" name="Campaigns" radius={[6, 6, 0, 0]}>
+                        {involvementData.map((entry) => (
+                            <Cell
+                                key={entry.name}
+                                fill={entry.name === 'Total' ? '#7c3aed' : (INVOLVEMENT_COLORS[entry.name] ?? '#888')}
+                            />
+                        ))}
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
+        )
+
+    const CHART_META: Record<NonNullable<ExpandedChart>, { title: string; render: () => React.ReactNode }> = {
+        platform: { title: 'Platform Distribution', render: () => renderPlatformChart(420, true) },
+        trend: { title: 'Monthly Invitations (Last 6 Months)', render: () => renderTrendChart(380, true) },
+        involvement: { title: 'Campaign Involvement', render: () => renderInvolvementChart(380, true) },
+    }
+
     return (
-        <Row gutter={[20, 20]}>
-            {/* Platform Distribution */}
-            <Col xs={24} md={8}>
-                <ChartCard title="Platform Distribution">
-                    {platformData.length === 0 ? (
-                        <EmptyChart />
-                    ) : (
-                        <ResponsiveContainer width="100%" height={220}>
-                            <PieChart>
-                                <Pie
-                                    data={platformData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={50}
-                                    outerRadius={80}
-                                    dataKey="value"
-                                    label={renderCustomLabel}
-                                    labelLine={false}
-                                >
-                                    {platformData.map((entry, idx) => (
-                                        <Cell
-                                            key={entry.name}
-                                            fill={PLATFORM_COLORS[idx % PLATFORM_COLORS.length]}
-                                        />
-                                    ))}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={TOOLTIP_STYLE}
-                                    itemStyle={{ color: '#ccc' }}
-                                    formatter={(value: number, name: string) => [value, name]}
-                                />
-                                <Legend
-                                    formatter={(value) => (
-                                        <Text style={{ color: '#aaa', fontSize: 12 }}>{value}</Text>
-                                    )}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    )}
-                </ChartCard>
-            </Col>
+        <>
+            <Row gutter={[20, 20]}>
+                <Col xs={24} md={8}>
+                    <ChartCard title="Platform Distribution" onExpand={() => setExpanded('platform')}>
+                        {renderPlatformChart(220)}
+                    </ChartCard>
+                </Col>
 
-            {/* Monthly Invitations Trend */}
-            <Col xs={24} md={8}>
-                <ChartCard title="Monthly Invitations (Last 6 Months)">
-                    {!hasTrendData ? (
-                        <EmptyChart />
-                    ) : (
-                        <ResponsiveContainer width="100%" height={220}>
-                            <BarChart data={trendData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                                <XAxis
-                                    dataKey="name"
-                                    tick={{ fill: '#888', fontSize: 11 }}
-                                    axisLine={{ stroke: '#333' }}
-                                    tickLine={false}
-                                />
-                                <YAxis
-                                    allowDecimals={false}
-                                    tick={{ fill: '#888', fontSize: 11 }}
-                                    axisLine={{ stroke: '#333' }}
-                                    tickLine={false}
-                                />
-                                <Tooltip
-                                    contentStyle={TOOLTIP_STYLE}
-                                    itemStyle={{ color: '#ccc' }}
-                                    cursor={{ fill: '#ffffff08' }}
-                                    formatter={(value: number) => [value, 'Invitations']}
-                                />
-                                <Bar dataKey="value" name="Invitations" fill="#7c3aed" radius={[6, 6, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    )}
-                </ChartCard>
-            </Col>
+                <Col xs={24} md={8}>
+                    <ChartCard title="Monthly Invitations (Last 6 Months)" onExpand={() => setExpanded('trend')}>
+                        {renderTrendChart(220)}
+                    </ChartCard>
+                </Col>
 
-            {/* Campaign Involvement */}
-            <Col xs={24} md={8}>
-                <ChartCard title="Campaign Involvement">
-                    {involvementData.length === 0 ? (
-                        <EmptyChart />
-                    ) : (
-                        <ResponsiveContainer width="100%" height={220}>
-                            <BarChart
-                                data={involvementData}
-                                margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
-                            >
-                                <XAxis
-                                    dataKey="name"
-                                    tick={{ fill: '#888', fontSize: 11 }}
-                                    axisLine={{ stroke: '#333' }}
-                                    tickLine={false}
-                                />
-                                <YAxis
-                                    allowDecimals={false}
-                                    tick={{ fill: '#888', fontSize: 11 }}
-                                    axisLine={{ stroke: '#333' }}
-                                    tickLine={false}
-                                />
-                                <Tooltip
-                                    contentStyle={TOOLTIP_STYLE}
-                                    itemStyle={{ color: '#ccc' }}
-                                    cursor={{ fill: '#ffffff08' }}
-                                    formatter={(value: number, name: string) => [value, name]}
-                                />
-                                <Bar dataKey="value" name="Campaigns" radius={[6, 6, 0, 0]}>
-                                    {involvementData.map((entry) => (
-                                        <Cell
-                                            key={entry.name}
-                                            fill={
-                                                entry.name === 'Total'
-                                                    ? '#7c3aed'
-                                                    : (INVOLVEMENT_COLORS[entry.name] ?? '#888')
-                                            }
-                                        />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    )}
-                </ChartCard>
-            </Col>
-        </Row>
+                <Col xs={24} md={8}>
+                    <ChartCard title="Campaign Involvement" onExpand={() => setExpanded('involvement')}>
+                        {renderInvolvementChart(220)}
+                    </ChartCard>
+                </Col>
+            </Row>
+
+            <Modal
+                open={expanded !== null}
+                onCancel={() => setExpanded(null)}
+                footer={null}
+                width="68vw"
+                destroyOnClose
+                title={
+                    expanded ? (
+                        <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>
+                            {CHART_META[expanded].title}
+                        </span>
+                    ) : null
+                }
+                styles={MODAL_STYLES}
+            >
+                {expanded && CHART_META[expanded].render()}
+            </Modal>
+        </>
     )
 }
