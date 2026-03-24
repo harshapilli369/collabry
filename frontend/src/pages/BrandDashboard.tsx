@@ -31,6 +31,7 @@ import {
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
+import { CampaignPerformanceCharts } from '../components/CampaignPerformanceCharts'
 import { getMyBrandProfile } from '../services/brandService'
 import { getMyCampaigns, PREFERRED_CONTENT_OPTIONS, type CampaignResponse } from '../services/campaignService'
 import {
@@ -42,6 +43,7 @@ import {
     type InvitationResponse,
     type UpdateInvitationRequest,
 } from '../services/invitationService'
+import { getMyPayments, type PaymentResponse } from '../services/paymentService'
 import { getCampaignRecommendations, type InfluencerRecommendationDTO } from '../services/recommendationService'
 
 const { Title, Text } = Typography
@@ -53,6 +55,7 @@ export const BrandDashboard = () => {
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
     const [sentInvitations, setSentInvitations] = useState<InvitationResponse[]>([])
     const [sentInvitationsLoading, setSentInvitationsLoading] = useState(false)
+    const [payments, setPayments] = useState<PaymentResponse[]>([])
     const [editModalOpen, setEditModalOpen] = useState(false)
     const [editingInvitation, setEditingInvitation] = useState<InvitationResponse | null>(null)
     const [editForm] = Form.useForm<UpdateInvitationRequest>()
@@ -108,6 +111,13 @@ export const BrandDashboard = () => {
             .then(setSentInvitations)
             .catch(() => setSentInvitations([]))
             .finally(() => setSentInvitationsLoading(false))
+    }, [profileCheckDone, user?.role])
+
+    useEffect(() => {
+        if (!profileCheckDone || user?.role !== 'BRAND') return
+        getMyPayments()
+            .then(setPayments)
+            .catch(() => setPayments([]))
     }, [profileCheckDone, user?.role])
 
     const handleWithdraw = async (inv: InvitationResponse) => {
@@ -286,6 +296,15 @@ export const BrandDashboard = () => {
                         </Card>
                     </Col>
                 ))}
+
+                {/* Performance Charts */}
+                <Col span={24}>
+                    <CampaignPerformanceCharts
+                        campaigns={campaigns}
+                        sentInvitations={sentInvitations}
+                        payments={payments}
+                    />
+                </Col>
 
                 {/* Campaigns Card */}
                 <Col span={12}>
