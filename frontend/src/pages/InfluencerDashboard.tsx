@@ -4,7 +4,9 @@ import { DollarOutlined, TeamOutlined, RiseOutlined, MailOutlined, UserOutlined 
 import { useNavigate } from 'react-router-dom'
 import { getMyInvitations } from '../services/invitationService'
 import { getMyInfluencerProfile } from '../services/influencerProfileService'
+import { getMyPayments, type PaymentResponse } from '../services/paymentService'
 import { InfluencerPortalLayout, INFLUENCER_PORTAL_PRIMARY } from '../components/InfluencerPortalLayout'
+import { InfluencerPerformanceCharts } from '../components/InfluencerPerformanceCharts'
 
 const { Title, Text } = Typography
 
@@ -12,6 +14,7 @@ export const InfluencerDashboard = () => {
     const navigate = useNavigate()
     const [invitations, setInvitations] = useState<Awaited<ReturnType<typeof getMyInvitations>>>([])
     const [profile, setProfile] = useState<any>(null)
+    const [payments, setPayments] = useState<PaymentResponse[]>([])
 
     useEffect(() => {
         getMyInvitations()
@@ -21,6 +24,10 @@ export const InfluencerDashboard = () => {
         getMyInfluencerProfile()
             .then(setProfile)
             .catch(() => {})
+
+        getMyPayments()
+            .then(setPayments)
+            .catch(() => setPayments([]))
     }, [])
 
     const pendingInvitations = invitations.filter((i) => i.status === 'PENDING' || i.status === 'NEGOTIATING')
@@ -114,6 +121,11 @@ export const InfluencerDashboard = () => {
                         </Card>
                     </Col>
                 ))}
+
+                {/* Performance Charts */}
+                <Col span={24}>
+                    <InfluencerPerformanceCharts invitations={invitations} payments={payments} />
+                </Col>
 
                 {/* Active Campaigns */}
                 <Col span={16}>
