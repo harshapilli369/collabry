@@ -87,4 +87,14 @@ class RatingControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void submitRating_invalidBody_returns400() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        mockMvc.perform(post("/api/ratings").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
 }

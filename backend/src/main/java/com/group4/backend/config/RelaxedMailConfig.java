@@ -47,14 +47,36 @@ public class RelaxedMailConfig {
         } else {
             props.put("mail.smtp.starttls.enable", "true");
         }
-        // Use JavaMail's MailSSLSocketFactory to trust all hosts (avoids PKIX errors)
-        Object sslFactory = Class.forName("com.sun.mail.util.MailSSLSocketFactory")
-                .getDeclaredConstructor()
-                .newInstance();
-        sslFactory.getClass().getMethod("setTrustAllHosts", boolean.class).invoke(sslFactory, true);
+        // Use JavaMail / Angus MailSSLSocketFactory to trust all hosts (avoids PKIX errors)
+        Object sslFactory = createTrustAllMailSslSocketFactory();
         props.put("mail.smtp.ssl.socketFactory", sslFactory);
 
         sender.setJavaMailProperties(props);
         return sender;
+    }
+
+    /**
+     * Jakarta Mail 2 (Angus) uses {@code org.eclipse.angus.mail.util.MailSSLSocketFactory};
+     * older stacks used {@code com.sun.mail.util.MailSSLSocketFactory}.
+     */
+    private static Object createTrustAllMailSslSocketFactory() throws Exception {
+        String[] classNames = {
+                "org.eclipse.angus.mail.util.MailSSLSocketFactory",
+                "com.sun.mail.util.MailSSLSocketFactory"
+        };
+        Exception last = null;
+        for (String className : classNames) {
+            try {
+                Object factory = Class.forName(className).getDeclaredConstructor().newInstance();
+                factory.getClass().getMethod("setTrustAllHosts", boolean.class).invoke(factory, true);
+                return factory;
+            } catch (ClassNotFoundException e) {
+                last = e;
+            }
+        }
+        if (last != null) {
+            throw new IllegalStateException("No MailSSLSocketFactory on classpath (Angus / com.sun.mail)", last);
+        }
+        throw new IllegalStateException("No MailSSLSocketFactory on classpath");
     }
 }
