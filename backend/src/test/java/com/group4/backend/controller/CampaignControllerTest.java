@@ -18,6 +18,7 @@ import com.group4.backend.service.AiRecommendationService;
 import com.group4.backend.dto.InfluencerRecommendationDTO;
 import com.group4.backend.service.InvitationService;
 import com.group4.backend.service.AiRecommendationService;
+import com.group4.backend.service.GroqApiClient;
 import com.group4.backend.dto.InfluencerRecommendationDTO;
 import com.group4.backend.dto.InfluencerRecommendationDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +57,8 @@ class CampaignControllerTest {
     private UserRepository userRepository;
     @MockBean
     private JwtUtils jwtUtils;
+    @MockBean
+    private GroqApiClient groqApiClient;
 
     private User brandUser;
     private User influencerUser;
@@ -190,5 +193,56 @@ class CampaignControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].influencerId").value(20))
                 .andExpect(jsonPath("$[0].matchScore").value(98));
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void generateDescription_asBrand_returns200() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(groqApiClient.isConfigured()).thenReturn(true);
+        when(groqApiClient.getTextCompletion(anyString())).thenReturn("A compelling summer campaign targeting fashion enthusiasts.");
+
+        String body = objectMapper.writeValueAsString(java.util.Map.of(
+                "name", "Summer Fashion Campaign",
+                "goal", "Brand Awareness",
+                "budget", "$1K-$5K"
+        ));
+
+        mockMvc.perform(post("/api/campaigns/generate-description").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value("A compelling summer campaign targeting fashion enthusiasts."));
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void generateDescription_missingName_returns400() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+
+        String body = objectMapper.writeValueAsString(java.util.Map.of(
+                "goal", "Brand Awareness"
+        ));
+
+        mockMvc.perform(post("/api/campaigns/generate-description").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Campaign name is required"));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void generateDescription_asInfluencer_returns403() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+
+        String body = objectMapper.writeValueAsString(java.util.Map.of(
+                "name", "Summer Campaign"
+        ));
+
+        mockMvc.perform(post("/api/campaigns/generate-description").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
     }
 }
