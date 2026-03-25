@@ -7,11 +7,12 @@ import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.InfluencerProfileRepository;
 import com.group4.backend.repository.UserRepository;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,6 +40,10 @@ public class InfluencerProfileService {
     /**
      * Search discoverable (complete) influencer profiles by niche, location, followers, engagement rate.
      * For use by brands to find influencers.
+     * <p>
+     * Rows are indexed on niche, follower_count, engagement_rate, and is_complete for efficient filtering.
+     * Results are ordered by {@linkplain InfluencerSearchRanker relevance score} (niche match quality, location match,
+     * engagement/follower signals, and fit to follower range), then by {@code createdAt} descending.
      *
      * @param availableOnly when {@link Boolean#TRUE}, only influencers with {@code openToCollaborations == true} are returned
      */
@@ -75,8 +80,12 @@ public class InfluencerProfileService {
             }
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
-        return influencerProfileRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"))
-                .stream()
+        List<InfluencerProfile> profiles = new ArrayList<>(influencerProfileRepository.findAll(spec));
+        profiles.sort(Comparator
+                .comparingDouble((InfluencerProfile p) ->
+                        -InfluencerSearchRanker.relevanceScore(p, niche, location, minFollowers, maxFollowers))
+                .thenComparing(InfluencerProfile::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
+        return profiles.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }

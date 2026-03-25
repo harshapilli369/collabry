@@ -46,6 +46,11 @@ describe('InfluencerSearch', () => {
     )
   }
 
+  it('mentions that results are ranked by relevance', () => {
+    renderWithRouter()
+    expect(screen.getByText(/ranked by relevance/i)).toBeInTheDocument()
+  })
+
   it('calls searchInfluencers with form values when Search is clicked', async () => {
     const user = userEvent.setup()
     mockSearchInfluencers.mockResolvedValue([])

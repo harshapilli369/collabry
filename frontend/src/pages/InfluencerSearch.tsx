@@ -93,7 +93,7 @@ export const InfluencerSearch = () => {
                         </Button>
                         <Title level={1} style={{ color: primaryColor, margin: '0 0 8px', fontSize: '2rem' }}>Find influencers</Title>
                         <Text style={{ color: '#aaa', display: 'block', marginBottom: 24 }}>
-                            Search and filter by niche, followers, engagement rate, and location. Send collaboration invitations with clear campaign details.
+                            Search and filter by niche, followers, engagement rate, and location. Results are ranked by relevance to your filters. Send collaboration invitations with clear campaign details.
                         </Text>
 
                         <Card bordered={false} style={{ background: cardBg, borderRadius: 12, marginBottom: 24 }}>

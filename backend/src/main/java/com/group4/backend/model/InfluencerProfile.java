@@ -6,7 +6,16 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
-@Table(name = "influencer_profiles", uniqueConstraints = @UniqueConstraint(columnNames = "user_id"))
+@Table(
+        name = "influencer_profiles",
+        uniqueConstraints = @UniqueConstraint(columnNames = "user_id"),
+        indexes = {
+                @Index(name = "idx_influencer_complete", columnList = "is_complete"),
+                @Index(name = "idx_influencer_niche", columnList = "niche"),
+                @Index(name = "idx_influencer_followers", columnList = "follower_count"),
+                @Index(name = "idx_influencer_engagement", columnList = "engagement_rate")
+        }
+)
 public class InfluencerProfile {
 
     @Id

@@ -15,7 +15,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
@@ -88,7 +87,7 @@ class InfluencerProfileServiceTest {
 
     @Test
     void search_withNoFilters_returnsOnlyCompleteProfilesFromRepository() {
-        when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
+        when(influencerProfileRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of(completeProfile));
 
         List<InfluencerProfileResponse> result = influencerProfileService.search(null, null, null, null, null, null);
@@ -104,7 +103,7 @@ class InfluencerProfileServiceTest {
 
     @Test
     void search_withFilters_callsRepositoryWithSpecification() {
-        when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
+        when(influencerProfileRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of(completeProfile));
 
         List<InfluencerProfileResponse> result = influencerProfileService.search(
@@ -112,13 +111,13 @@ class InfluencerProfileServiceTest {
 
         assertThat(result).hasSize(1);
         ArgumentCaptor<Specification<InfluencerProfile>> specCaptor = ArgumentCaptor.forClass(Specification.class);
-        verify(influencerProfileRepository).findAll(specCaptor.capture(), eq(Sort.by(Sort.Direction.DESC, "createdAt")));
+        verify(influencerProfileRepository).findAll(specCaptor.capture());
         assertThat(specCaptor.getValue()).isNotNull();
     }
 
     @Test
     void search_emptyResult_returnsEmptyList() {
-        when(influencerProfileRepository.findAll(any(Specification.class), any(Sort.class)))
+        when(influencerProfileRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of());
 
         List<InfluencerProfileResponse> result = influencerProfileService.search("Tech", null, null, null, null, null);
@@ -135,13 +134,47 @@ class InfluencerProfileServiceTest {
 
     @Test
     void search_withPartialNiche_returnsMatchingProfiles() {
-        when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
+        when(influencerProfileRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of(completeProfile));
 
         List<InfluencerProfileResponse> result = influencerProfileService.search("Fash", null, null, null, null, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getNiche()).isEqualTo("Fashion");
+    }
+
+    @Test
+    void search_withNicheQuery_ordersExactMatchBeforeSubstringMatch() {
+        InfluencerProfile retroGaming = new InfluencerProfile();
+        retroGaming.setId(10L);
+        retroGaming.setUserId(101L);
+        retroGaming.setName("Retro");
+        retroGaming.setNiche("Retro Gaming");
+        retroGaming.setLocation("Austin");
+        retroGaming.setComplete(true);
+        retroGaming.setFollowerCount(10_000L);
+        retroGaming.setEngagementRate(BigDecimal.valueOf(3.0));
+        retroGaming.setCreatedAt(Instant.parse("2024-01-01T00:00:00Z"));
+
+        InfluencerProfile pureGaming = new InfluencerProfile();
+        pureGaming.setId(11L);
+        pureGaming.setUserId(102L);
+        pureGaming.setName("Pro");
+        pureGaming.setNiche("Gaming");
+        pureGaming.setLocation("Austin");
+        pureGaming.setComplete(true);
+        pureGaming.setFollowerCount(10_000L);
+        pureGaming.setEngagementRate(BigDecimal.valueOf(3.0));
+        pureGaming.setCreatedAt(Instant.parse("2020-01-01T00:00:00Z"));
+
+        when(influencerProfileRepository.findAll(any(Specification.class)))
+                .thenReturn(List.of(retroGaming, pureGaming));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search("gaming", null, null, null, null, null);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getNiche()).isEqualTo("Gaming");
+        assertThat(result.get(1).getNiche()).isEqualTo("Retro Gaming");
     }
 
     @Test
@@ -191,14 +224,14 @@ class InfluencerProfileServiceTest {
 
     @Test
     void search_withAvailableOnlyTrue_stillInvokesRepository() {
-        when(influencerProfileRepository.findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt"))))
+        when(influencerProfileRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of(completeProfile));
 
         List<InfluencerProfileResponse> result = influencerProfileService.search(null, null, null, null, null, true);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).isOpenToCollaborations()).isTrue();
-        verify(influencerProfileRepository).findAll(any(Specification.class), eq(Sort.by(Sort.Direction.DESC, "createdAt")));
+        verify(influencerProfileRepository).findAll(any(Specification.class));
     }
 
     @Test
