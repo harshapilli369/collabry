@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Form, Input, Button, Typography, Select, message, InputNumber, Card, Alert, Table, Modal } from 'antd'
-import { ArrowLeftOutlined, MailOutlined, FundProjectionScreenOutlined, CheckCircleFilled } from '@ant-design/icons'
+import { ArrowLeftOutlined, MailOutlined, FundProjectionScreenOutlined, CheckCircleFilled, ThunderboltOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import {
@@ -29,7 +29,40 @@ export const CreateCampaign = () => {
     const [findIdModalOpen, setFindIdModalOpen] = useState(false)
     const [influencerList, setInfluencerList] = useState<InfluencerSearchResult[]>([])
     const [influencerListLoading, setInfluencerListLoading] = useState(false)
+    const [aiDescLoading, setAiDescLoading] = useState(false)
     const navigate = useNavigate()
+
+    const generateDescription = async () => {
+        const name = form.getFieldValue('name')
+        if (!name?.trim()) {
+            message.warning('Please enter a campaign name first')
+            return
+        }
+        setAiDescLoading(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('http://localhost:9090/api/campaigns/generate-description', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({
+                    name: name.trim(),
+                    goal: form.getFieldValue('campaignGoal') || '',
+                    budget: form.getFieldValue('budgetRange') || '',
+                }),
+            })
+            const data = await res.json()
+            if (res.ok && data.description) {
+                form.setFieldsValue({ description: data.description })
+                message.success('AI description generated! You can edit it before saving.')
+            } else {
+                message.error(data.message || 'Failed to generate description')
+            }
+        } catch {
+            message.error('Failed to connect to AI service')
+        } finally {
+            setAiDescLoading(false)
+        }
+    }
 
     const openFindIdModal = () => {
         setFindIdModalOpen(true)
@@ -155,8 +188,24 @@ export const CreateCampaign = () => {
                             <Text style={{ color: '#666', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
                                 Campaign Details
                             </Text>
-                            <Form.Item name="description" label="Description">
-                                <TextArea rows={4} placeholder="Describe the campaign, deliverables, and key messages" />
+                            <Form.Item
+                                name="description"
+                                label={
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                        <span>Description</span>
+                                        <Button
+                                            type="link"
+                                            icon={<ThunderboltOutlined />}
+                                            loading={aiDescLoading}
+                                            onClick={generateDescription}
+                                            style={{ color: PRIMARY, padding: 0, fontSize: 13 }}
+                                        >
+                                            Generate with AI
+                                        </Button>
+                                    </div>
+                                }
+                            >
+                                <TextArea rows={4} placeholder="Describe the campaign, deliverables, and key messages — or click 'Generate with AI'" />
                             </Form.Item>
                             <Form.Item name="campaignGoal" label="Campaign goal">
                                 <Select placeholder="Select primary goal" allowClear options={CAMPAIGN_GOAL_OPTIONS} />
