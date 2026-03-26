@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Typography, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tag, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined } from '@ant-design/icons'
-import { useNavigate } from 'react-router-dom'
+import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, FileTextOutlined } from '@ant-design/icons'
+import { Link, useNavigate } from 'react-router-dom'
 import { getMyCollaborations, INVITATION_STATUS_LABELS, type InvitationResponse, type InvitationStatus } from '../services/invitationService'
 
 const { Header, Content, Sider } = Layout
@@ -70,6 +70,7 @@ export const Collaborations = () => {
                             { key: 'profile', icon: <UserOutlined />, label: 'Profile', onClick: () => navigate('/influencer/profile') },
                             { key: 'invitations', icon: <MailOutlined />, label: 'Invitations', onClick: () => navigate('/influencer/invitations') },
                             { key: 'collaborations', icon: <TeamOutlined />, label: 'Collaborations' },
+                            { key: 'disclosure', icon: <FileTextOutlined />, label: 'Disclosure guidelines', onClick: () => navigate('/influencer/disclosure-guidelines') },
                             { key: 'payments', icon: <DollarOutlined />, label: 'Payments', onClick: () => navigate('/influencer/payments') },
                             { key: 'logout', icon: <LogoutOutlined />, label: 'Logout', onClick: handleLogout, danger: true },
                         ]}
@@ -83,7 +84,10 @@ export const Collaborations = () => {
                     <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
                         <div style={{ marginBottom: 30 }}>
                             <Title level={1} style={{ color: secondaryColor, margin: 0, fontSize: '3rem' }}>My Collaborations</Title>
-                            <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>Campaigns you’ve accepted or confirmed.</Text>
+                            <Text style={{ color: '#aaa', fontSize: '1.2rem', display: 'block' }}>Campaigns you’ve accepted or confirmed.</Text>
+                            <Link to="/influencer/disclosure-guidelines" style={{ color: primaryColor, fontSize: '0.95rem' }}>
+                                Advertising & disclosure guidelines
+                            </Link>
                         </div>
 
                         {loading ? (

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tag, message, theme, Input, InputNumber, Form } from 'antd'
-import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, ArrowLeftOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tag, message, theme, Input, InputNumber, Form, Modal, Checkbox } from 'antd'
+import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, ArrowLeftOutlined, CheckOutlined, CloseOutlined, FileTextOutlined } from '@ant-design/icons'
+import { useNavigate, useParams, Link } from 'react-router-dom'
+import { DisclosureGuidelinesContent } from '../components/DisclosureGuidelinesContent'
+import { DISCLOSURE_ACKNOWLEDGMENT_LABEL } from '../content/disclosureGuidelines'
 import {
     getInvitationById,
     respondToInvitation,
@@ -35,6 +37,8 @@ export const InvitationDetail = () => {
     const [invitation, setInvitation] = useState<InvitationDetailResponse | null>(null)
     const [loading, setLoading] = useState(true)
     const [responding, setResponding] = useState(false)
+    const [acceptModalOpen, setAcceptModalOpen] = useState(false)
+    const [disclosureAcknowledged, setDisclosureAcknowledged] = useState(false)
     const [negotiateForm] = Form.useForm()
 
     const load = () => {
@@ -63,12 +67,25 @@ export const InvitationDetail = () => {
     const user = userStr ? JSON.parse(userStr) : null
 
     const canRespond = invitation && (invitation.status === 'PENDING' || invitation.status === 'NEGOTIATING')
-    const handleAccept = () => {
+
+    const openAcceptDisclosureModal = () => {
         if (!id || !canRespond) return
+        setDisclosureAcknowledged(false)
+        setAcceptModalOpen(true)
+    }
+
+    const closeAcceptModal = () => {
+        setAcceptModalOpen(false)
+        setDisclosureAcknowledged(false)
+    }
+
+    const handleConfirmAcceptAfterDisclosure = () => {
+        if (!id || !canRespond || !disclosureAcknowledged) return
         setResponding(true)
         respondToInvitation(Number(id), { action: 'ACCEPT' })
             .then(() => {
                 message.success('Invitation accepted')
+                closeAcceptModal()
                 load()
             })
             .catch((e) => message.error(e.message || 'Failed to accept'))
@@ -140,6 +157,7 @@ export const InvitationDetail = () => {
                             { key: 'profile', icon: <UserOutlined />, label: 'Profile', onClick: () => navigate('/influencer/profile') },
                             { key: 'invitations', icon: <MailOutlined />, label: 'Invitations', onClick: () => navigate('/influencer/invitations') },
                             { key: 'collaborations', icon: <TeamOutlined />, label: 'Collaborations', onClick: () => navigate('/influencer/collaborations') },
+                            { key: 'disclosure', icon: <FileTextOutlined />, label: 'Disclosure guidelines', onClick: () => navigate('/influencer/disclosure-guidelines') },
                             { key: 'payments', icon: <DollarOutlined />, label: 'Payments', onClick: () => navigate('/influencer/payments') },
                             { key: 'logout', icon: <LogoutOutlined />, label: 'Logout', onClick: handleLogout, danger: true },
                         ]}
@@ -161,6 +179,10 @@ export const InvitationDetail = () => {
                             </Tag>
                             <Title level={3} style={{ color: '#fff', margin: '8px 0 0' }}>Invitation #{invitation.id}</Title>
                             <Text type="secondary" style={{ display: 'block', marginTop: 4 }}>Received {formatDate(invitation.createdAt)}</Text>
+                            <Text type="secondary" style={{ display: 'block', marginTop: 12 }}>
+                                <Link to="/influencer/disclosure-guidelines">View disclosure guidelines</Link>
+                                {' '}— reference anytime; required acknowledgment when you accept.
+                            </Text>
                         </div>
 
                         {invitation.brandMessage && (
@@ -198,7 +220,16 @@ export const InvitationDetail = () => {
                         {canRespond && (
                             <Card title="Respond" bordered={false} size="small" style={{ marginBottom: 24, background: '#1c1c1c', borderRadius: 8, borderColor: '#333' }}>
                                 <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-                                    <Button type="primary" icon={<CheckOutlined />} loading={responding} onClick={handleAccept} style={{ color: '#000000' }}>Accept</Button>
+                                    <Button
+                                        type="primary"
+                                        icon={<CheckOutlined />}
+                                        loading={responding && !acceptModalOpen}
+                                        onClick={openAcceptDisclosureModal}
+                                        style={{ color: '#000000' }}
+                                        data-testid="invitation-accept-open-disclosure"
+                                    >
+                                        Accept
+                                    </Button>
                                     <Button danger icon={<CloseOutlined />} loading={responding} onClick={handleDecline}>Decline</Button>
                                 </div>
                                 <Title level={5} style={{ color: '#aaa', marginTop: 16 }}>Or propose terms (negotiate)</Title>
@@ -218,6 +249,39 @@ export const InvitationDetail = () => {
                                 </Form>
                             </Card>
                         )}
+
+                        <Modal
+                            title="Accept campaign — disclosure required"
+                            open={acceptModalOpen}
+                            onCancel={closeAcceptModal}
+                            footer={[
+                                <Button key="cancel" onClick={closeAcceptModal}>
+                                    Cancel
+                                </Button>,
+                                <Button
+                                    key="confirm"
+                                    type="primary"
+                                    disabled={!disclosureAcknowledged}
+                                    loading={responding}
+                                    onClick={handleConfirmAcceptAfterDisclosure}
+                                    style={{ color: '#000000' }}
+                                >
+                                    Confirm acceptance
+                                </Button>,
+                            ]}
+                            width={640}
+                            destroyOnHidden
+                        >
+                            <div style={{ maxHeight: 'min(52vh, 420px)', overflowY: 'auto', marginBottom: 16 }}>
+                                <DisclosureGuidelinesContent compact />
+                            </div>
+                            <Checkbox
+                                checked={disclosureAcknowledged}
+                                onChange={(e) => setDisclosureAcknowledged(e.target.checked)}
+                            >
+                                {DISCLOSURE_ACKNOWLEDGMENT_LABEL}
+                            </Checkbox>
+                        </Modal>
                     </Content>
                 </Layout>
             </Layout>

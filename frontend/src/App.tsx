@@ -9,6 +9,7 @@ import { InfluencerDashboard } from './pages/InfluencerDashboard'
 import { Invitations } from './pages/Invitations'
 import { InvitationDetail } from './pages/InvitationDetail'
 import { Collaborations } from './pages/Collaborations'
+import { InfluencerDisclosureGuidelines } from './pages/InfluencerDisclosureGuidelines'
 import { PaymentsDashboard } from './pages/PaymentsDashboard'
 import { BrandDashboard } from './pages/BrandDashboard'
 import { BrandProfile } from './pages/BrandProfile'
@@ -37,6 +38,7 @@ function App() {
           <Route path="/influencer/invitations" element={<Invitations />} />
           <Route path="/influencer/invitations/:id" element={<InvitationDetail />} />
           <Route path="/influencer/collaborations" element={<Collaborations />} />
+          <Route path="/influencer/disclosure-guidelines" element={<InfluencerDisclosureGuidelines />} />
           <Route path="/influencer/payments" element={<PaymentsDashboard />} />
         </Route>
 

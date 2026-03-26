@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Typography, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Table, Tag, Button, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, DownloadOutlined, TeamOutlined } from '@ant-design/icons'
+import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, DownloadOutlined, TeamOutlined, FileTextOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyPayments, getInvoice, PAYMENT_STATUS_LABELS, PAYMENT_STATUS_COLORS, type PaymentResponse, type PaymentStatus } from '../services/paymentService'
 
@@ -92,6 +92,7 @@ export const PaymentsDashboard = () => {
                             { key: 'profile', icon: <UserOutlined />, label: 'Profile', onClick: () => navigate('/influencer/profile') },
                             { key: 'invitations', icon: <MailOutlined />, label: 'Invitations', onClick: () => navigate('/influencer/invitations') },
                             { key: 'collaborations', icon: <TeamOutlined />, label: 'Collaborations', onClick: () => navigate('/influencer/collaborations') },
+                            { key: 'disclosure', icon: <FileTextOutlined />, label: 'Disclosure guidelines', onClick: () => navigate('/influencer/disclosure-guidelines') },
                             { key: 'payments', icon: <DollarOutlined />, label: 'Payments', onClick: () => navigate('/influencer/payments') },
                             { key: 'logout', icon: <LogoutOutlined />, label: 'Logout', onClick: handleLogout, danger: true },
                         ]}

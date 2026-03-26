@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Card, Typography, Button, ConfigProvider, Layout, Menu, Descriptions, theme, Avatar, Spin, Tag, Space, Row, Col, Rate } from 'antd'
-import { UserOutlined, LogoutOutlined, AppstoreOutlined, ArrowLeftOutlined, EditOutlined, InstagramOutlined, YoutubeOutlined, CheckCircleFilled, DollarOutlined, MailOutlined, TeamOutlined, StarFilled } from '@ant-design/icons'
+import { UserOutlined, LogoutOutlined, AppstoreOutlined, ArrowLeftOutlined, EditOutlined, InstagramOutlined, YoutubeOutlined, CheckCircleFilled, DollarOutlined, MailOutlined, TeamOutlined, StarFilled, FileTextOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyInfluencerProfile, type InfluencerProfileResponse, type RatingResponse } from '../services/influencerProfileService'
 
@@ -112,6 +112,12 @@ export const ViewInfluencerProfile = () => {
                                 icon: <TeamOutlined />,
                                 label: 'Collaborations',
                                 onClick: () => navigate('/influencer/collaborations'),
+                            },
+                            {
+                                key: 'disclosure',
+                                icon: <FileTextOutlined />,
+                                label: 'Disclosure guidelines',
+                                onClick: () => navigate('/influencer/disclosure-guidelines'),
                             },
                             {
                                 key: 'payments',

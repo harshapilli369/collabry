@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, theme, Switch, Space, message } from 'antd'
-import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, CheckCircleFilled } from '@ant-design/icons'
-import { useNavigate } from 'react-router-dom'
+import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, CheckCircleFilled, FileTextOutlined } from '@ant-design/icons'
+import { Link, useNavigate } from 'react-router-dom'
 import { getMyInvitations } from '../services/invitationService'
 import { getMyInfluencerProfile, updateCollaborationAvailability, type InfluencerProfileResponse } from '../services/influencerProfileService'
 
@@ -115,6 +115,12 @@ export const InfluencerDashboard = () => {
                                 onClick: () => navigate('/influencer/collaborations'),
                             },
                             {
+                                key: 'disclosure',
+                                icon: <FileTextOutlined />,
+                                label: 'Disclosure guidelines',
+                                onClick: () => navigate('/influencer/disclosure-guidelines'),
+                            },
+                            {
                                 key: 'payments',
                                 icon: <DollarOutlined />,
                                 label: 'Payments',
@@ -150,7 +156,10 @@ export const InfluencerDashboard = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <Title level={1} style={{ color: secondaryColor, margin: 0, fontSize: '3rem' }}>Welcome!</Title>
                             </div>
-                            <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>Here's what's happening with your campaigns today.</Text>
+                            <Text style={{ color: '#aaa', fontSize: '1.2rem', display: 'block' }}>Here's what's happening with your campaigns today.</Text>
+                            <Link to="/influencer/disclosure-guidelines" style={{ color: primaryColor, fontSize: '0.95rem' }}>
+                                Advertising & disclosure guidelines
+                            </Link>
                         </div>
 
                         <Row gutter={[24, 24]}>

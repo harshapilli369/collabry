@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Typography, Button, ConfigProvider, Layout, Menu, Card, Row, Col, Avatar, Tag, message, theme } from 'antd'
-import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, EyeOutlined } from '@ant-design/icons'
+import { UserOutlined, LogoutOutlined, MailOutlined, AppstoreOutlined, DollarOutlined, TeamOutlined, EyeOutlined, FileTextOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
     getMyInvitations,
@@ -77,6 +77,7 @@ export const Invitations = () => {
                             { key: 'profile', icon: <UserOutlined />, label: 'Profile', onClick: () => navigate('/influencer/profile') },
                             { key: 'invitations', icon: <MailOutlined />, label: 'Invitations' },
                             { key: 'collaborations', icon: <TeamOutlined />, label: 'Collaborations', onClick: () => navigate('/influencer/collaborations') },
+                            { key: 'disclosure', icon: <FileTextOutlined />, label: 'Disclosure guidelines', onClick: () => navigate('/influencer/disclosure-guidelines') },
                             { key: 'payments', icon: <DollarOutlined />, label: 'Payments', onClick: () => navigate('/influencer/payments') },
                             { key: 'logout', icon: <LogoutOutlined />, label: 'Logout', onClick: handleLogout, danger: true },
                         ]}
