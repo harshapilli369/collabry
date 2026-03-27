@@ -13,6 +13,7 @@ import {
     ResponsiveContainer,
     Legend,
 } from 'recharts'
+import type { PieLabelRenderProps } from 'recharts'
 import type { CampaignResponse } from '../services/campaignService'
 import type { InvitationResponse } from '../services/invitationService'
 import type { PaymentResponse } from '../services/paymentService'
@@ -152,8 +153,10 @@ export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments
         { name: 'Delayed', value: payments.filter((p) => p.status === 'DELAYED').length },
     ].filter((d) => d.value > 0)
 
-    const renderPieLabel = ({ name, percent }: { name: string; percent: number }) =>
-        percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+    const renderPieLabel = (props: PieLabelRenderProps) => {
+        const percent = props.percent ?? 0
+        return percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+    }
 
     // --- Chart renderers ---
     const renderStatusChart = (height: number, isModal = false) =>
@@ -179,7 +182,7 @@ export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments
                     <Tooltip
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
-                        formatter={(value: number, name: string) => [value, name]}
+                        formatter={(value, name) => [Number(value ?? 0), String(name ?? '')]}
                     />
                     <Legend
                         formatter={(value) => (

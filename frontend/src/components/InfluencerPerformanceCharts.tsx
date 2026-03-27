@@ -13,6 +13,7 @@ import {
     ResponsiveContainer,
     Legend,
 } from 'recharts'
+import type { PieLabelRenderProps } from 'recharts'
 import type { InvitationResponse } from '../services/invitationService'
 import type { PaymentResponse } from '../services/paymentService'
 
@@ -151,8 +152,10 @@ export function InfluencerPerformanceCharts({ invitations, payments }: Props) {
         { name: 'Delayed', value: sumByStatus('DELAYED') },
     ].filter((d) => d.value > 0)
 
-    const renderPieLabel = ({ name, percent }: { name: string; percent: number }) =>
-        percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+    const renderPieLabel = (props: PieLabelRenderProps) => {
+        const percent = props.percent ?? 0
+        return percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+    }
 
     const formatDollar = (value: number) =>
         value >= 1000 ? `$${(value / 1000).toFixed(1)}k` : `$${value}`
@@ -181,7 +184,7 @@ export function InfluencerPerformanceCharts({ invitations, payments }: Props) {
                     <Tooltip
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
-                        formatter={(value: number, name: string) => [value, name]}
+                        formatter={(value, name) => [Number(value ?? 0), String(name ?? '')]}
                     />
                     <Legend
                         formatter={(value) => (
@@ -228,7 +231,10 @@ export function InfluencerPerformanceCharts({ invitations, payments }: Props) {
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
                         cursor={{ fill: '#ffffff08' }}
-                        formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']}
+                        formatter={(value) => {
+                            const num = Number(value ?? 0)
+                            return [`$${num.toLocaleString()}`, 'Amount']
+                        }}
                     />
                     <Bar dataKey="value" name="Amount" radius={[6, 6, 0, 0]}>
                         {earningsData.map((entry) => (

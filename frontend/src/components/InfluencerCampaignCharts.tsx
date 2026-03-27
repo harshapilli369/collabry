@@ -13,6 +13,7 @@ import {
     ResponsiveContainer,
     Legend,
 } from 'recharts'
+import type { PieLabelRenderProps } from 'recharts'
 import type { InvitationResponse } from '../services/invitationService'
 
 const { Text } = Typography
@@ -177,8 +178,10 @@ export function InfluencerCampaignCharts({ invitations }: Props) {
 
     const hasTrendData = trendData.some((d) => d.value > 0)
 
-    const renderPieLabel = ({ name, percent }: { name: string; percent: number }) =>
-        percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+    const renderPieLabel = (props: PieLabelRenderProps) => {
+        const percent = props.percent ?? 0
+        return percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+    }
 
     // --- Chart renderers ---
     const renderPlatformChart = (height: number, isModal = false) =>
@@ -204,7 +207,7 @@ export function InfluencerCampaignCharts({ invitations }: Props) {
                     <Tooltip
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
-                        formatter={(value: number, name: string) => [value, name]}
+                        formatter={(value, name) => [Number(value ?? 0), String(name ?? '')]}
                     />
                     <Legend
                         formatter={(value) => (
@@ -227,7 +230,7 @@ export function InfluencerCampaignCharts({ invitations }: Props) {
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
                         cursor={{ fill: '#ffffff08' }}
-                        formatter={(value: number) => [value, 'Invitations']}
+                        formatter={(value) => [Number(value ?? 0), 'Invitations']}
                     />
                     <Bar dataKey="value" name="Invitations" fill="#7c3aed" radius={[6, 6, 0, 0]} />
                 </BarChart>
@@ -246,7 +249,7 @@ export function InfluencerCampaignCharts({ invitations }: Props) {
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
                         cursor={{ fill: '#ffffff08' }}
-                        formatter={(value: number, name: string) => [value, name]}
+                        formatter={(value, name) => [Number(value ?? 0), String(name ?? '')]}
                     />
                     <Bar dataKey="value" name="Campaigns" radius={[6, 6, 0, 0]}>
                         {involvementData.map((entry) => (

@@ -11,7 +11,6 @@ import { PREFERRED_CONTENT_OPTIONS } from '../services/campaignService'
 const { Title, Text } = Typography
 
 const primaryColor = BRAND_PORTAL_PRIMARY
-const cardBg = '#1c1c1c'
 
 export const InfluencerSearch = () => {
     const navigate = useNavigate()
