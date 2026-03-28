@@ -107,3 +107,21 @@ export async function getMyCampaigns(): Promise<CampaignResponse[]> {
     }
     return response.json();
 }
+
+export async function downloadCampaignReport(campaignId: number): Promise<void> {
+    const response = await fetch(`${CAMPAIGNS_URL}/${campaignId}/report`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to download campaign report');
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `campaign-${campaignId}-report.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+}

@@ -8,11 +8,13 @@ import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.service.CampaignService;
+import com.group4.backend.service.CampaignReportService;
 import com.group4.backend.service.InvitationService;
 import com.group4.backend.service.AiRecommendationService;
 import com.group4.backend.dto.InfluencerRecommendationDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,12 +35,15 @@ public class CampaignController {
     private final InvitationService invitationService;
     private final UserRepository userRepository;
     private final AiRecommendationService aiRecommendationService;
+    private final CampaignReportService campaignReportService;
 
-    public CampaignController(CampaignService campaignService, InvitationService invitationService, UserRepository userRepository, AiRecommendationService aiRecommendationService) {
+    public CampaignController(CampaignService campaignService, InvitationService invitationService, UserRepository userRepository,
+                              AiRecommendationService aiRecommendationService, CampaignReportService campaignReportService) {
         this.campaignService = campaignService;
         this.invitationService = invitationService;
         this.userRepository = userRepository;
         this.aiRecommendationService = aiRecommendationService;
+        this.campaignReportService = campaignReportService;
     }
 
     @PostMapping
@@ -87,6 +92,19 @@ public class CampaignController {
         }
         List<InfluencerRecommendationDTO> recommendations = aiRecommendationService.getRecommendations(campaignId);
         return ResponseEntity.ok(recommendations);
+    }
+
+    @GetMapping(value = "/{campaignId}/report", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> downloadCampaignReport(@PathVariable Long campaignId) {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        byte[] pdf = campaignReportService.generateCampaignReportPdf(user.getId(), campaignId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"campaign-" + campaignId + "-report.pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
