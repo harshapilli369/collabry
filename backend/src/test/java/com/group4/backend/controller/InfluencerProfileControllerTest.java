@@ -8,6 +8,7 @@ import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.security.JwtUtils;
+import com.group4.backend.service.GroqApiClient;
 import com.group4.backend.service.InfluencerProfileService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +52,8 @@ class InfluencerProfileControllerTest {
     private UserRepository userRepository;
     @MockBean
     private JwtUtils jwtUtils;
+    @MockBean
+    private GroqApiClient groqApiClient;
 
     private User influencerUser;
     private User brandUser;
