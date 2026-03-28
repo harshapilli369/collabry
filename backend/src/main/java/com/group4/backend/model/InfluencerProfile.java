@@ -6,7 +6,16 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
-@Table(name = "influencer_profiles", uniqueConstraints = @UniqueConstraint(columnNames = "user_id"))
+@Table(
+        name = "influencer_profiles",
+        uniqueConstraints = @UniqueConstraint(columnNames = "user_id"),
+        indexes = {
+                @Index(name = "idx_influencer_complete", columnList = "is_complete"),
+                @Index(name = "idx_influencer_niche", columnList = "niche"),
+                @Index(name = "idx_influencer_followers", columnList = "follower_count"),
+                @Index(name = "idx_influencer_engagement", columnList = "engagement_rate")
+        }
+)
 public class InfluencerProfile {
 
     @Id
@@ -57,6 +66,12 @@ public class InfluencerProfile {
 
     @Column(name = "is_complete", nullable = false)
     private boolean isComplete = false;
+
+    /**
+     * Nullable so Hibernate can add the column to existing DBs; null treated as open (true).
+     */
+    @Column(name = "open_to_collaborations")
+    private Boolean openToCollaborations;
 
     @Column(name = "created_at")
     private Instant createdAt;
@@ -206,6 +221,14 @@ public class InfluencerProfile {
 
     public void setComplete(boolean complete) {
         isComplete = complete;
+    }
+
+    public boolean isOpenToCollaborations() {
+        return openToCollaborations == null || openToCollaborations;
+    }
+
+    public void setOpenToCollaborations(boolean openToCollaborations) {
+        this.openToCollaborations = openToCollaborations;
     }
 
     public Instant getCreatedAt() {

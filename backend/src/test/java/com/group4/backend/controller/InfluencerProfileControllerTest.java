@@ -1,6 +1,7 @@
 package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group4.backend.dto.CollaborationAvailabilityRequest;
 import com.group4.backend.dto.InfluencerProfileRequest;
 import com.group4.backend.dto.InfluencerProfileResponse;
 import com.group4.backend.model.Role;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -71,7 +74,7 @@ class InfluencerProfileControllerTest {
         resp.setNiche("Fashion");
         resp.setLocation("NYC");
         resp.setComplete(true);
-        when(influencerProfileService.search(any(), any(), any(), any(), any())).thenReturn(List.of(resp));
+        when(influencerProfileService.search(any(), any(), any(), any(), any(), any())).thenReturn(List.of(resp));
 
         mockMvc.perform(get("/api/influencers/search"))
                 .andExpect(status().isOk())
@@ -80,14 +83,14 @@ class InfluencerProfileControllerTest {
                 .andExpect(jsonPath("$[0].name").value("Jane"))
                 .andExpect(jsonPath("$[0].niche").value("Fashion"));
 
-        verify(influencerProfileService).search(null, null, null, null, null);
+        verify(influencerProfileService).search(null, null, null, null, null, null);
     }
 
     @Test
     @WithMockUser(username = "brand@test.com")
     void search_asBrand_withQueryParams_passesParamsToService() throws Exception {
         when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
-        when(influencerProfileService.search("Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5)))
+        when(influencerProfileService.search("Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5), null))
                 .thenReturn(List.of());
 
         mockMvc.perform(get("/api/influencers/search")
@@ -98,7 +101,19 @@ class InfluencerProfileControllerTest {
                         .param("minEngagementRate", "2.5"))
                 .andExpect(status().isOk());
 
-        verify(influencerProfileService).search("Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5));
+        verify(influencerProfileService).search("Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5), null);
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void search_asBrand_withAvailableOnly_passesToService() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(influencerProfileService.search(null, null, null, null, null, true)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/influencers/search").param("availableOnly", "true"))
+                .andExpect(status().isOk());
+
+        verify(influencerProfileService).search(null, null, null, null, null, true);
     }
 
     @Test
@@ -109,14 +124,14 @@ class InfluencerProfileControllerTest {
         mockMvc.perform(get("/api/influencers/search"))
                 .andExpect(status().isForbidden());
 
-        verify(influencerProfileService, never()).search(any(), any(), any(), any(), any());
+        verify(influencerProfileService, never()).search(any(), any(), any(), any(), any(), any());
     }
 
     @Test
     @WithMockUser(username = "brand@test.com")
     void search_withMinFollowersGreaterThanMaxFollowers_returns400() throws Exception {
         when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
-        when(influencerProfileService.search(any(), any(), eq(10000L), eq(1000L), any()))
+        when(influencerProfileService.search(any(), any(), eq(10000L), eq(1000L), any(), any()))
                 .thenThrow(new IllegalArgumentException("minFollowers cannot be greater than maxFollowers"));
 
         mockMvc.perform(get("/api/influencers/search")
@@ -125,7 +140,7 @@ class InfluencerProfileControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("minFollowers cannot be greater than maxFollowers"));
 
-        verify(influencerProfileService).search(null, null, 10000L, 1000L, null);
+        verify(influencerProfileService).search(null, null, 10000L, 1000L, null, null);
     }
 
     @Test
@@ -146,6 +161,44 @@ class InfluencerProfileControllerTest {
                 .andExpect(jsonPath("$.userId").value(20))
                 .andExpect(jsonPath("$.name").value("Jane Doe"))
                 .andExpect(jsonPath("$.complete").value(true));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void updateCollaborationAvailability_asInfluencer_returns200() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        InfluencerProfileResponse response = new InfluencerProfileResponse();
+        response.setUserId(20L);
+        response.setName("Jane");
+        response.setOpenToCollaborations(false);
+        response.setComplete(true);
+        when(influencerProfileService.updateCollaborationAvailability(20L, false)).thenReturn(response);
+
+        CollaborationAvailabilityRequest body = new CollaborationAvailabilityRequest();
+        body.setOpenToCollaborations(false);
+
+        mockMvc.perform(put("/api/influencers/me/collaboration-availability").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.openToCollaborations").value(false));
+
+        verify(influencerProfileService).updateCollaborationAvailability(20L, false);
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void updateCollaborationAvailability_asBrand_returns403() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        CollaborationAvailabilityRequest body = new CollaborationAvailabilityRequest();
+        body.setOpenToCollaborations(true);
+
+        mockMvc.perform(put("/api/influencers/me/collaboration-availability").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isForbidden());
+
+        verify(influencerProfileService, never()).updateCollaborationAvailability(anyLong(), anyBoolean());
     }
 
     @Test

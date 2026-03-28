@@ -54,6 +54,8 @@ export interface InfluencerProfileResponse {
     engagementRate?: number;
     audienceInfo?: string;
     complete: boolean;
+    /** When false, influencer is not seeking new collaborations */
+    openToCollaborations?: boolean;
     createdAt?: string;
     updatedAt?: string;
     averageRating?: number;
@@ -67,6 +69,8 @@ export interface InfluencerSearchParams {
     minFollowers?: number;
     maxFollowers?: number;
     minEngagementRate?: number;
+    /** When true, only influencers open to collaborations are returned */
+    availableOnly?: boolean;
 }
 
 export async function getMyInfluencerProfile(): Promise<InfluencerProfileResponse | null> {
@@ -112,6 +116,20 @@ export async function enhanceBio(bio: string): Promise<string> {
     return data.enhancedBio;
 }
 
+/** Update whether influencer is open to new collaborations. */
+export async function updateCollaborationAvailability(openToCollaborations: boolean): Promise<InfluencerProfileResponse> {
+    const response = await fetch(`${INFLUENCERS_URL}/me/collaboration-availability`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ openToCollaborations }),
+    });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to update collaboration availability');
+    }
+    return response.json();
+}
+
 /** Search influencers by niche, location, followers, engagement. Brands only. */
 export async function searchInfluencers(params: InfluencerSearchParams): Promise<InfluencerProfileResponse[]> {
     const sp = new URLSearchParams();
@@ -120,6 +138,7 @@ export async function searchInfluencers(params: InfluencerSearchParams): Promise
     if (params.minFollowers != null) sp.set('minFollowers', String(params.minFollowers));
     if (params.maxFollowers != null) sp.set('maxFollowers', String(params.maxFollowers));
     if (params.minEngagementRate != null) sp.set('minEngagementRate', String(params.minEngagementRate));
+    if (params.availableOnly === true) sp.set('availableOnly', 'true');
     const qs = sp.toString();
     const url = `${INFLUENCERS_URL}/search${qs ? `?${qs}` : ''}`;
     const response = await fetch(url, { method: 'GET', headers: getAuthHeaders() });

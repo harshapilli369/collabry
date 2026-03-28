@@ -52,12 +52,22 @@ public class BrandProfile {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    /**
+     * Present on some DBs (e.g. file H2) as NOT NULL. Nullable in mapping so Hibernate can add the column
+     * to existing DBs; {@link #prePersist} sets a default before insert.
+     */
+    @Column(name = "is_verified")
+    private Boolean verified;
+
     @PrePersist
     public void prePersist() {
         Instant now = Instant.now();
         if (createdAt == null)
             createdAt = now;
         updatedAt = now;
+        if (verified == null) {
+            verified = true;
+        }
     }
 
     @PreUpdate
@@ -178,5 +188,13 @@ public class BrandProfile {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public boolean isVerified() {
+        return Boolean.TRUE.equals(verified);
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 }

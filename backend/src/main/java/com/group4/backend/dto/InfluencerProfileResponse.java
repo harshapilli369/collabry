@@ -22,6 +22,7 @@ public class InfluencerProfileResponse {
     private BigDecimal engagementRate;
     private String audienceInfo;
     private boolean isComplete;
+    private boolean openToCollaborations = true;
     private Instant createdAt;
     private Instant updatedAt;
     private Double averageRating;
@@ -78,6 +79,9 @@ public class InfluencerProfileResponse {
 
     public boolean isComplete() { return isComplete; }
     public void setComplete(boolean complete) { isComplete = complete; }
+
+    public boolean isOpenToCollaborations() { return openToCollaborations; }
+    public void setOpenToCollaborations(boolean openToCollaborations) { this.openToCollaborations = openToCollaborations; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
