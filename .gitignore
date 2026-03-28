@@ -14,7 +14,8 @@ desktop.ini
 .settings/
 *.sublime-*
 *.code-workspace
-
+ .claude/
+ .cursor/
 ############################
 # Logs
 ############################
