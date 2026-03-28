@@ -6,6 +6,7 @@ import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.service.InfluencerProfileService;
+import com.group4.backend.service.GroqApiClient;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +25,12 @@ public class InfluencerProfileController {
 
     private final InfluencerProfileService influencerProfileService;
     private final UserRepository userRepository;
+    private final GroqApiClient groqApiClient;
 
-    public InfluencerProfileController(InfluencerProfileService influencerProfileService, UserRepository userRepository) {
+    public InfluencerProfileController(InfluencerProfileService influencerProfileService, UserRepository userRepository, GroqApiClient groqApiClient) {
         this.influencerProfileService = influencerProfileService;
         this.userRepository = userRepository;
+        this.groqApiClient = groqApiClient;
     }
 
     @GetMapping("/me")
@@ -67,6 +70,38 @@ public class InfluencerProfileController {
         }
         List<InfluencerProfileResponse> list = influencerProfileService.search(niche, location, minFollowers, maxFollowers, minEngagementRate);
         return ResponseEntity.ok(list);
+    }
+
+    @PostMapping("/enhance-bio")
+    public ResponseEntity<Map<String, String>> enhanceBio(@RequestBody Map<String, String> request) {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.INFLUENCER) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        String bio = request.get("bio");
+        if (bio == null || bio.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Bio text is required"));
+        }
+        if (!groqApiClient.isConfigured()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "AI service is not configured"));
+        }
+        String prompt = "You are a professional copywriter for influencer profiles. " +
+                "Rewrite the following bio to sound more professional, engaging, and appealing to brands looking for collaborations. " +
+                "Keep the same meaning and personality but make it polished. " +
+                "Keep it concise (2-4 sentences max). " +
+                "Return ONLY the enhanced bio text, nothing else.\n\n" +
+                "Original bio:\n" + bio;
+        try {
+            String enhanced = groqApiClient.getTextCompletion(prompt).trim();
+            // Remove surrounding quotes if the AI wraps it
+            if (enhanced.startsWith("\"") && enhanced.endsWith("\"")) {
+                enhanced = enhanced.substring(1, enhanced.length() - 1);
+            }
+            return ResponseEntity.ok(Map.of("enhancedBio", enhanced));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to enhance bio: " + e.getMessage()));
+        }
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

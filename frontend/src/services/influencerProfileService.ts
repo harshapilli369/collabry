@@ -98,6 +98,20 @@ export async function updateMyInfluencerProfile(
     return response.json();
 }
 
+export async function enhanceBio(bio: string): Promise<string> {
+    const response = await fetch(`${INFLUENCERS_URL}/enhance-bio`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ bio }),
+    });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to enhance bio');
+    }
+    const data = await response.json();
+    return data.enhancedBio;
+}
+
 /** Search influencers by niche, location, followers, engagement. Brands only. */
 export async function searchInfluencers(params: InfluencerSearchParams): Promise<InfluencerProfileResponse[]> {
     const sp = new URLSearchParams();

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message, theme, Modal } from 'antd'
-import { UserOutlined, LinkOutlined, DollarOutlined, ArrowLeftOutlined, CheckCircleFilled, InstagramOutlined, YoutubeOutlined } from '@ant-design/icons'
+import { UserOutlined, LinkOutlined, DollarOutlined, ArrowLeftOutlined, CheckCircleFilled, InstagramOutlined, YoutubeOutlined, RobotOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
     getMyInfluencerProfile,
     updateMyInfluencerProfile,
+    enhanceBio,
     type InfluencerProfileRequest,
     type InfluencerProfileResponse,
 } from '../services/influencerProfileService'
@@ -28,6 +29,8 @@ export const ProfileSetup = () => {
     const [isEdit, setIsEdit] = useState(false)
     const [form] = Form.useForm<InfluencerProfileRequest & { saveAsDraft?: boolean }>()
     const navigate = useNavigate()
+    const [enhancingBio, setEnhancingBio] = useState(false)
+    const [enhancedBio, setEnhancedBio] = useState<string | null>(null)
 
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
@@ -305,9 +308,70 @@ export const ProfileSetup = () => {
                                 <Text style={{ color: '#666', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
                                     Optional
                                 </Text>
-                                <Form.Item name="bio" label="Bio">
+                                <Form.Item name="bio" label={
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                        <span>Bio</span>
+                                        <Button
+                                            type="link"
+                                            size="small"
+                                            icon={<RobotOutlined />}
+                                            loading={enhancingBio}
+                                            onClick={async () => {
+                                                const currentBio = form.getFieldValue('bio' as any) as string | undefined
+                                                if (!currentBio?.trim()) {
+                                                    Modal.warning({ title: 'Bio Required', content: 'Please write a bio first, then click Enhance with AI to polish it.', centered: true, okText: 'Got it' })
+                                                    return
+                                                }
+                                                setEnhancingBio(true)
+                                                try {
+                                                    const result = await enhanceBio(currentBio.trim())
+                                                    setEnhancedBio(result)
+                                                } catch (e) {
+                                                    Modal.error({ title: 'Enhancement Failed', content: e instanceof Error ? e.message : 'Could not enhance bio. Try again.', centered: true })
+                                                } finally {
+                                                    setEnhancingBio(false)
+                                                }
+                                            }}
+                                            style={{ color: PRIMARY, padding: 0, fontSize: 12 }}
+                                        >
+                                            Enhance with AI
+                                        </Button>
+                                    </div>
+                                }>
                                     <TextArea rows={4} placeholder="Tell brands about yourself..." />
                                 </Form.Item>
+
+                                {/* Enhanced Bio Preview */}
+                                {enhancedBio && (
+                                    <div style={{ marginBottom: 16, padding: 16, background: `${PRIMARY}08`, borderRadius: 10, border: `1px solid ${PRIMARY}25` }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                                            <RobotOutlined style={{ color: PRIMARY }} />
+                                            <Text style={{ color: PRIMARY, fontSize: 12, fontWeight: 600 }}>AI-Enhanced Version</Text>
+                                        </div>
+                                        <Text style={{ color: '#ccc', fontSize: 14, lineHeight: 1.6, display: 'block', marginBottom: 12 }}>{enhancedBio}</Text>
+                                        <div style={{ display: 'flex', gap: 8 }}>
+                                            <Button
+                                                type="primary"
+                                                size="small"
+                                                onClick={() => {
+                                                    form.setFieldsValue({ bio: enhancedBio } as any)
+                                                    setEnhancedBio(null)
+                                                    Modal.success({ title: 'Bio Updated!', content: 'The enhanced bio has been applied. Remember to save your profile.', centered: true, okText: 'Got it' })
+                                                }}
+                                                style={{ borderRadius: 8 }}
+                                            >
+                                                Accept
+                                            </Button>
+                                            <Button
+                                                size="small"
+                                                onClick={() => setEnhancedBio(null)}
+                                                style={{ borderRadius: 8 }}
+                                            >
+                                                Discard
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
                                 <Form.Item name="profilePictureUrl" label="Profile picture URL">
                                     <Input placeholder="https://..." />
                                 </Form.Item>

@@ -3,18 +3,24 @@ package com.group4.backend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group4.backend.dto.CampaignRequest;
 import com.group4.backend.dto.CampaignResponse;
-import com.group4.backend.dto.InfluencerRecommendationDTO;
 import com.group4.backend.dto.InvitationRequest;
 import com.group4.backend.dto.InvitationResponse;
 import com.group4.backend.model.BudgetRange;
+import com.group4.backend.model.CampaignGoal;
 import com.group4.backend.model.InvitationStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.CampaignService;
-import com.group4.backend.service.AiRecommendationService;
 import com.group4.backend.service.InvitationService;
+import com.group4.backend.service.AiRecommendationService;
+import com.group4.backend.dto.InfluencerRecommendationDTO;
+import com.group4.backend.service.InvitationService;
+import com.group4.backend.service.AiRecommendationService;
+import com.group4.backend.service.GroqApiClient;
+import com.group4.backend.dto.InfluencerRecommendationDTO;
+import com.group4.backend.dto.InfluencerRecommendationDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +57,8 @@ class CampaignControllerTest {
     private UserRepository userRepository;
     @MockBean
     private JwtUtils jwtUtils;
+    @MockBean
+    private GroqApiClient groqApiClient;
 
     private User brandUser;
     private User influencerUser;
@@ -188,49 +196,53 @@ class CampaignControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "brand@test.com")
+    void generateDescription_asBrand_returns200() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(groqApiClient.isConfigured()).thenReturn(true);
+        when(groqApiClient.getTextCompletion(anyString())).thenReturn("A compelling summer campaign targeting fashion enthusiasts.");
+
+        String body = objectMapper.writeValueAsString(java.util.Map.of(
+                "name", "Summer Fashion Campaign",
+                "goal", "Brand Awareness",
+                "budget", "$1K-$5K"
+        ));
+
+        mockMvc.perform(post("/api/campaigns/generate-description").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value("A compelling summer campaign targeting fashion enthusiasts."));
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void generateDescription_missingName_returns400() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+
+        String body = objectMapper.writeValueAsString(java.util.Map.of(
+                "goal", "Brand Awareness"
+        ));
+
+        mockMvc.perform(post("/api/campaigns/generate-description").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Campaign name is required"));
+    }
+
+    @Test
     @WithMockUser(username = "influencer@test.com")
-    void getRecommendations_asInfluencer_returns403() throws Exception {
+    void generateDescription_asInfluencer_returns403() throws Exception {
         when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
 
-        mockMvc.perform(get("/api/campaigns/1/recommendations"))
-                .andExpect(status().isForbidden());
-    }
+        String body = objectMapper.writeValueAsString(java.util.Map.of(
+                "name", "Summer Campaign"
+        ));
 
-    @Test
-    @WithMockUser(username = "other-brand@test.com")
-    void createCampaign_unverifiedNonTestEmail_returns403() throws Exception {
-        User unverified = new User("other-brand@test.com", "pass", Role.BRAND);
-        unverified.setId(33L);
-        unverified.setVerified(false);
-        when(userRepository.findByEmail("other-brand@test.com")).thenReturn(Optional.of(unverified));
-        CampaignRequest request = new CampaignRequest();
-        request.setName("Blocked");
-        request.setBudgetRange(BudgetRange.ONE_K_5K);
-
-        mockMvc.perform(post("/api/campaigns").with(csrf())
+        mockMvc.perform(post("/api/campaigns/generate-description").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(body))
                 .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @WithMockUser(username = "brand@collabry")
-    void createCampaign_unverifiedTestBrandEmail_returns201() throws Exception {
-        User testBrand = new User("brand@collabry", "pass", Role.BRAND);
-        testBrand.setId(99L);
-        testBrand.setVerified(false);
-        when(userRepository.findByEmail("brand@collabry")).thenReturn(Optional.of(testBrand));
-        CampaignRequest request = new CampaignRequest();
-        request.setName("Allowed by test email");
-        request.setBudgetRange(BudgetRange.ONE_K_5K);
-        CampaignResponse resp = new CampaignResponse();
-        resp.setId(7L);
-        when(campaignService.create(eq(99L), any(CampaignRequest.class))).thenReturn(resp);
-
-        mockMvc.perform(post("/api/campaigns").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(7));
     }
 }

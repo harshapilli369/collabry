@@ -40,7 +40,7 @@ public class GroqApiClient {
     }
 
     public String getChatCompletion(String prompt) {
-        
+
         String url = "https://api.groq.com/openai/v1/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();
@@ -66,6 +66,33 @@ public class GroqApiClient {
         } catch (Exception e) {
             e.printStackTrace();
             return "{\"recommendations\": []}";
+        }
+    }
+
+    public String getTextCompletion(String prompt) {
+        String url = "https://api.groq.com/openai/v1/chat/completions";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        Map<String, Object> message = new HashMap<>();
+        message.put("role", "user");
+        message.put("content", prompt);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", "llama-3.3-70b-versatile");
+        requestBody.put("messages", List.of(message));
+        requestBody.put("temperature", 0.7);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+        String responseStr = restTemplate.postForObject(url, entity, String.class);
+        try {
+            JsonNode root = objectMapper.readTree(responseStr);
+            return root.path("choices").get(0).path("message").path("content").asText();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse AI response", e);
         }
     }
 }
