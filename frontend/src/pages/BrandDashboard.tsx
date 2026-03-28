@@ -17,6 +17,7 @@ import {
     Progress,
     Tag,
     Divider,
+    Slider,
 } from 'antd'
 import {
     PlusCircleOutlined,
@@ -30,6 +31,7 @@ import {
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
+import { CampaignPerformanceCharts } from '../components/CampaignPerformanceCharts'
 import { getMyBrandProfile } from '../services/brandService'
 import { getMyCampaigns, PREFERRED_CONTENT_OPTIONS, type CampaignResponse } from '../services/campaignService'
 import {
@@ -41,6 +43,7 @@ import {
     type InvitationResponse,
     type UpdateInvitationRequest,
 } from '../services/invitationService'
+import { getMyPayments, type PaymentResponse } from '../services/paymentService'
 import { getCampaignRecommendations, type InfluencerRecommendationDTO } from '../services/recommendationService'
 
 const { Title, Text } = Typography
@@ -52,6 +55,7 @@ export const BrandDashboard = () => {
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
     const [sentInvitations, setSentInvitations] = useState<InvitationResponse[]>([])
     const [sentInvitationsLoading, setSentInvitationsLoading] = useState(false)
+    const [payments, setPayments] = useState<PaymentResponse[]>([])
     const [editModalOpen, setEditModalOpen] = useState(false)
     const [editingInvitation, setEditingInvitation] = useState<InvitationResponse | null>(null)
     const [editForm] = Form.useForm<UpdateInvitationRequest>()
@@ -66,7 +70,10 @@ export const BrandDashboard = () => {
     const [aiDrawerOpen, setAiDrawerOpen] = useState(false)
     const [aiDrawerCampaignId, setAiDrawerCampaignId] = useState<number | null>(null)
     const [aiRecommendations, setAiRecommendations] = useState<InfluencerRecommendationDTO[]>([])
+    const [aiAllRecommendations, setAiAllRecommendations] = useState<InfluencerRecommendationDTO[]>([])
     const [aiLoading, setAiLoading] = useState(false)
+    const [aiFilterNiche, setAiFilterNiche] = useState<string | null>(null)
+    const [aiFilterMinScore, setAiFilterMinScore] = useState<number>(0)
 
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
@@ -104,6 +111,13 @@ export const BrandDashboard = () => {
             .then(setSentInvitations)
             .catch(() => setSentInvitations([]))
             .finally(() => setSentInvitationsLoading(false))
+    }, [profileCheckDone, user?.role])
+
+    useEffect(() => {
+        if (!profileCheckDone || user?.role !== 'BRAND') return
+        getMyPayments()
+            .then(setPayments)
+            .catch(() => setPayments([]))
     }, [profileCheckDone, user?.role])
 
     const handleWithdraw = async (inv: InvitationResponse) => {
@@ -173,13 +187,39 @@ export const BrandDashboard = () => {
         }
     }
 
+    const normalizeNiche = (niche: string | undefined): string => {
+        if (!niche) return ''
+        const lower = niche.toLowerCase().trim()
+        if (lower === 'tech' || lower === 'technology') return 'Technology'
+        if (lower === 'fashion' || lower === 'style') return 'Fashion'
+        if (lower === 'gaming' || lower === 'games') return 'Gaming'
+        if (lower === 'fitness' || lower === 'health' || lower === 'health & fitness') return 'Fitness'
+        if (lower === 'food' || lower === 'cooking' || lower === 'food & cooking') return 'Food'
+        return niche.charAt(0).toUpperCase() + niche.slice(1)
+    }
+
+    const applyAiFilters = (all: InfluencerRecommendationDTO[], niche: string | null, minScore: number) => {
+        let filtered = all
+        if (niche) {
+            filtered = filtered.filter((r) => normalizeNiche(r.niche) === niche)
+        }
+        if (minScore > 0) {
+            filtered = filtered.filter((r) => r.matchScore >= minScore)
+        }
+        setAiRecommendations(filtered)
+    }
+
     const openAiDrawer = async (campaignId: number) => {
         setAiDrawerCampaignId(campaignId)
         setAiDrawerOpen(true)
         setAiLoading(true)
         setAiRecommendations([])
+        setAiAllRecommendations([])
+        setAiFilterNiche(null)
+        setAiFilterMinScore(0)
         try {
             const recs = await getCampaignRecommendations(campaignId)
+            setAiAllRecommendations(recs)
             setAiRecommendations(recs)
         } catch (e) {
             message.error(e instanceof Error ? e.message : 'Failed to load AI recommendations')
@@ -205,67 +245,87 @@ export const BrandDashboard = () => {
 
     return (
         <BrandPortalLayout activeMenuKey="dashboard" brandProfileForHeader={brandProfile}>
-            <div style={{ marginBottom: 30 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <Title level={1} style={{ color: primaryColor, margin: 0, fontSize: '3rem' }}>
-                        Welcome!
+            {/* Welcome Banner */}
+            <div
+                style={{
+                    marginBottom: 30,
+                    padding: '32px 36px',
+                    borderRadius: 16,
+                    background: 'linear-gradient(135deg, #1a1a00 0%, #0d0d0d 50%, #1a1a00 100%)',
+                    border: `1px solid ${primaryColor}15`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                }}
+            >
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: -40,
+                        right: -40,
+                        width: 200,
+                        height: 200,
+                        borderRadius: '50%',
+                        background: `radial-gradient(circle, ${primaryColor}12 0%, transparent 70%)`,
+                        pointerEvents: 'none',
+                    }}
+                />
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                    <Title level={2} style={{ color: '#fff', margin: 0 }}>
+                        Welcome back, <span style={{ color: primaryColor }}>{brandProfile?.name || 'Brand'}</span>!
                     </Title>
+                    <Text style={{ color: '#888', fontSize: 16 }}>Overview of your campaign performance and collaborations.</Text>
                 </div>
-                <Text style={{ color: '#aaa', fontSize: '1.2rem' }}>Overview of your improved brand performance.</Text>
             </div>
 
-            <Row gutter={[24, 24]}>
-                <Col span={6}>
-                    <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>
-                        <Text type="secondary">Draft</Text>
-                        <Title level={2} style={{ margin: '10px 0 0' }}>
-                            {campaigns.filter((c) => c.status === 'DRAFT').length}
-                        </Title>
-                    </Card>
-                </Col>
-                <Col span={6}>
-                    <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>
-                        <Text type="secondary">Active</Text>
-                        <Title level={2} style={{ margin: '10px 0 0' }}>
-                            {campaigns.filter((c) => c.status === 'ACTIVE').length}
-                        </Title>
-                    </Card>
-                </Col>
-                <Col span={6}>
-                    <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>
-                        <Text type="secondary">Completed</Text>
-                        <Title level={2} style={{ margin: '10px 0 0' }}>
-                            {campaigns.filter((c) => c.status === 'COMPLETED').length}
-                        </Title>
-                    </Card>
-                </Col>
-                <Col span={6}>
-                    <Card bordered={false} style={{ borderRadius: 12, textAlign: 'center' }}>
-                        <Text type="secondary">Total campaigns</Text>
-                        <Title level={2} style={{ margin: '10px 0 0' }}>{campaigns.length}</Title>
-                    </Card>
+            <Row gutter={[20, 20]}>
+                {/* Stats Cards */}
+                {[
+                    { label: 'Draft', count: campaigns.filter((c) => c.status === 'DRAFT').length, color: '#888', icon: <EditOutlined style={{ fontSize: 20, color: '#888' }} /> },
+                    { label: 'Active', count: campaigns.filter((c) => c.status === 'ACTIVE').length, color: '#52c41a', icon: <FundProjectionScreenOutlined style={{ fontSize: 20, color: '#52c41a' }} /> },
+                    { label: 'Completed', count: campaigns.filter((c) => c.status === 'COMPLETED').length, color: '#1890ff', icon: <UnorderedListOutlined style={{ fontSize: 20, color: '#1890ff' }} /> },
+                    { label: 'Total', count: campaigns.length, color: primaryColor, icon: <FundProjectionScreenOutlined style={{ fontSize: 20, color: primaryColor }} /> },
+                ].map((stat, idx) => (
+                    <Col span={6} key={idx}>
+                        <Card
+                            className="brand-stat-card"
+                            style={{ borderRadius: 16, textAlign: 'center', background: '#0d0d0d', border: `1px solid ${stat.color}20`, transition: 'all 0.3s ease' }}
+                        >
+                            <div style={{ marginBottom: 8 }}>{stat.icon}</div>
+                            <Text type="secondary">{stat.label}</Text>
+                            <Title level={2} style={{ margin: '8px 0 0', color: stat.color }}>{stat.count}</Title>
+                        </Card>
+                    </Col>
+                ))}
+
+                {/* Performance Charts */}
+                <Col span={24}>
+                    <CampaignPerformanceCharts
+                        campaigns={campaigns}
+                        sentInvitations={sentInvitations}
+                        payments={payments}
+                    />
                 </Col>
 
-                <Col span={24}>
+                {/* Campaigns Card */}
+                <Col span={12}>
                     <Card
                         title={
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <FundProjectionScreenOutlined />
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#fff' }}>
+                                <FundProjectionScreenOutlined style={{ color: primaryColor }} />
                                 Campaigns
                             </span>
                         }
-                        bordered={false}
-                        style={{ borderRadius: 12 }}
+                        style={{ borderRadius: 16, background: '#0d0d0d', border: '1px solid #1a1a1a', height: '100%' }}
                     >
                         <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-                            Open your full campaign list by status, send invitations, and manage details on a dedicated page.
+                            Manage your campaigns, track performance, and send invitations.
                         </Text>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                             <Button
                                 type="primary"
                                 icon={<UnorderedListOutlined />}
                                 onClick={() => navigate('/brand/campaigns')}
-                                style={{ color: '#000000' }}
+                                style={{ color: '#000', fontWeight: 600, borderRadius: 10 }}
                             >
                                 View my campaigns
                             </Button>
@@ -274,6 +334,7 @@ export const BrandDashboard = () => {
                                 onClick={() => navigate('/brand/campaigns/create')}
                                 disabled={!user?.isVerified}
                                 title={!user?.isVerified ? 'Only verified brands can create campaigns' : ''}
+                                style={{ borderRadius: 10 }}
                             >
                                 Create campaign
                             </Button>
@@ -281,54 +342,61 @@ export const BrandDashboard = () => {
                     </Card>
                 </Col>
 
-                <Col span={24}>
+                {/* AI Matchmaker Card */}
+                <Col span={12}>
                     <Card
                         title={
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <RobotOutlined />
-                                AI matchmaker
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#fff' }}>
+                                <RobotOutlined style={{ color: primaryColor }} />
+                                AI Matchmaker
                             </span>
                         }
-                        bordered={false}
-                        style={{ borderRadius: 12 }}
+                        style={{ borderRadius: 16, background: '#0d0d0d', border: '1px solid #1a1a1a', height: '100%' }}
                     >
                         <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-                            Pick a campaign, then get ranked influencer suggestions or send a manual invite by user ID.
+                            Get AI-powered influencer recommendations for your campaigns.
                         </Text>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                             <Select
                                 placeholder="Choose a campaign"
-                                style={{ minWidth: 280 }}
+                                style={{ width: '100%' }}
                                 allowClear
                                 options={campaigns.map((c) => ({ value: c.id, label: c.name }))}
                                 value={aiPickCampaignId ?? undefined}
                                 onChange={(v) => setAiPickCampaignId(v ?? null)}
                             />
-                            <Button
-                                type="primary"
-                                icon={<RobotOutlined />}
-                                disabled={aiPickCampaignId == null}
-                                onClick={() => aiPickCampaignId != null && openAiDrawer(aiPickCampaignId)}
-                                style={{ color: '#000000' }}
-                            >
-                                Get AI recommendations
-                            </Button>
-                            <Button
-                                icon={<MailOutlined />}
-                                disabled={aiPickCampaignId == null}
-                                onClick={() => aiPickCampaignId != null && openInviteModal(aiPickCampaignId)}
-                            >
-                                Invite influencer
-                            </Button>
+                            <div style={{ display: 'flex', gap: 10 }}>
+                                <Button
+                                    type="primary"
+                                    icon={<RobotOutlined />}
+                                    disabled={aiPickCampaignId == null}
+                                    onClick={() => aiPickCampaignId != null && openAiDrawer(aiPickCampaignId)}
+                                    style={{ color: '#000', fontWeight: 600, borderRadius: 10, flex: 1 }}
+                                >
+                                    AI Match
+                                </Button>
+                                <Button
+                                    icon={<MailOutlined />}
+                                    disabled={aiPickCampaignId == null}
+                                    onClick={() => aiPickCampaignId != null && openInviteModal(aiPickCampaignId)}
+                                    style={{ borderRadius: 10 }}
+                                >
+                                    Invite
+                                </Button>
+                            </div>
                         </div>
                     </Card>
                 </Col>
 
                 <Col span={24}>
                     <Card
-                        title="Sent invitations"
-                        bordered={false}
-                        style={{ borderRadius: 12 }}
+                        title={
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#fff' }}>
+                                <MailOutlined style={{ color: primaryColor }} />
+                                Sent Invitations
+                            </span>
+                        }
+                        style={{ borderRadius: 16, background: '#0d0d0d', border: '1px solid #1a1a1a' }}
                         extra={
                             <Button
                                 type="link"
@@ -340,24 +408,27 @@ export const BrandDashboard = () => {
                         }
                     >
                         <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-                            Track status: Sent, Accepted, Rejected, Expired, Withdrawn. You can withdraw or edit an invitation before it is accepted.
+                            Track invitations you've sent. Edit or withdraw before acceptance.
                         </Text>
                         {sentInvitationsLoading ? (
-                            <Text type="secondary">Loading…</Text>
+                            <Text type="secondary">Loading...</Text>
                         ) : sentInvitations.length === 0 ? (
-                            <Text type="secondary">
-                                No invitations sent yet. Use &quot;Find influencers&quot; or Invite on a campaign to send one.
-                            </Text>
+                            <div style={{ textAlign: 'center', padding: '30px 0' }}>
+                                <MailOutlined style={{ fontSize: 32, opacity: 0.2, color: primaryColor, marginBottom: 12, display: 'block' }} />
+                                <Text type="secondary">No invitations sent yet. Use "Find influencers" or Invite on a campaign to send one.</Text>
+                            </div>
                         ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                 {sentInvitations.map((inv) => {
                                     const canWithdrawOrEdit = inv.status === 'PENDING' || inv.status === 'NEGOTIATING'
                                     const campaign = campaigns.find((c) => c.id === inv.campaignId)
+                                    const statusColor = (inv.status === 'PENDING' || inv.status === 'NEGOTIATING') ? '#faad14' : (inv.status === 'ACCEPTED' || inv.status === 'CONFIRMED') ? '#52c41a' : '#888'
                                     return (
                                         <Card
                                             key={inv.id}
                                             size="small"
-                                            style={{ background: '#1c1c1c', borderRadius: 8, borderColor: '#333' }}
+                                            className="brand-invitation-item"
+                                            style={{ background: '#141414', borderRadius: 12, borderColor: '#1a1a1a', borderLeft: `3px solid ${statusColor}` }}
                                         >
                                             <div
                                                 style={{
@@ -503,7 +574,7 @@ export const BrandDashboard = () => {
                             Analyzing campaign metrics, niche resonance, and engagement rates
                         </div>
                     </div>
-                ) : aiRecommendations.length === 0 ? (
+                ) : aiAllRecommendations.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '100px 0', color: '#aaa' }}>
                         <RobotOutlined style={{ fontSize: 40, opacity: 0.2, marginBottom: 16 }} />
                         <div>No optimal matches found for this campaign&apos;s criteria.</div>
@@ -513,6 +584,56 @@ export const BrandDashboard = () => {
                         <Text style={{ color: '#aaa', fontSize: 14 }}>
                             We analyzed your campaign metrics against available influencers. Here are your top algorithmic matches:
                         </Text>
+
+                        {/* Filter Controls */}
+                        <div style={{ background: '#161616', borderRadius: 12, padding: 16, border: '1px solid #2a2a2a' }}>
+                            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                                <div style={{ flex: 1, minWidth: 140 }}>
+                                    <Text style={{ color: '#888', fontSize: 12, display: 'block', marginBottom: 4 }}>Niche</Text>
+                                    <Select
+                                        placeholder="All niches"
+                                        value={aiFilterNiche ?? 'all'}
+                                        onChange={(val) => {
+                                            const selected = val === 'all' ? null : val
+                                            setAiFilterNiche(selected)
+                                            applyAiFilters(aiAllRecommendations, selected, aiFilterMinScore)
+                                        }}
+                                        style={{ width: '100%' }}
+                                        options={[
+                                            { label: 'All', value: 'all' },
+                                            ...[...new Set(aiAllRecommendations.map((r) => normalizeNiche(r.niche)).filter(Boolean))].map(
+                                                (n) => ({ label: n, value: n })
+                                            ),
+                                        ]}
+                                    />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 160 }}>
+                                    <Text style={{ color: '#888', fontSize: 12, display: 'block', marginBottom: 4 }}>
+                                        Min Match Score: {aiFilterMinScore}%
+                                    </Text>
+                                    <Slider
+                                        min={0}
+                                        max={100}
+                                        value={aiFilterMinScore}
+                                        onChange={(val) => {
+                                            setAiFilterMinScore(val)
+                                            applyAiFilters(aiAllRecommendations, aiFilterNiche, val)
+                                        }}
+                                        styles={{ track: { background: primaryColor }, rail: { background: '#333' } }}
+                                    />
+                                </div>
+                            </div>
+                            <Text style={{ color: '#555', fontSize: 11, marginTop: 4, display: 'block' }}>
+                                Showing {aiRecommendations.length} of {aiAllRecommendations.length} matches
+                            </Text>
+                        </div>
+
+                        {aiRecommendations.length === 0 && aiAllRecommendations.length > 0 ? (
+                            <div style={{ textAlign: 'center', padding: '40px 0', color: '#aaa' }}>
+                                <RobotOutlined style={{ fontSize: 32, opacity: 0.3, marginBottom: 12 }} />
+                                <div>No matches for the selected filters. Try adjusting your criteria.</div>
+                            </div>
+                        ) : null}
 
                         {aiRecommendations.map((rec, idx) => (
                             <Card

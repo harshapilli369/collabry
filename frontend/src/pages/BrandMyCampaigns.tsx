@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, Card, Row, Col, Tabs, Modal, Form, Input, InputNumber, Select, Table, message } from 'antd'
-import { PlusCircleOutlined, FundProjectionScreenOutlined, MailOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import { Typography, Button, Card, Tabs, Modal, Form, Input, InputNumber, Select, Table, message } from 'antd'
+import { PlusCircleOutlined, FundProjectionScreenOutlined, MailOutlined, ArrowLeftOutlined, EditOutlined, CheckCircleOutlined, RocketOutlined, StopOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import { getMyBrandProfile, type BrandProfileResponse } from '../services/brandService'
@@ -114,6 +114,9 @@ export const BrandMyCampaigns = () => {
 
     const primaryColor = BRAND_PORTAL_PRIMARY
 
+    const statusColors: Record<string, string> = { DRAFT: '#888', ACTIVE: '#52c41a', COMPLETED: '#1890ff', CANCELLED: '#ff4d4f' }
+    const statusIcons: Record<string, React.ReactNode> = { DRAFT: <EditOutlined />, ACTIVE: <RocketOutlined />, COMPLETED: <CheckCircleOutlined />, CANCELLED: <StopOutlined /> }
+
     if (!profileCheckDone && user?.role === 'BRAND') {
         return null
     }
@@ -137,108 +140,101 @@ export const BrandMyCampaigns = () => {
                 </Text>
             </div>
 
-            <Row gutter={[24, 24]}>
-                <Col span={24}>
-                    <Card
-                        title={
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <FundProjectionScreenOutlined />
-                                Campaigns
-                            </span>
-                        }
-                        bordered={false}
-                        style={{ borderRadius: 12 }}
-                        extra={
-                            <Button
-                                type="primary"
-                                icon={<PlusCircleOutlined />}
-                                onClick={() => navigate('/brand/campaigns/create')}
-                                style={{ color: '#000000' }}
-                                disabled={!user?.isVerified}
-                                title={!user?.isVerified ? 'Only verified brands can create campaigns' : ''}
-                            >
-                                Create campaign
-                            </Button>
-                        }
+            <Card
+                title={
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#fff' }}>
+                        <FundProjectionScreenOutlined style={{ color: primaryColor }} />
+                        Campaigns
+                    </span>
+                }
+                style={{ borderRadius: 16, background: '#0d0d0d', border: '1px solid #1a1a1a' }}
+                extra={
+                    <Button
+                        type="primary"
+                        icon={<PlusCircleOutlined />}
+                        onClick={() => navigate('/brand/campaigns/create')}
+                        style={{ borderRadius: 10 }}
+                        disabled={!user?.isVerified}
+                        title={!user?.isVerified ? 'Only verified brands can create campaigns' : ''}
                     >
-                        {campaignsLoading ? (
-                            <Text type="secondary">Loading campaigns…</Text>
-                        ) : campaigns.length === 0 ? (
-                            <Text type="secondary">No campaigns yet. Create one to get started.</Text>
-                        ) : (
-                            <Tabs
-                                defaultActiveKey={STATUS_ORDER.find((s) => campaigns.some((c) => c.status === s)) ?? 'DRAFT'}
-                                items={campaignsByStatus.map(({ status, label, list }) => ({
-                                    key: status,
-                                    label: `${label} (${list.length})`,
-                                    children: (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                            {list.length === 0 ? (
-                                                <Text type="secondary">No {label.toLowerCase()} campaigns.</Text>
-                                            ) : (
-                                                list.map((campaign) => (
-                                                    <Card
-                                                        key={campaign.id}
-                                                        size="small"
-                                                        style={{ background: '#1c1c1c', borderRadius: 8, borderColor: '#333' }}
-                                                    >
-                                                        <div
-                                                            style={{
-                                                                display: 'flex',
-                                                                justifyContent: 'space-between',
-                                                                alignItems: 'flex-start',
-                                                                flexWrap: 'wrap',
-                                                                gap: 8,
-                                                            }}
-                                                        >
+                        Create campaign
+                    </Button>
+                }
+            >
+                {campaignsLoading ? (
+                    <Text type="secondary">Loading campaigns...</Text>
+                ) : campaigns.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                        <FundProjectionScreenOutlined style={{ fontSize: 40, opacity: 0.2, color: primaryColor, marginBottom: 16, display: 'block' }} />
+                        <Text type="secondary" style={{ fontSize: 16 }}>No campaigns yet. Create one to get started.</Text>
+                    </div>
+                ) : (
+                    <Tabs
+                        defaultActiveKey={STATUS_ORDER.find((s) => campaigns.some((c) => c.status === s)) ?? 'DRAFT'}
+                        items={campaignsByStatus.map(({ status, label, list }) => ({
+                            key: status,
+                            label: (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <span style={{ color: statusColors[status] }}>{statusIcons[status]}</span>
+                                    {label} ({list.length})
+                                </span>
+                            ),
+                            children: (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    {list.length === 0 ? (
+                                        <Text type="secondary">No {label.toLowerCase()} campaigns.</Text>
+                                    ) : (
+                                        list.map((campaign) => (
+                                            <Card
+                                                key={campaign.id}
+                                                size="small"
+                                                className="brand-campaign-card"
+                                                style={{
+                                                    background: '#141414',
+                                                    borderRadius: 12,
+                                                    borderColor: '#1a1a1a',
+                                                    borderLeft: `3px solid ${statusColors[campaign.status] || '#333'}`,
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                                                    <div>
+                                                        <Text strong style={{ color: '#fff', fontSize: 16 }}>
+                                                            {campaign.name}
+                                                        </Text>
+                                                        {campaign.description && (
                                                             <div>
-                                                                <Text strong style={{ color: '#fff', fontSize: 16 }}>
-                                                                    {campaign.name}
+                                                                <Text type="secondary" style={{ fontSize: 13 }}>
+                                                                    {campaign.description.slice(0, 100)}
+                                                                    {campaign.description.length > 100 ? '...' : ''}
                                                                 </Text>
-                                                                {campaign.description && (
-                                                                    <div>
-                                                                        <Text type="secondary" style={{ fontSize: 13 }}>
-                                                                            {campaign.description.slice(0, 100)}
-                                                                            {campaign.description.length > 100 ? '…' : ''}
-                                                                        </Text>
-                                                                    </div>
-                                                                )}
-                                                                <div style={{ marginTop: 6 }}>
-                                                                    <Text type="secondary" style={{ fontSize: 12 }}>
-                                                                        Budget:{' '}
-                                                                        {BUDGET_RANGE_OPTIONS.find((o) => o.value === campaign.budgetRange)?.label ??
-                                                                            campaign.budgetRange}
-                                                                        {campaign.numberOfInfluencers != null &&
-                                                                            ` · ${campaign.numberOfInfluencers} influencer(s)`}
-                                                                        {campaign.startDate && ` · ${campaign.startDate}`}
-                                                                    </Text>
-                                                                </div>
                                                             </div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                <Text style={{ fontSize: 12, fontWeight: 600, color: primaryColor }}>
-                                                                    {CAMPAIGN_STATUS_LABELS[campaign.status]}
-                                                                </Text>
-                                                                <Button
-                                                                    type="default"
-                                                                    size="small"
-                                                                    icon={<MailOutlined />}
-                                                                    onClick={() => openInviteModal(campaign.id)}
-                                                                >
-                                                                    Invite
-                                                                </Button>
-                                                            </div>
+                                                        )}
+                                                        <div style={{ marginTop: 6 }}>
+                                                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                                                Budget: {BUDGET_RANGE_OPTIONS.find((o) => o.value === campaign.budgetRange)?.label ?? campaign.budgetRange}
+                                                                {campaign.numberOfInfluencers != null && ` \u00b7 ${campaign.numberOfInfluencers} influencer(s)`}
+                                                                {campaign.startDate && ` \u00b7 ${campaign.startDate}`}
+                                                            </Text>
                                                         </div>
-                                                    </Card>
-                                                ))
-                                            )}
-                                        </div>
-                                    ),
-                                }))}
-                            />
-                        )}
-                    </Card>
-                </Col>
-            </Row>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                        <Text style={{ fontSize: 12, fontWeight: 600, color: statusColors[campaign.status] || primaryColor }}>
+                                                            {CAMPAIGN_STATUS_LABELS[campaign.status]}
+                                                        </Text>
+                                                        <Button type="default" size="small" icon={<MailOutlined />} onClick={() => openInviteModal(campaign.id)} style={{ borderRadius: 8 }}>
+                                                            Invite
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </Card>
+                                        ))
+                                    )}
+                                </div>
+                            ),
+                        }))}
+                    />
+                )}
+            </Card>
 
             <Modal title="Invite influencer" open={inviteModalOpen} onCancel={closeInviteModal} footer={null} destroyOnClose width={520}>
                 <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>

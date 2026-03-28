@@ -21,10 +21,12 @@ import { BrandDashboard } from './BrandDashboard'
 import * as brandService from '../services/brandService'
 import * as campaignService from '../services/campaignService'
 import * as invitationService from '../services/invitationService'
+import * as paymentService from '../services/paymentService'
 
 vi.mock('../services/brandService')
 vi.mock('../services/campaignService')
 vi.mock('../services/invitationService')
+vi.mock('../services/paymentService')
 
 describe('BrandDashboard', () => {
   const mockGetMyBrandProfile = vi.mocked(brandService.getMyBrandProfile)
@@ -32,6 +34,7 @@ describe('BrandDashboard', () => {
   const mockGetSentInvitations = vi.mocked(invitationService.getSentInvitations)
   const mockWithdrawInvitation = vi.mocked(invitationService.withdrawInvitation)
   const mockUpdateInvitation = vi.mocked(invitationService.updateInvitation)
+  const mockGetMyPayments = vi.mocked(paymentService.getMyPayments)
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -48,6 +51,7 @@ describe('BrandDashboard', () => {
     mockGetSentInvitations.mockResolvedValue([])
     mockWithdrawInvitation.mockResolvedValue()
     mockUpdateInvitation.mockResolvedValue({} as invitationService.InvitationResponse)
+    mockGetMyPayments.mockResolvedValue([])
   })
 
   const renderWithRouter = () => {
@@ -71,7 +75,7 @@ describe('BrandDashboard', () => {
     ])
     renderWithRouter()
 
-    expect(await screen.findByText('Sent invitations')).toBeInTheDocument()
+    expect(await screen.findByText('Sent Invitations')).toBeInTheDocument()
     expect(mockGetSentInvitations).toHaveBeenCalled()
   })
 
@@ -88,7 +92,7 @@ describe('BrandDashboard', () => {
     mockGetMyCampaigns.mockResolvedValue([{ id: 1, name: 'My Campaign', status: 'ACTIVE', userId: 1, budgetRange: 'ONE_K_5K' }])
     renderWithRouter()
 
-    await screen.findByText('Sent invitations')
+    await screen.findByText('Sent Invitations')
     const withdrawButtons = screen.getAllByRole('button', { name: /withdraw/i })
     expect(withdrawButtons.length).toBeGreaterThanOrEqual(1)
     await userEvent.click(withdrawButtons[0])
@@ -111,7 +115,7 @@ describe('BrandDashboard', () => {
     mockGetMyCampaigns.mockResolvedValue([{ id: 1, name: 'My Campaign', status: 'ACTIVE', userId: 1, budgetRange: 'ONE_K_5K' }])
     renderWithRouter()
 
-    await screen.findByText('Sent invitations')
+    await screen.findByText('Sent Invitations')
     const editButtons = screen.getAllByRole('button', { name: /edit/i })
     expect(editButtons.length).toBeGreaterThanOrEqual(1)
     await userEvent.click(editButtons[0])
