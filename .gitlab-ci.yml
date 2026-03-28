@@ -195,6 +195,9 @@ deploy-dev:
         docker container rm -f my-app-dev my-app 2>/dev/null || true &&
         docker run -d -p 8073:8073 \
           -e APP_CONFIRMATION_BASE_URL=http://$SERVER_IP:8073 \
+          -e SPRING_DATASOURCE_URL=\"jdbc:mysql://db-5308.cs.dal.ca:3306/CSCI5308_5_DEVINT\" \
+          -e SPRING_DATASOURCE_USERNAME=\"CSCI5308_5_DEVINT_USER\" \
+          -e SPRING_DATASOURCE_PASSWORD=\"${DB_PASSWORD:-}\" \
           -e SPRING_MAIL_HOST=\"${SPRING_MAIL_HOST:-}\" \
           -e SPRING_MAIL_PORT=\"${SPRING_MAIL_PORT:-465}\" \
           -e SPRING_MAIL_USERNAME=\"${SPRING_MAIL_USERNAME:-}\" \
@@ -229,6 +232,9 @@ deploy-prod:
         docker container rm -f my-app 2>/dev/null || true &&
         docker run -d -p 8073:8073 \
           -e APP_CONFIRMATION_BASE_URL=http://$SERVER_IP:8073 \
+          -e SPRING_DATASOURCE_URL=\"jdbc:mysql://db-5308.cs.dal.ca:3306/CSCI5308_5_PRODUCTION\" \
+          -e SPRING_DATASOURCE_USERNAME=\"CSCI5308_5_PRODUCTION_USER\" \
+          -e SPRING_DATASOURCE_PASSWORD=\"${DB_PASSWORD:-}\" \
           -e SPRING_MAIL_HOST=\"${SPRING_MAIL_HOST:-}\" \
           -e SPRING_MAIL_PORT=\"${SPRING_MAIL_PORT:-465}\" \
           -e SPRING_MAIL_USERNAME=\"${SPRING_MAIL_USERNAME:-}\" \
