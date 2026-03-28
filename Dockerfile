@@ -51,6 +51,6 @@ ENV SERVER_PORT=8073
 EXPOSE 8073
 
 # Override at runtime if needed (e.g. docker run -e APP_CONFIRMATION_BASE_URL=...)
-ENV APP_CONFIRMATION_BASE_URL=http://csci5308-vm2.research.cs.dal.ca:8073
+ENV APP_CONFIRMATION_BASE_URL=http://csci5308-vm5.research.cs.dal.ca:8073
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
