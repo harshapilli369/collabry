@@ -156,12 +156,12 @@ publish:
   script:
     - |
       if [ "$CI_COMMIT_BRANCH" = "main" ]; then
-        API_URL="${VITE_API_BASE_URL:-/api/auth}"
+        API_URL="${VITE_API_BASE_URL:-http://csci5308-vm5.research.cs.dal.ca:8073/api/auth}"
         docker build --build-arg VITE_API_BASE_URL="$API_URL" --build-arg VITE_GOOGLE_CLIENT_ID="${VITE_GOOGLE_CLIENT_ID}" -t docker.io/hpilli369/group04:$CI_COMMIT_SHORT_SHA -t docker.io/hpilli369/group04:latest .
         docker push docker.io/hpilli369/group04:$CI_COMMIT_SHORT_SHA
         docker push docker.io/hpilli369/group04:latest
       else
-        API_URL="${VITE_API_BASE_URL_DEV:-/api/auth}"
+        API_URL="${VITE_API_BASE_URL_DEV:-http://csci5308-vm5.research.cs.dal.ca:8073/api/auth}"
         docker build --build-arg VITE_API_BASE_URL="$API_URL" --build-arg VITE_GOOGLE_CLIENT_ID="${VITE_GOOGLE_CLIENT_ID}" -t docker.io/hpilli369/group04:dev-$CI_COMMIT_SHORT_SHA -t docker.io/hpilli369/group04:dev-latest .
         docker push docker.io/hpilli369/group04:dev-$CI_COMMIT_SHORT_SHA
         docker push docker.io/hpilli369/group04:dev-latest
