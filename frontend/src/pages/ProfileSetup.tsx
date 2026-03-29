@@ -130,7 +130,6 @@ export const ProfileSetup = () => {
             await form.validateFields()
         } catch {
             const step1Fields = ['name', 'age', 'location', 'niche']
-            const step3Fields = ['rate']
             const values = form.getFieldsValue()
             const step1Invalid = step1Fields.some(f => !values[f as keyof typeof values])
             if (step1Invalid) {
