@@ -129,6 +129,19 @@ export const ProfileSetup = () => {
         try {
             await form.validateFields()
         } catch {
+            const step1Fields = ['name', 'age', 'location', 'niche']
+            const step3Fields = ['rate']
+            const values = form.getFieldsValue()
+            const step1Invalid = step1Fields.some(f => !values[f as keyof typeof values])
+            if (step1Invalid) {
+                setCurrent(0)
+                message.error('Please complete your personal info first')
+            } else if (!values.rate) {
+                setCurrent(2)
+                message.error('Rate is required to complete your profile')
+            } else {
+                message.error('Please fill in all required fields')
+            }
             return
         }
         const values = form.getFieldsValue()
