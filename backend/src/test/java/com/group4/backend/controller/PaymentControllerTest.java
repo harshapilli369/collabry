@@ -249,4 +249,21 @@ class PaymentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.invoiceNumber").value("INV-ABCD"));
     }
+
+    @Test
+    @WithMockUser(username = "unknown@test.com")
+    void createPayment_userNotFound_returns400() throws Exception {
+        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        PaymentRequest request = new PaymentRequest();
+        request.setCampaignId(1L);
+        request.setInfluencerId(20L);
+        request.setMilestoneName("Delivery");
+        request.setAmount(new BigDecimal("100.00"));
+
+        mockMvc.perform(post("/api/payments").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User not found"));
+    }
 }

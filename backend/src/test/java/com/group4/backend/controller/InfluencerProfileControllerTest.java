@@ -21,17 +21,20 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -290,5 +293,92 @@ class InfluencerProfileControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("At least one social media handle is required to complete your profile"));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void enhanceBio_asInfluencer_returns200() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(groqApiClient.isConfigured()).thenReturn(true);
+        when(groqApiClient.getTextCompletion(anyString())).thenReturn("Enhanced bio text.");
+
+        mockMvc.perform(post("/api/influencers/enhance-bio").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("bio", "Original bio text."))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.enhancedBio").value("Enhanced bio text."));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void enhanceBio_quotedResponse_stripsQuotes() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(groqApiClient.isConfigured()).thenReturn(true);
+        when(groqApiClient.getTextCompletion(anyString())).thenReturn("\"Quoted bio text.\"");
+
+        mockMvc.perform(post("/api/influencers/enhance-bio").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("bio", "Original bio text."))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.enhancedBio").value("Quoted bio text."));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void enhanceBio_missingBio_returns400() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+
+        mockMvc.perform(post("/api/influencers/enhance-bio").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("other", "value"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Bio text is required"));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void enhanceBio_aiNotConfigured_returns400() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(groqApiClient.isConfigured()).thenReturn(false);
+
+        mockMvc.perform(post("/api/influencers/enhance-bio").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("bio", "Original bio."))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("AI service is not configured"));
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void enhanceBio_aiThrowsException_returns500() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(groqApiClient.isConfigured()).thenReturn(true);
+        when(groqApiClient.getTextCompletion(anyString())).thenThrow(new RuntimeException("AI error"));
+
+        mockMvc.perform(post("/api/influencers/enhance-bio").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("bio", "Original bio."))))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Failed to enhance bio: AI error"));
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void enhanceBio_asBrand_returns403() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+
+        mockMvc.perform(post("/api/influencers/enhance-bio").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("bio", "Some bio"))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "unknown@test.com")
+    void getMyProfile_userNotFound_returns400() throws Exception {
+        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        mockMvc.perform(get("/api/influencers/me"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User not found"));
     }
 }

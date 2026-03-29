@@ -169,4 +169,13 @@ class BrandProfileControllerTest {
                         .content("{\"name\":\"\",\"industry\":\"\",\"website\":\"\",\"email\":\"bad\"}"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @WithMockUser(username = "unknown@test.com")
+    void getMyProfile_userNotFound_returns400() throws Exception {
+        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        mockMvc.perform(get("/api/brands/me"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User not found"));
+    }
 }
