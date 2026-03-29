@@ -128,7 +128,7 @@ public class AuthService {
     }
 
     // New Google Login Method
-    public AuthResponse loginWithGoogle(String accessToken) {
+    public AuthResponse loginWithGoogle(String accessToken, String roleStr) {
         // In a real production app, verify the token via Google's API to get the email
         // For simplicity/demo with implicit flow/access token:
         // HttpRequest to https://www.googleapis.com/oauth2/v3/userinfo?access_token=...
@@ -151,13 +151,25 @@ public class AuthService {
             throw new RuntimeException("Invalid Google Token");
         }
 
+        com.group4.backend.model.Role role;
+        try {
+            role = (roleStr != null && !roleStr.isBlank())
+                    ? com.group4.backend.model.Role.valueOf(roleStr.toUpperCase())
+                    : com.group4.backend.model.Role.INFLUENCER;
+            if (role == com.group4.backend.model.Role.USER) {
+                role = com.group4.backend.model.Role.INFLUENCER;
+            }
+        } catch (IllegalArgumentException e) {
+            role = com.group4.backend.model.Role.INFLUENCER;
+        }
+
+        final com.group4.backend.model.Role assignedRole = role;
         // Check if user exists
         var user = userRepository.findByEmail(email).orElseGet(() -> {
-            // Create new Google user
             var newUser = new com.group4.backend.model.User(
                     email,
                     "GOOGLE_AUTH_PLACEHOLDER", // Dummy password
-                    com.group4.backend.model.Role.USER);
+                    assignedRole);
             return userRepository.save(newUser);
         });
 

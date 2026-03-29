@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Form, Input, Button, Checkbox, Typography, Divider, ConfigProvider, message, theme } from 'antd'
-import { MailOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons'
+import { Form, Input, Button, Checkbox, Typography, Divider, ConfigProvider, message, theme, Radio } from 'antd'
+import { MailOutlined, LockOutlined, GoogleOutlined, RocketOutlined, UserOutlined } from '@ant-design/icons'
 import { Link, useNavigate } from 'react-router-dom'
 import { useGoogleLogin } from '@react-oauth/google'
 import { loginUser, googleLoginUser } from '../services/authService'
@@ -12,6 +12,7 @@ const { Title, Text } = Typography
 
 export const Login = () => {
     const [loading, setLoading] = useState(false)
+    const [googleRole, setGoogleRole] = useState<'BRAND' | 'INFLUENCER'>('BRAND')
     const [form] = Form.useForm()
     const navigate = useNavigate()
 
@@ -62,7 +63,7 @@ export const Login = () => {
             console.log('Google Success:', tokenResponse);
             try {
                 // Send access token to backend to verify and get JWT
-                const data = await googleLoginUser(tokenResponse.access_token);
+                const data = await googleLoginUser(tokenResponse.access_token, googleRole);
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role, isVerified: data.isVerified }));
                 alert("Google Login Successful! Redirecting...");
@@ -221,10 +222,28 @@ export const Login = () => {
 
                     <Divider style={{ color: 'rgba(0,0,0,0.4)', fontSize: 12 }}>OR</Divider>
 
+                    <div style={{ marginBottom: 12 }}>
+                        <Text style={{ color: '#888', fontSize: 12, display: 'block', marginBottom: 8 }}>
+                            Signing up with Google? Select your role:
+                        </Text>
+                        <Radio.Group
+                            value={googleRole}
+                            onChange={e => setGoogleRole(e.target.value)}
+                            style={{ width: '100%', display: 'flex', gap: 8 }}
+                        >
+                            <Radio.Button value="BRAND" style={{ flex: 1, textAlign: 'center', height: 36, lineHeight: '36px', borderRadius: 8 }}>
+                                <RocketOutlined /> Brand
+                            </Radio.Button>
+                            <Radio.Button value="INFLUENCER" style={{ flex: 1, textAlign: 'center', height: 36, lineHeight: '36px', borderRadius: 8 }}>
+                                <UserOutlined /> Influencer
+                            </Radio.Button>
+                        </Radio.Group>
+                    </div>
+
                     <Button
                         block
                         size="large"
-                        icon={<GoogleOutlined style={{ color: '#000' }} />} // Black icon for consistency
+                        icon={<GoogleOutlined style={{ color: '#000' }} />}
                         onClick={() => googleLogin()}
                         style={{
                             height: 50,

@@ -56,11 +56,11 @@ export const loginUser = async (credentials: any) => {
 
 // ... existing code ...
 
-export const googleLoginUser = async (token: string) => {
+export const googleLoginUser = async (token: string, role: 'BRAND' | 'INFLUENCER') => {
     const response = await fetch(`${API_URL}/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, role }),
     });
     if (!response.ok) {
         throw new Error('Google login failed');

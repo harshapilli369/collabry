@@ -78,7 +78,7 @@ public class AuthController {
 
     @PostMapping("/google")
     public ResponseEntity<AuthResponse> googleLogin(@RequestBody com.group4.backend.dto.TokenRequest request) {
-        return ResponseEntity.ok(service.loginWithGoogle(request.getToken()));
+        return ResponseEntity.ok(service.loginWithGoogle(request.getToken(), request.getRole()));
     }
 
     @PostMapping("/forgot-password")
