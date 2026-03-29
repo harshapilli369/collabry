@@ -1,6 +1,6 @@
 const AUTH_API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/auth';
 const API_BASE = AUTH_API.replace(/\/api\/auth\/?$/, '') || 'http://localhost:8080';
-const CAMPAIGNS_URL = `${API_BASE}/api/campaigns`;
+export const CAMPAIGNS_URL = `${API_BASE}/api/campaigns`;
 
 function getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('token');

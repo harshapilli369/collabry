@@ -10,6 +10,7 @@ import {
     PREFERRED_CONTENT_OPTIONS,
     type CampaignRequest,
     type CampaignResponse,
+    CAMPAIGNS_URL,
 } from '../services/campaignService'
 import { createInvitation } from '../services/invitationService'
 import { userService, type InfluencerSearchResult } from '../services/userService'
@@ -41,7 +42,7 @@ export const CreateCampaign = () => {
         setAiDescLoading(true)
         try {
             const token = localStorage.getItem('token')
-            const res = await fetch('http://localhost:9090/api/campaigns/generate-description', {
+            const res = await fetch(`${CAMPAIGNS_URL}/generate-description`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
