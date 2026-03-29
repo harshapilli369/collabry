@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/auth';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090/api/auth';
 
 export interface RegisterPayload {
     email: string;
