@@ -134,7 +134,7 @@ class AuthControllerTest {
         TokenRequest request = new TokenRequest();
         request.setToken("google-id-token");
         AuthResponse response = new AuthResponse("jwt", "user@gmail.com", Role.BRAND, 1L, true);
-        when(authService.loginWithGoogle("google-id-token")).thenReturn(response);
+        when(authService.loginWithGoogle("google-id-token", null)).thenReturn(response);
 
         mockMvc.perform(post("/api/auth/google")
                         .contentType(MediaType.APPLICATION_JSON)
