@@ -97,4 +97,18 @@ class RatingControllerTest {
                         .content("{}"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @WithMockUser(username = "unknown@test.com")
+    void submitRating_userNotFound_returns400() throws Exception {
+        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        RatingRequest request = new RatingRequest();
+        request.setInvitationId(100L);
+        request.setRating(5);
+        mockMvc.perform(post("/api/ratings").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User not found"));
+    }
 }

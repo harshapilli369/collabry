@@ -66,4 +66,13 @@ class CollaborationsControllerTest {
         when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
         mockMvc.perform(get("/api/collaborations/me")).andExpect(status().isForbidden());
     }
+
+    @Test
+    @WithMockUser(username = "unknown@test.com")
+    void getCollaborationHistory_userNotFound_returns400() throws Exception {
+        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        mockMvc.perform(get("/api/collaborations/me"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User not found"));
+    }
 }

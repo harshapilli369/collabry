@@ -245,4 +245,99 @@ class CampaignControllerTest {
                         .content(body))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void generateDescription_aiNotConfigured_returns400() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(groqApiClient.isConfigured()).thenReturn(false);
+
+        String body = objectMapper.writeValueAsString(java.util.Map.of("name", "My Campaign"));
+
+        mockMvc.perform(post("/api/campaigns/generate-description").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("AI service is not configured"));
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void generateDescription_aiReturnsQuotedDescription_stripsQuotes() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(groqApiClient.isConfigured()).thenReturn(true);
+        when(groqApiClient.getTextCompletion(anyString())).thenReturn("\"A quoted campaign description.\"");
+
+        String body = objectMapper.writeValueAsString(java.util.Map.of("name", "My Campaign"));
+
+        mockMvc.perform(post("/api/campaigns/generate-description").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value("A quoted campaign description."));
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void generateDescription_aiThrowsException_returns500() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(groqApiClient.isConfigured()).thenReturn(true);
+        when(groqApiClient.getTextCompletion(anyString())).thenThrow(new RuntimeException("AI service error"));
+
+        String body = objectMapper.writeValueAsString(java.util.Map.of("name", "My Campaign"));
+
+        mockMvc.perform(post("/api/campaigns/generate-description").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Failed to generate description: AI service error"));
+    }
+
+    @Test
+    @WithMockUser(username = "brand@test.com")
+    void generateDescription_withOnlyName_coversEmptyGoalAndBudgetBranches() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(groqApiClient.isConfigured()).thenReturn(true);
+        when(groqApiClient.getTextCompletion(anyString())).thenReturn("A campaign description.");
+
+        String body = objectMapper.writeValueAsString(java.util.Map.of("name", "My Campaign"));
+
+        mockMvc.perform(post("/api/campaigns/generate-description").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value("A campaign description."));
+    }
+
+    @Test
+    @WithMockUser(username = "unverified@test.com")
+    void createCampaign_unverifiedBrand_returns403() throws Exception {
+        User unverifiedBrand = new User("unverified@test.com", "pass", Role.BRAND);
+        unverifiedBrand.setId(30L);
+        // isVerified() defaults to false
+        when(userRepository.findByEmail("unverified@test.com")).thenReturn(Optional.of(unverifiedBrand));
+        CampaignRequest request = new CampaignRequest();
+        request.setName("Summer Promo");
+        request.setBudgetRange(BudgetRange.ONE_K_5K);
+
+        mockMvc.perform(post("/api/campaigns").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "unknown@test.com")
+    void createCampaign_userNotFound_returns400() throws Exception {
+        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        CampaignRequest request = new CampaignRequest();
+        request.setName("Summer Promo");
+        request.setBudgetRange(BudgetRange.ONE_K_5K);
+
+        mockMvc.perform(post("/api/campaigns").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User not found"));
+    }
 }

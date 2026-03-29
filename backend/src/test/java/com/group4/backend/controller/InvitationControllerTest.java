@@ -273,4 +273,13 @@ class InvitationControllerTest {
                         .content("{}"))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @WithMockUser(username = "unknown@test.com")
+    void getMyInvitations_userNotFound_returns400() throws Exception {
+        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        mockMvc.perform(get("/api/invitations/me"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User not found"));
+    }
 }
