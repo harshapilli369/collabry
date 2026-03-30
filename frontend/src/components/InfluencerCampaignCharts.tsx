@@ -52,10 +52,7 @@ function EmptyChart() {
     )
 }
 
-export function InfluencerCampaignCharts({ invitations }: Props) {
-    const [expanded, setExpanded] = useState(false)
-
-    // --- Monthly Invitations Trend (last 6 months) ---
+function buildMonthLabels(): { label: string; key: string }[] {
     const now = new Date()
     const months: { label: string; key: string }[] = []
     for (let i = 5; i >= 0; i--) {
@@ -65,22 +62,27 @@ export function InfluencerCampaignCharts({ invitations }: Props) {
             label: d.toLocaleString('default', { month: 'short', year: '2-digit' }),
         })
     }
+    return months
+}
 
-    const monthlyCounts: Record<string, number> = {}
+function buildTrendData(invitations: InvitationResponse[]): { name: string; invitations: number }[] {
+    const months = buildMonthLabels()
+    const counts: Record<string, number> = {}
     for (const inv of invitations) {
         if (inv.createdAt) {
             const key = inv.createdAt.slice(0, 7)
-            if (monthlyCounts[key] !== undefined || months.some((m) => m.key === key)) {
-                monthlyCounts[key] = (monthlyCounts[key] ?? 0) + 1
+            if (counts[key] !== undefined || months.some((m) => m.key === key)) {
+                counts[key] = (counts[key] ?? 0) + 1
             }
         }
     }
+    return months.map((m) => ({ name: m.label, invitations: counts[m.key] ?? 0 }))
+}
 
-    const trendData = months.map((m) => ({
-        name: m.label,
-        invitations: monthlyCounts[m.key] ?? 0,
-    }))
+export function InfluencerCampaignCharts({ invitations }: Props) {
+    const [expanded, setExpanded] = useState(false)
 
+    const trendData = buildTrendData(invitations)
     const hasTrendData = trendData.some((d) => d.invitations > 0)
 
     const renderTrendChart = (height: number, isModal = false) =>
