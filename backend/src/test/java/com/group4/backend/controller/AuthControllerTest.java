@@ -6,6 +6,8 @@ import com.group4.backend.exception.DuplicateEmailException;
 import com.group4.backend.model.Role;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.AuthService;
+import com.group4.backend.service.PasswordResetService;
+import com.group4.backend.service.RegistrationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,13 +19,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -36,7 +37,11 @@ class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @MockBean
+    private RegistrationService registrationService;
+    @MockBean
     private AuthService authService;
+    @MockBean
+    private PasswordResetService passwordResetService;
     @MockBean
     private JwtUtils jwtUtils;
 
@@ -44,7 +49,7 @@ class AuthControllerTest {
     void register_validRequest_returns201() throws Exception {
         SignupRequest request = new SignupRequest("user@test.com", "Password1", Role.BRAND);
         SignupResponse response = new SignupResponse("Check your email to confirm registration.");
-        when(authService.register(any(SignupRequest.class))).thenReturn(response);
+        when(registrationService.register(any(SignupRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -56,7 +61,7 @@ class AuthControllerTest {
     @Test
     void register_duplicateEmail_returns409() throws Exception {
         SignupRequest request = new SignupRequest("existing@test.com", "Password1", Role.INFLUENCER);
-        when(authService.register(any(SignupRequest.class)))
+        when(registrationService.register(any(SignupRequest.class)))
                 .thenThrow(new DuplicateEmailException("An account with this email already exists."));
 
         mockMvc.perform(post("/api/auth/register")
@@ -84,7 +89,7 @@ class AuthControllerTest {
     @Test
     void confirmEmail_validToken_returns200() throws Exception {
         AuthResponse response = new AuthResponse("jwt", "user@test.com", Role.BRAND, 1L, true);
-        when(authService.confirmEmail("valid-token")).thenReturn(response);
+        when(registrationService.confirmEmail("valid-token")).thenReturn(response);
 
         mockMvc.perform(get("/api/auth/confirm-email").param("token", "valid-token"))
                 .andExpect(status().isOk())
@@ -95,7 +100,7 @@ class AuthControllerTest {
 
     @Test
     void confirmEmail_invalidToken_returns400() throws Exception {
-        when(authService.confirmEmail("bad-token"))
+        when(registrationService.confirmEmail("bad-token"))
                 .thenThrow(new RuntimeException("Invalid or expired confirmation link."));
 
         mockMvc.perform(get("/api/auth/confirm-email").param("token", "bad-token"))
@@ -145,7 +150,7 @@ class AuthControllerTest {
 
     @Test
     void forgotPassword_success_returns200() throws Exception {
-        doNothing().when(authService).forgotPassword("user@test.com");
+        doNothing().when(passwordResetService).forgotPassword("user@test.com");
 
         mockMvc.perform(post("/api/auth/forgot-password")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -156,7 +161,7 @@ class AuthControllerTest {
 
     @Test
     void forgotPassword_serviceThrows_returns500() throws Exception {
-        doThrow(new RuntimeException("Email not found")).when(authService).forgotPassword(anyString());
+        doThrow(new RuntimeException("Email not found")).when(passwordResetService).forgotPassword(anyString());
 
         mockMvc.perform(post("/api/auth/forgot-password")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -170,7 +175,7 @@ class AuthControllerTest {
         ResetPasswordRequest request = new ResetPasswordRequest();
         request.setToken("reset-token");
         request.setNewPassword("NewPassword1");
-        doNothing().when(authService).resetPassword("reset-token", "NewPassword1");
+        doNothing().when(passwordResetService).resetPassword("reset-token", "NewPassword1");
 
         mockMvc.perform(post("/api/auth/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)

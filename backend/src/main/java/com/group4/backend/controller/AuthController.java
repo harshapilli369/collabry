@@ -8,6 +8,8 @@ import com.group4.backend.dto.SignupResponse;
 import com.group4.backend.dto.TokenRequest;
 import com.group4.backend.exception.DuplicateEmailException;
 import com.group4.backend.service.AuthService;
+import com.group4.backend.service.PasswordResetService;
+import com.group4.backend.service.RegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,39 +22,44 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService service;
+    private final RegistrationService registrationService;
+    private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
-    public AuthController(AuthService service) {
-        this.service = service;
+    public AuthController(RegistrationService registrationService, AuthService authService,
+                           PasswordResetService passwordResetService) {
+        this.registrationService = registrationService;
+        this.authService = authService;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<SignupResponse> register(@Valid @RequestBody SignupRequest request) {
-        SignupResponse response = service.register(request);
+        SignupResponse response = registrationService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/confirm-email")
     public ResponseEntity<AuthResponse> confirmEmail(@RequestParam String token) {
-        AuthResponse response = service.confirmEmail(token);
+        AuthResponse response = registrationService.confirmEmail(token);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(service.login(request));
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/google")
     public ResponseEntity<AuthResponse> googleLogin(@RequestBody TokenRequest request) {
-        return ResponseEntity.ok(service.loginWithGoogle(request.getToken(), request.getRole()));
+        return ResponseEntity.ok(authService.loginWithGoogle(request.getToken(), request.getRole()));
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
         System.out.println("Processing forgot password for: " + request.get("email"));
         try {
-            service.forgotPassword(request.get("email"));
+            passwordResetService.forgotPassword(request.get("email"));
             return ResponseEntity.ok(Map.of("message", "Reset link sent"));
         } catch (Exception e) {
             System.err.println("Error in forgot password: " + e.getMessage());
@@ -62,7 +69,7 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        service.resetPassword(request.getToken(), request.getNewPassword());
+        passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
     }
 
