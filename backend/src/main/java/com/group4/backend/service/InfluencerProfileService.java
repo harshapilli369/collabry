@@ -51,7 +51,7 @@ public class InfluencerProfileService {
      */
     public List<InfluencerProfileResponse> search(String niche, String location, Long minFollowers, Long maxFollowers,
                                                    java.math.BigDecimal minEngagementRate, Boolean availableOnly) {
-        if (minFollowers != null && maxFollowers != null && minFollowers > maxFollowers) {
+        if (isInvalidFollowerRange(minFollowers, maxFollowers)) {
             throw new IllegalArgumentException("minFollowers cannot be greater than maxFollowers");
         }
         Specification<InfluencerProfile> spec = buildSearchSpec(
@@ -158,6 +158,10 @@ public class InfluencerProfileService {
         profile.setOpenToCollaborations(openToCollaborations);
         profile = influencerProfileRepository.save(profile);
         return toResponse(profile);
+    }
+
+    private static boolean isInvalidFollowerRange(Long minFollowers, Long maxFollowers) {
+        return minFollowers != null && maxFollowers != null && minFollowers > maxFollowers;
     }
 
     private static boolean hasAny(String... values) {
