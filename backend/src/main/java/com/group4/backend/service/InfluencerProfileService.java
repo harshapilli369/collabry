@@ -52,19 +52,33 @@ public class InfluencerProfileService {
         if (minFollowers != null && maxFollowers != null && minFollowers > maxFollowers) {
             throw new IllegalArgumentException("minFollowers cannot be greater than maxFollowers");
         }
-        Specification<InfluencerProfile> spec = (root, query, cb) -> {
+        Specification<InfluencerProfile> spec = buildSearchSpec(
+                niche, location, minFollowers, maxFollowers, minEngagementRate, availableOnly);
+        List<InfluencerProfile> profiles = new ArrayList<>(influencerProfileRepository.findAll(spec));
+        profiles.sort(Comparator
+                .comparingDouble((InfluencerProfile p) ->
+                        -InfluencerSearchRanker.relevanceScore(p, niche, location, minFollowers, maxFollowers))
+                .thenComparing(InfluencerProfile::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
+        return profiles.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    private Specification<InfluencerProfile> buildSearchSpec(String niche, String location,
+                                                               Long minFollowers, Long maxFollowers,
+                                                               java.math.BigDecimal minEngagementRate,
+                                                               Boolean availableOnly) {
+        return (root, query, cb) -> {
             var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
             predicates.add(cb.isTrue(root.get("isComplete")));
             if (Boolean.TRUE.equals(availableOnly)) {
-                // Match entity: null means legacy row → treat as open to collaborations
                 predicates.add(cb.or(
                         cb.isTrue(root.get("openToCollaborations")),
                         cb.isNull(root.get("openToCollaborations"))
                 ));
             }
             if (niche != null && !niche.isBlank()) {
-                String nicheTerm = "%" + niche.trim().toLowerCase() + "%";
-                predicates.add(cb.like(cb.lower(root.get("niche")), nicheTerm));
+                predicates.add(cb.like(cb.lower(root.get("niche")), "%" + niche.trim().toLowerCase() + "%"));
             }
             if (location != null && !location.isBlank()) {
                 predicates.add(cb.like(cb.lower(root.get("location")), "%" + location.trim().toLowerCase() + "%"));
@@ -80,14 +94,6 @@ public class InfluencerProfileService {
             }
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
-        List<InfluencerProfile> profiles = new ArrayList<>(influencerProfileRepository.findAll(spec));
-        profiles.sort(Comparator
-                .comparingDouble((InfluencerProfile p) ->
-                        -InfluencerSearchRanker.relevanceScore(p, niche, location, minFollowers, maxFollowers))
-                .thenComparing(InfluencerProfile::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
-        return profiles.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
     }
 
     @Transactional
