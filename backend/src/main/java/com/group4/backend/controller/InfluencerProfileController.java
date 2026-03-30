@@ -6,14 +6,11 @@ import com.group4.backend.dto.InfluencerProfileResponse;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
-import com.group4.backend.service.InfluencerProfileService;
 import com.group4.backend.service.GroqApiClient;
+import com.group4.backend.service.InfluencerProfileService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -22,15 +19,15 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/influencers")
-public class InfluencerProfileController {
+public class InfluencerProfileController extends BaseController {
 
     private final InfluencerProfileService influencerProfileService;
-    private final UserRepository userRepository;
     private final GroqApiClient groqApiClient;
 
-    public InfluencerProfileController(InfluencerProfileService influencerProfileService, UserRepository userRepository, GroqApiClient groqApiClient) {
+    public InfluencerProfileController(InfluencerProfileService influencerProfileService,
+                                        UserRepository userRepository, GroqApiClient groqApiClient) {
+        super(userRepository);
         this.influencerProfileService = influencerProfileService;
-        this.userRepository = userRepository;
         this.groqApiClient = groqApiClient;
     }
 
@@ -121,29 +118,5 @@ public class InfluencerProfileController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to enhance bio: " + e.getMessage()));
         }
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException e) {
-        String message = e.getBindingResult().getFieldErrors().stream()
-                .map(err -> err.getField() + ": " + err.getDefaultMessage())
-                .reduce((a, b) -> a + "; " + b)
-                .orElse("Validation failed");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", message));
-    }
-
-    private User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getPrincipal() == null) {
-            throw new IllegalArgumentException("Not authenticated");
-        }
-        String email = auth.getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }

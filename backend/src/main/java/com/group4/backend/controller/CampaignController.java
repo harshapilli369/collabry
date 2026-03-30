@@ -4,42 +4,40 @@ import com.group4.backend.dto.CampaignRequest;
 import com.group4.backend.dto.CampaignResponse;
 import com.group4.backend.dto.InvitationRequest;
 import com.group4.backend.dto.InvitationResponse;
+import com.group4.backend.dto.InfluencerRecommendationDTO;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
-import com.group4.backend.service.CampaignService;
-import com.group4.backend.service.InvitationService;
 import com.group4.backend.service.AiRecommendationService;
+import com.group4.backend.service.CampaignService;
 import com.group4.backend.service.GroqApiClient;
-import com.group4.backend.dto.InfluencerRecommendationDTO;
+import com.group4.backend.service.InvitationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/campaigns")
-public class CampaignController {
+public class CampaignController extends BaseController {
 
     /** Test user allowed to create campaigns without verification. */
     private static final String TEST_BRAND_EMAIL = "brand@collabry";
 
     private final CampaignService campaignService;
     private final InvitationService invitationService;
-    private final UserRepository userRepository;
     private final AiRecommendationService aiRecommendationService;
     private final GroqApiClient groqApiClient;
 
-    public CampaignController(CampaignService campaignService, InvitationService invitationService, UserRepository userRepository, AiRecommendationService aiRecommendationService, GroqApiClient groqApiClient) {
+    public CampaignController(CampaignService campaignService, InvitationService invitationService,
+                               UserRepository userRepository, AiRecommendationService aiRecommendationService,
+                               GroqApiClient groqApiClient) {
+        super(userRepository);
         this.campaignService = campaignService;
         this.invitationService = invitationService;
-        this.userRepository = userRepository;
         this.aiRecommendationService = aiRecommendationService;
         this.groqApiClient = groqApiClient;
     }
@@ -67,7 +65,8 @@ public class CampaignController {
     }
 
     @PostMapping("/{campaignId}/invitations")
-    public ResponseEntity<InvitationResponse> createInvitation(@PathVariable Long campaignId, @Valid @RequestBody InvitationRequest request) {
+    public ResponseEntity<InvitationResponse> createInvitation(@PathVariable Long campaignId,
+                                                                @Valid @RequestBody InvitationRequest request) {
         User user = getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -127,31 +126,7 @@ public class CampaignController {
         }
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException e) {
-        String message = e.getBindingResult().getFieldErrors().stream()
-                .map(err -> err.getField() + ": " + err.getDefaultMessage())
-                .reduce((a, b) -> a + "; " + b)
-                .orElse("Validation failed");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", message));
-    }
-
     private boolean isAllowedToCreateCampaigns(User user) {
         return user.isVerified() || TEST_BRAND_EMAIL.equalsIgnoreCase(user.getEmail());
-    }
-
-    private User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getPrincipal() == null) {
-            throw new IllegalArgumentException("Not authenticated");
-        }
-        String email = auth.getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }
