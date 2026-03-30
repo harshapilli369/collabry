@@ -80,7 +80,7 @@ public class AuthService {
             conn.setRequestProperty("Authorization", "Bearer " + accessToken);
             conn.setRequestMethod("GET");
 
-            if (conn.getResponseCode() == 200) {
+            if (conn.getResponseCode() == java.net.HttpURLConnection.HTTP_OK) {
                 try (java.io.BufferedReader br = new java.io.BufferedReader(
                         new java.io.InputStreamReader(conn.getInputStream()))) {
                     String response = br.lines().collect(java.util.stream.Collectors.joining());
