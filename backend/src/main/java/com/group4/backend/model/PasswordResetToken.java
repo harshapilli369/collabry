@@ -7,6 +7,8 @@ import java.util.UUID;
 @Entity
 public class PasswordResetToken {
 
+    private static final long EXPIRY_DURATION_MS = 1000L * 60 * 60; // 1 hour
+
     // Requirements: Token, Expiry Date, User mapping
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,7 +29,7 @@ public class PasswordResetToken {
     public PasswordResetToken(String token, User user) {
         this.token = token;
         this.user = user;
-        this.expiryDate = new Date(System.currentTimeMillis() + 1000 * 60 * 60); // 1 hour expiry
+        this.expiryDate = new Date(System.currentTimeMillis() + EXPIRY_DURATION_MS);
     }
 
     public boolean isExpired() {
