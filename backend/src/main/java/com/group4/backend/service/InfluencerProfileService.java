@@ -106,12 +106,19 @@ public class InfluencerProfileService {
 
         InfluencerProfile profile = influencerProfileRepository.findByUserId(userId)
                 .orElseGet(InfluencerProfile::new);
-
         profile.setUserId(userId);
-        profile.setName(emptyToNull(request.getName()) != null ? request.getName().trim() : profile.getName());
-        profile.setAge(request.getAge() != null ? request.getAge() : profile.getAge());
-        profile.setLocation(emptyToNull(request.getLocation()) != null ? request.getLocation().trim() : profile.getLocation());
-        profile.setNiche(emptyToNull(request.getNiche()) != null ? request.getNiche().trim() : profile.getNiche());
+        applyFieldsFromRequest(profile, request);
+        updateCompletionStatus(profile, request.isSaveAsDraft());
+
+        profile = influencerProfileRepository.save(profile);
+        return toResponse(profile);
+    }
+
+    private void applyFieldsFromRequest(InfluencerProfile profile, InfluencerProfileRequest request) {
+        if (emptyToNull(request.getName()) != null) profile.setName(request.getName().trim());
+        if (request.getAge() != null) profile.setAge(request.getAge());
+        if (emptyToNull(request.getLocation()) != null) profile.setLocation(request.getLocation().trim());
+        if (emptyToNull(request.getNiche()) != null) profile.setNiche(request.getNiche().trim());
         profile.setBio(emptyToNull(request.getBio()));
         profile.setProfilePictureUrl(emptyToNull(request.getProfilePictureUrl()));
         profile.setInstagramHandle(emptyToNull(request.getInstagramHandle()));
@@ -121,23 +128,20 @@ public class InfluencerProfileService {
         profile.setFollowerCount(request.getFollowerCount());
         profile.setEngagementRate(request.getEngagementRate());
         profile.setAudienceInfo(emptyToNull(request.getAudienceInfo()));
+    }
 
-        if (request.isSaveAsDraft()) {
+    private void updateCompletionStatus(InfluencerProfile profile, boolean saveAsDraft) {
+        if (saveAsDraft) {
             profile.setComplete(false);
-        } else {
-            // Validate completeness: need at least one social handle and rate
-            boolean hasSocialHandle = hasAny(profile.getInstagramHandle(), profile.getYoutubeHandle(), profile.getTiktokHandle());
-            if (!hasSocialHandle) {
-                throw new IllegalArgumentException("At least one social media handle is required to complete your profile");
-            }
-            if (profile.getRate() == null || profile.getRate().compareTo(java.math.BigDecimal.ZERO) < 0) {
-                throw new IllegalArgumentException("Rate is required and must be zero or greater to complete your profile");
-            }
-            profile.setComplete(true);
+            return;
         }
-
-        profile = influencerProfileRepository.save(profile);
-        return toResponse(profile);
+        if (!hasAny(profile.getInstagramHandle(), profile.getYoutubeHandle(), profile.getTiktokHandle())) {
+            throw new IllegalArgumentException("At least one social media handle is required to complete your profile");
+        }
+        if (profile.getRate() == null || profile.getRate().compareTo(java.math.BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Rate is required and must be zero or greater to complete your profile");
+        }
+        profile.setComplete(true);
     }
 
     @Transactional
