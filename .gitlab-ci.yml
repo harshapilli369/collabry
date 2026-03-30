@@ -9,6 +9,9 @@
 # Designite submit needs CI/CD variables: DCODE_PROJECT_ID, DCODE_API_KEY (masked).
 # Requires repo files: .quality/requirements.txt, .quality/push_to_dcode.py
 
+include:
+  - template: Jobs/Code-Quality.gitlab-ci.yml
+
 stages:
   - build
   - test
