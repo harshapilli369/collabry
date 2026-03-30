@@ -20,6 +20,7 @@ import java.util.UUID;
 public class RegistrationService {
 
     private static final int CONFIRMATION_EXPIRY_HOURS = 24;
+    private static final long SECONDS_PER_HOUR = 3600L;
     private static final String TEST_BRAND_EMAIL = "brand@collabry";
 
     private final UserRepository userRepository;
@@ -58,7 +59,7 @@ public class RegistrationService {
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         String confirmationToken = UUID.randomUUID().toString();
-        Instant expiresAt = Instant.now().plusSeconds(CONFIRMATION_EXPIRY_HOURS * 3600L);
+        Instant expiresAt = Instant.now().plusSeconds(CONFIRMATION_EXPIRY_HOURS * SECONDS_PER_HOUR);
         PendingSignup pending = new PendingSignup(
                 request.getEmail(), encodedPassword, request.getRole(), confirmationToken, expiresAt);
         pendingSignupRepository.save(pending);
