@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 @Service
 public class InfluencerProfileService {
 
+    private static final int RECENT_REVIEWS_LIMIT = 5;
+
     private final InfluencerProfileRepository influencerProfileRepository;
     private final UserRepository userRepository;
     private final RatingService ratingService;
@@ -195,7 +197,7 @@ public class InfluencerProfileService {
         long influencerUserId = profile.getUserId();
         response.setAverageRating(ratingService.getAverageRating(influencerUserId));
         response.setTotalRatings(ratingService.getRatingsForInfluencer(influencerUserId).size());
-        response.setRecentReviews(ratingService.getRecentReviews(influencerUserId, 5));
+        response.setRecentReviews(ratingService.getRecentReviews(influencerUserId, RECENT_REVIEWS_LIMIT));
         return response;
     }
 }
