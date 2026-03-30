@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private static final String TEST_BRAND_EMAIL = "brand@collabry";
+    private static final String EMAIL_JSON_PREFIX = "\"email\": \"";
+    private static final int EMAIL_JSON_PREFIX_LENGTH = EMAIL_JSON_PREFIX.length();
 
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
@@ -85,7 +87,7 @@ public class AuthService {
                         new java.io.InputStreamReader(conn.getInputStream()))) {
                     String response = br.lines().collect(java.util.stream.Collectors.joining());
                     if (response.contains("\"email\": \"")) {
-                        int start = response.indexOf("\"email\": \"") + 10;
+                        int start = response.indexOf(EMAIL_JSON_PREFIX) + EMAIL_JSON_PREFIX_LENGTH;
                         int end = response.indexOf("\"", start);
                         return response.substring(start, end);
                     }
