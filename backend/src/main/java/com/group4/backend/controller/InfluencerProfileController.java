@@ -95,28 +95,27 @@ public class InfluencerProfileController extends BaseController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         String bio = request.get("bio");
-        if (bio == null || bio.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Bio text is required"));
+        if (bio == null || bio.isBlank()) throw new IllegalArgumentException("Bio text is required");
+        if (!groqApiClient.isConfigured()) throw new IllegalArgumentException("AI service is not configured");
+        try {
+            return ResponseEntity.ok(Map.of("enhancedBio", callEnhanceBioAi(bio)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to enhance bio: " + e.getMessage()));
         }
-        if (!groqApiClient.isConfigured()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "AI service is not configured"));
-        }
+    }
+
+    private String callEnhanceBioAi(String bio) {
         String prompt = "You are a professional copywriter for influencer profiles. " +
                 "Rewrite the following bio to sound more professional, engaging, and appealing to brands looking for collaborations. " +
                 "Keep the same meaning and personality but make it polished. " +
                 "Keep it concise (2-4 sentences max). " +
                 "Return ONLY the enhanced bio text, nothing else.\n\n" +
                 "Original bio:\n" + bio;
-        try {
-            String enhanced = groqApiClient.getTextCompletion(prompt).trim();
-            // Remove surrounding quotes if the AI wraps it
-            if (enhanced.startsWith("\"") && enhanced.endsWith("\"")) {
-                enhanced = enhanced.substring(1, enhanced.length() - 1);
-            }
-            return ResponseEntity.ok(Map.of("enhancedBio", enhanced));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Failed to enhance bio: " + e.getMessage()));
+        String enhanced = groqApiClient.getTextCompletion(prompt).trim();
+        if (enhanced.startsWith("\"") && enhanced.endsWith("\"")) {
+            enhanced = enhanced.substring(1, enhanced.length() - 1);
         }
+        return enhanced;
     }
 }
