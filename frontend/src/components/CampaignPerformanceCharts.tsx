@@ -5,13 +5,14 @@ import {
     PieChart,
     Pie,
     Cell,
-    BarChart,
-    Bar,
+    AreaChart,
+    Area,
     XAxis,
     YAxis,
     Tooltip,
     ResponsiveContainer,
     Legend,
+    CartesianGrid,
 } from 'recharts'
 import type { PieLabelRenderProps } from 'recharts'
 import type { CampaignResponse } from '../services/campaignService'
@@ -30,7 +31,7 @@ type ExpandedChart = 'status' | 'invitation' | 'payment' | null
 
 const DARK_BG = '#0d0d0d'
 const CARD_BORDER = '#1a1a1a'
-const TOOLTIP_STYLE = { background: '#1a1a1a', border: '1px solid #333', borderRadius: 8, color: '#fff' }
+const TOOLTIP_STYLE = { background: '#1a1a2e', border: '1px solid #444', borderRadius: 10, color: '#fff', fontSize: 13 }
 
 const STATUS_COLORS: Record<string, string> = {
     Draft: '#888888',
@@ -44,13 +45,6 @@ const INVITATION_COLORS: Record<string, string> = {
     Rejected: '#ff4d4f',
     Pending: '#faad14',
     Other: '#888888',
-}
-
-const PAYMENT_COLORS: Record<string, string> = {
-    Pending: '#faad14',
-    Processing: '#1890ff',
-    Paid: '#52c41a',
-    Delayed: '#ff4d4f',
 }
 
 const MODAL_STYLES = {
@@ -77,16 +71,23 @@ const MODAL_STYLES = {
 
 function ChartCard({
     title,
+    subtitle,
     children,
     onExpand,
 }: {
     title: string
+    subtitle?: string
     children: React.ReactNode
     onExpand: () => void
 }) {
     return (
         <Card
-            title={<span style={{ color: '#fff', fontSize: 14 }}>{title}</span>}
+            title={
+                <div>
+                    <span style={{ color: '#fff', fontSize: 14 }}>{title}</span>
+                    {subtitle && <div style={{ color: '#666', fontSize: 11, fontWeight: 400, marginTop: 2 }}>{subtitle}</div>}
+                </div>
+            }
             extra={
                 <Button
                     type="text"
@@ -145,13 +146,18 @@ export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments
         { name: 'Other', value: other },
     ].filter((d) => d.value > 0)
 
-    // --- Payment Overview Data ---
-    const paymentData = [
-        { name: 'Pending', value: payments.filter((p) => p.status === 'PENDING').length },
-        { name: 'Processing', value: payments.filter((p) => p.status === 'PROCESSING').length },
-        { name: 'Paid', value: payments.filter((p) => p.status === 'PAID').length },
-        { name: 'Delayed', value: payments.filter((p) => p.status === 'DELAYED').length },
-    ].filter((d) => d.value > 0)
+    // --- Payment Area Data ---
+    const paymentAreaData = [
+        { name: 'Pending', count: payments.filter((p) => p.status === 'PENDING').length, amount: payments.filter((p) => p.status === 'PENDING').reduce((s, p) => s + (p.amount ?? 0), 0) },
+        { name: 'Processing', count: payments.filter((p) => p.status === 'PROCESSING').length, amount: payments.filter((p) => p.status === 'PROCESSING').reduce((s, p) => s + (p.amount ?? 0), 0) },
+        { name: 'Paid', count: payments.filter((p) => p.status === 'PAID').length, amount: payments.filter((p) => p.status === 'PAID').reduce((s, p) => s + (p.amount ?? 0), 0) },
+        { name: 'Delayed', count: payments.filter((p) => p.status === 'DELAYED').length, amount: payments.filter((p) => p.status === 'DELAYED').reduce((s, p) => s + (p.amount ?? 0), 0) },
+    ]
+
+    const hasPaymentData = paymentAreaData.some((d) => d.count > 0)
+    const totalSpend = payments.reduce((s, p) => s + (p.amount ?? 0), 0)
+    const formatDollar = (value: number) =>
+        value >= 1000 ? `$${(value / 1000).toFixed(1)}k` : `$${value}`
 
     const renderPieLabel = (props: PieLabelRenderProps) => {
         const percent = props.percent ?? 0
@@ -165,28 +171,38 @@ export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments
         ) : (
             <ResponsiveContainer width="100%" height={height}>
                 <PieChart>
+                    <defs>
+                        {campaignStatusData.map((entry) => (
+                            <linearGradient key={entry.name} id={`cs-${entry.name}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor={STATUS_COLORS[entry.name] ?? '#888'} stopOpacity={1} />
+                                <stop offset="100%" stopColor={STATUS_COLORS[entry.name] ?? '#888'} stopOpacity={0.6} />
+                            </linearGradient>
+                        ))}
+                    </defs>
                     <Pie
                         data={campaignStatusData}
                         cx="50%"
-                        cy={isModal ? '48%' : '58%'}
-                        innerRadius={isModal ? 70 : 50}
-                        outerRadius={isModal ? 120 : 75}
+                        cy={isModal ? '48%' : '55%'}
+                        innerRadius={isModal ? 75 : 48}
+                        outerRadius={isModal ? 125 : 78}
                         dataKey="value"
                         label={renderPieLabel}
                         labelLine={false}
+                        stroke="none"
+                        paddingAngle={3}
                     >
                         {campaignStatusData.map((entry) => (
-                            <Cell key={entry.name} fill={STATUS_COLORS[entry.name] ?? '#888'} />
+                            <Cell key={entry.name} fill={`url(#cs-${entry.name})`} />
                         ))}
                     </Pie>
                     <Tooltip
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
-                        formatter={(value, name) => [Number(value ?? 0), String(name ?? '')]}
+                        formatter={(value: number, name: string) => [Number(value ?? 0), String(name ?? '')]}
                     />
                     <Legend
-                        formatter={(value) => (
-                            <Text style={{ color: '#aaa', fontSize: isModal ? 13 : 12 }}>{value}</Text>
+                        formatter={(value: string) => (
+                            <Text style={{ color: '#aaa', fontSize: isModal ? 13 : 11 }}>{value}</Text>
                         )}
                     />
                 </PieChart>
@@ -198,40 +214,73 @@ export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments
             <EmptyChart />
         ) : (
             <ResponsiveContainer width="100%" height={height}>
-                <BarChart data={invitationData} margin={{ top: 8, right: 8, left: isModal ? 0 : -20, bottom: 0 }}>
-                    <XAxis dataKey="name" tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
-                    <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={{ color: '#ccc' }} cursor={{ fill: '#ffffff08' }} />
-                    <Bar dataKey="value" name="Invitations" radius={[6, 6, 0, 0]}>
+                <PieChart>
+                    <defs>
                         {invitationData.map((entry) => (
-                            <Cell key={entry.name} fill={INVITATION_COLORS[entry.name] ?? '#888'} />
+                            <linearGradient key={entry.name} id={`ci-${entry.name}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor={INVITATION_COLORS[entry.name] ?? '#888'} stopOpacity={1} />
+                                <stop offset="100%" stopColor={INVITATION_COLORS[entry.name] ?? '#888'} stopOpacity={0.6} />
+                            </linearGradient>
                         ))}
-                    </Bar>
-                </BarChart>
+                    </defs>
+                    <Pie
+                        data={invitationData}
+                        cx="50%"
+                        cy={isModal ? '48%' : '55%'}
+                        innerRadius={isModal ? 75 : 48}
+                        outerRadius={isModal ? 125 : 78}
+                        dataKey="value"
+                        label={renderPieLabel}
+                        labelLine={false}
+                        stroke="none"
+                        paddingAngle={3}
+                    >
+                        {invitationData.map((entry) => (
+                            <Cell key={entry.name} fill={`url(#ci-${entry.name})`} />
+                        ))}
+                    </Pie>
+                    <Tooltip
+                        contentStyle={TOOLTIP_STYLE}
+                        itemStyle={{ color: '#ccc' }}
+                        formatter={(value: number, name: string) => [Number(value ?? 0), String(name ?? '')]}
+                    />
+                    <Legend
+                        formatter={(value: string) => (
+                            <Text style={{ color: '#aaa', fontSize: isModal ? 13 : 11 }}>{value}</Text>
+                        )}
+                    />
+                </PieChart>
             </ResponsiveContainer>
         )
 
     const renderPaymentChart = (height: number, isModal = false) =>
-        paymentData.length === 0 ? (
+        !hasPaymentData ? (
             <EmptyChart />
         ) : (
             <ResponsiveContainer width="100%" height={height}>
-                <BarChart data={paymentData} margin={{ top: 8, right: 8, left: isModal ? 0 : -20, bottom: 0 }}>
-                    <XAxis dataKey="name" tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#333' }} tickLine={false} />
-                    <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={{ color: '#ccc' }} cursor={{ fill: '#ffffff08' }} />
-                    <Bar dataKey="value" name="Payments" radius={[6, 6, 0, 0]}>
-                        {paymentData.map((entry) => (
-                            <Cell key={entry.name} fill={PAYMENT_COLORS[entry.name] ?? '#888'} />
-                        ))}
-                    </Bar>
-                </BarChart>
+                <AreaChart data={paymentAreaData} margin={{ top: 8, right: 16, left: isModal ? 10 : -4, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="brandPayGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#FFFD82" stopOpacity={0.35} />
+                            <stop offset="100%" stopColor="#FFFD82" stopOpacity={0.02} />
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1a1a2e" />
+                    <XAxis dataKey="name" tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#222' }} tickLine={false} />
+                    <YAxis tickFormatter={formatDollar} tick={{ fill: '#888', fontSize: isModal ? 13 : 11 }} axisLine={{ stroke: '#222' }} tickLine={false} />
+                    <Tooltip
+                        contentStyle={TOOLTIP_STYLE}
+                        itemStyle={{ color: '#ccc' }}
+                        formatter={(value: number) => [`$${Number(value ?? 0).toLocaleString()}`, 'Spend']}
+                    />
+                    <Area type="monotone" dataKey="amount" name="Spend" stroke="#FFFD82" strokeWidth={2} fill="url(#brandPayGrad)" dot={{ fill: '#FFFD82', r: 4, strokeWidth: 0 }} activeDot={{ r: 6, stroke: '#FFFD82', strokeWidth: 2, fill: '#0d0d0d' }} />
+                </AreaChart>
             </ResponsiveContainer>
         )
 
     const CHART_META: Record<NonNullable<ExpandedChart>, { title: string; render: () => React.ReactNode }> = {
         status: { title: 'Campaigns by Status', render: () => renderStatusChart(420, true) },
-        invitation: { title: 'Invitation Response Rate', render: () => renderInvitationChart(380, true) },
+        invitation: { title: 'Invitation Response Rate', render: () => renderInvitationChart(420, true) },
         payment: { title: 'Payment Overview', render: () => renderPaymentChart(380, true) },
     }
 
@@ -239,19 +288,19 @@ export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments
         <>
             <Row gutter={[20, 20]}>
                 <Col xs={24} md={8}>
-                    <ChartCard title="Campaigns by Status" onExpand={() => setExpanded('status')}>
+                    <ChartCard title="Campaigns by Status" subtitle={`${campaigns.length} campaigns`} onExpand={() => setExpanded('status')}>
                         {renderStatusChart(220)}
                     </ChartCard>
                 </Col>
 
                 <Col xs={24} md={8}>
-                    <ChartCard title="Invitation Response Rate" onExpand={() => setExpanded('invitation')}>
+                    <ChartCard title="Invitation Responses" subtitle={`${sentInvitations.length} sent`} onExpand={() => setExpanded('invitation')}>
                         {renderInvitationChart(220)}
                     </ChartCard>
                 </Col>
 
                 <Col xs={24} md={8}>
-                    <ChartCard title="Payment Overview" onExpand={() => setExpanded('payment')}>
+                    <ChartCard title="Payment Overview" subtitle={`${formatDollar(totalSpend)} total`} onExpand={() => setExpanded('payment')}>
                         {renderPaymentChart(220)}
                     </ChartCard>
                 </Col>

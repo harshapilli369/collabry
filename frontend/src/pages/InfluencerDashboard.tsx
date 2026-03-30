@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Typography, Button, Card, Row, Col, Avatar, Progress } from 'antd'
-import { DollarOutlined, TeamOutlined, RiseOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
+import { MailOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyInvitations } from '../services/invitationService'
 import { getMyInfluencerProfile } from '../services/influencerProfileService'
@@ -76,53 +76,6 @@ export const InfluencerDashboard = () => {
             </div>
 
             <Row gutter={[20, 20]}>
-                {/* Stats Cards */}
-                {[
-                    {
-                        icon: <DollarOutlined style={{ fontSize: 24, color: '#52c41a' }} />,
-                        label: 'Total Earnings',
-                        value: '$12,450',
-                        sub: '+15% from last month',
-                        subColor: '#52c41a',
-                        borderColor: '#52c41a',
-                    },
-                    {
-                        icon: <TeamOutlined style={{ fontSize: 24, color: INFLUENCER_PORTAL_PRIMARY }} />,
-                        label: 'Active Collabs',
-                        value: '4',
-                        sub: '2 pending approval',
-                        subColor: INFLUENCER_PORTAL_PRIMARY,
-                        borderColor: INFLUENCER_PORTAL_PRIMARY,
-                    },
-                    {
-                        icon: <RiseOutlined style={{ fontSize: 24, color: '#1890ff' }} />,
-                        label: 'Engagement Rate',
-                        value: '5.8%',
-                        sub: '+0.4% this week',
-                        subColor: '#52c41a',
-                        borderColor: '#1890ff',
-                    },
-                ].map((stat, idx) => (
-                    <Col span={8} key={idx}>
-                        <Card
-                            className="influencer-stat-card"
-                            style={{
-                                borderRadius: 16,
-                                textAlign: 'center',
-                                border: `1px solid ${stat.borderColor}20`,
-                                background: '#0d0d0d',
-                                transition: 'all 0.3s ease',
-                                cursor: 'default',
-                            }}
-                        >
-                            <div style={{ marginBottom: 12 }}>{stat.icon}</div>
-                            <Text type="secondary" style={{ fontSize: 13 }}>{stat.label}</Text>
-                            <Title level={2} style={{ margin: '8px 0 0' }}>{stat.value}</Title>
-                            <Text style={{ color: stat.subColor, fontSize: 13 }}>{stat.sub}</Text>
-                        </Card>
-                    </Col>
-                ))}
-
                 {/* Performance Charts */}
                 <Col span={24}>
                     <InfluencerPerformanceCharts invitations={invitations} payments={payments} />

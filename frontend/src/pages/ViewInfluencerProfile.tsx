@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Card, Typography, Button, ConfigProvider, Descriptions, theme, Avatar, Spin, Tag, Space, Row, Col, Rate } from 'antd'
-import { UserOutlined, ArrowLeftOutlined, EditOutlined, InstagramOutlined, YoutubeOutlined, CheckCircleFilled, StarFilled } from '@ant-design/icons'
+import { UserOutlined, ArrowLeftOutlined, EditOutlined, InstagramOutlined, YoutubeOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { getMyInfluencerProfile, type InfluencerProfileResponse, type RatingResponse } from '../services/influencerProfileService'
+import { getMyInfluencerProfile, type InfluencerProfileResponse } from '../services/influencerProfileService'
 import { InfluencerPortalLayout, INFLUENCER_PORTAL_PRIMARY } from '../components/InfluencerPortalLayout'
 
 const { Title, Text, Paragraph } = Typography
@@ -152,30 +152,13 @@ export const ViewInfluencerProfile = () => {
                     </Card>
 
                     {(profile?.totalRatings != null && profile.totalRatings > 0) && (
-                        <Card style={{ backgroundColor: cardBackgroundColor, borderRadius: 12, marginTop: 24 }}>
-                            <Title level={5} style={{ color: INFLUENCER_PORTAL_PRIMARY, marginBottom: 12 }}>
-                                <StarFilled style={{ marginRight: 8, color: '#FFFD82' }} />
-                                Ratings & Reviews
-                            </Title>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                                <Rate disabled allowHalf value={profile.averageRating ?? 0} style={{ color: '#FFFD82' }} />
-                                <Text style={{ color: '#d9d9d9' }}>
-                                    {typeof profile.averageRating === 'number' ? profile.averageRating.toFixed(1) : '0'} ({profile.totalRatings} {profile.totalRatings === 1 ? 'review' : 'reviews'})
-                                </Text>
-                            </div>
-                            {profile.recentReviews && profile.recentReviews.length > 0 && (
-                                <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                                    {profile.recentReviews.map((r: RatingResponse) => (
-                                        <div key={r.id} style={{ padding: '12px 0', borderBottom: '1px solid #333' }}>
-                                            <Rate disabled value={r.rating} count={5} style={{ fontSize: 12, color: '#FFFD82' }} />
-                                            {r.review && (
-                                                <Paragraph style={{ color: '#d9d9d9', margin: '6px 0 0', fontSize: '0.9rem' }}>{r.review}</Paragraph>
-                                            )}
-                                        </div>
-                                    ))}
-                                </Space>
-                            )}
-                        </Card>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, padding: '10px 16px', background: '#1a1a2e', borderRadius: 8 }}>
+                            <Text style={{ color: INFLUENCER_PORTAL_PRIMARY, fontSize: '0.9rem', fontWeight: 600 }}>Reviews</Text>
+                            <Rate disabled allowHalf value={profile.averageRating ?? 0} style={{ fontSize: 12, color: '#FFFD82' }} />
+                            <Text style={{ color: '#aaa', fontSize: '0.8rem' }}>
+                                {typeof profile.averageRating === 'number' ? profile.averageRating.toFixed(1) : '0'}/5 ({profile.totalRatings})
+                            </Text>
+                        </div>
                     )}
                 </Col>
             </Row>
