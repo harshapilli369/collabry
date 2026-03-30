@@ -63,7 +63,7 @@ public class AuthController {
             return ResponseEntity.ok(Map.of("message", "Reset link sent"));
         } catch (Exception e) {
             System.err.println("Error in forgot password: " + e.getMessage());
-            return ResponseEntity.status(500).body(Map.of("message", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", e.getMessage()));
         }
     }
 
