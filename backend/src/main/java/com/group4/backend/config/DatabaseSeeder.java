@@ -19,6 +19,8 @@ import java.util.List;
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
+    private static final int SEED_INFLUENCER_AGE = 26;
+
     private final UserRepository userRepository;
     private final InfluencerProfileRepository influencerProfileRepository;
     private final BrandProfileRepository brandProfileRepository;
@@ -78,7 +80,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         InfluencerProfile p = new InfluencerProfile();
         p.setUserId(userId);
         p.setName(m.name);
-        p.setAge(26);
+        p.setAge(SEED_INFLUENCER_AGE);
         p.setNiche(m.niche);
         p.setBio(m.bio);
         p.setLocation(m.location);
