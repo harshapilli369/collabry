@@ -16,6 +16,18 @@ import java.util.List;
 @Service
 public class AiRecommendationService {
 
+    private static final int MAX_MOCK_RECOMMENDATIONS = 3;
+    private static final int SCORE_GAMING_BASE = 90;
+    private static final int SCORE_GAMING_VARIANCE = 8;
+    private static final int SCORE_TECH_BASE = 85;
+    private static final int SCORE_TECH_VARIANCE = 10;
+    private static final int SCORE_FASHION_BASE = 88;
+    private static final int SCORE_FASHION_VARIANCE = 11;
+    private static final int SCORE_SECONDARY_BASE = 75;
+    private static final int SCORE_SECONDARY_VARIANCE = 15;
+    private static final int SCORE_DEFAULT_BASE = 30;
+    private static final int SCORE_DEFAULT_VARIANCE = 20;
+
     private final GroqApiClient groqApiClient;
     private final ObjectMapper objectMapper;
     private final CampaignRepository campaignRepository;
@@ -109,7 +121,7 @@ public class AiRecommendationService {
         }
 
         recs.sort((a, b) -> Integer.compare(b.getMatchScore(), a.getMatchScore()));
-        return recs.subList(0, Math.min(recs.size(), 3));
+        return recs.subList(0, Math.min(recs.size(), MAX_MOCK_RECOMMENDATIONS));
     }
 
     private static final String[] MOCK_REASONS = {
@@ -123,18 +135,18 @@ public class AiRecommendationService {
     private int[] calculateNicheMatchScore(InfluencerProfile p, String campaignName, String campaignDesc) {
         String niche = p.getNiche() != null ? p.getNiche().toLowerCase() : "";
         if (niche.contains("gaming") && campaignName.contains("gaming")) {
-            return new int[]{90 + (int)(Math.random() * 8), 4};
+            return new int[]{SCORE_GAMING_BASE + (int)(Math.random() * SCORE_GAMING_VARIANCE), 4};
         }
         if (niche.contains("technology") && campaignName.contains("tech")) {
-            return new int[]{85 + (int)(Math.random() * 10), 2};
+            return new int[]{SCORE_TECH_BASE + (int)(Math.random() * SCORE_TECH_VARIANCE), 2};
         }
         if (niche.contains("fashion") && campaignName.contains("apparel")) {
-            return new int[]{88 + (int)(Math.random() * 11), 3};
+            return new int[]{SCORE_FASHION_BASE + (int)(Math.random() * SCORE_FASHION_VARIANCE), 3};
         }
         if (!niche.isEmpty() && campaignDesc.contains(niche)) {
-            return new int[]{75 + (int)(Math.random() * 15), 1};
+            return new int[]{SCORE_SECONDARY_BASE + (int)(Math.random() * SCORE_SECONDARY_VARIANCE), 1};
         }
-        return new int[]{30 + (int)(Math.random() * 20), 0};
+        return new int[]{SCORE_DEFAULT_BASE + (int)(Math.random() * SCORE_DEFAULT_VARIANCE), 0};
     }
 
     private InfluencerRecommendationDTO buildRecommendationDTO(InfluencerProfile p, int score, String reason) {
