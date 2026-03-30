@@ -114,6 +114,44 @@ function ChartCard({
     )
 }
 
+const formatDollar = (value: number) =>
+    value >= 1000 ? `$${(value / 1000).toFixed(1)}k` : `$${value}`
+
+const renderPieLabel = (props: PieLabelRenderProps) => {
+    const percent = props.percent ?? 0
+    return percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+}
+
+function buildCampaignStatusData(campaigns: CampaignResponse[]) {
+    return [
+        { name: 'Draft', value: campaigns.filter((c) => c.status === 'DRAFT').length },
+        { name: 'Active', value: campaigns.filter((c) => c.status === 'ACTIVE').length },
+        { name: 'Completed', value: campaigns.filter((c) => c.status === 'COMPLETED').length },
+        { name: 'Cancelled', value: campaigns.filter((c) => c.status === 'CANCELLED').length },
+    ].filter((d) => d.value > 0)
+}
+
+function buildInvitationData(sentInvitations: InvitationResponse[]) {
+    return [
+        { name: 'Accepted', value: sentInvitations.filter((i) => i.status === 'ACCEPTED' || i.status === 'CONFIRMED').length },
+        { name: 'Rejected', value: sentInvitations.filter((i) => i.status === 'REJECTED').length },
+        { name: 'Pending', value: sentInvitations.filter((i) => i.status === 'PENDING' || i.status === 'NEGOTIATING').length },
+        { name: 'Other', value: sentInvitations.filter((i) => i.status === 'EXPIRED' || i.status === 'WITHDRAWN').length },
+    ].filter((d) => d.value > 0)
+}
+
+function buildPaymentAreaData(payments: PaymentResponse[]) {
+    const statuses = ['PENDING', 'PROCESSING', 'PAID', 'DELAYED']
+    return statuses.map((status) => {
+        const filtered = payments.filter((p) => p.status === status)
+        return {
+            name: status.charAt(0) + status.slice(1).toLowerCase(),
+            count: filtered.length,
+            amount: filtered.reduce((s, p) => s + (p.amount ?? 0), 0),
+        }
+    })
+}
+
 function EmptyChart() {
     return (
         <div style={{ textAlign: 'center', padding: '32px 0', color: '#555', fontSize: 13 }}>
@@ -125,44 +163,11 @@ function EmptyChart() {
 export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments }: Props) {
     const [expanded, setExpanded] = useState<ExpandedChart>(null)
 
-    // --- Campaign Status Data ---
-    const campaignStatusData = [
-        { name: 'Draft', value: campaigns.filter((c) => c.status === 'DRAFT').length },
-        { name: 'Active', value: campaigns.filter((c) => c.status === 'ACTIVE').length },
-        { name: 'Completed', value: campaigns.filter((c) => c.status === 'COMPLETED').length },
-        { name: 'Cancelled', value: campaigns.filter((c) => c.status === 'CANCELLED').length },
-    ].filter((d) => d.value > 0)
-
-    // --- Invitation Rate Data ---
-    const accepted = sentInvitations.filter((i) => i.status === 'ACCEPTED' || i.status === 'CONFIRMED').length
-    const rejected = sentInvitations.filter((i) => i.status === 'REJECTED').length
-    const pending = sentInvitations.filter((i) => i.status === 'PENDING' || i.status === 'NEGOTIATING').length
-    const other = sentInvitations.filter((i) => i.status === 'EXPIRED' || i.status === 'WITHDRAWN').length
-
-    const invitationData = [
-        { name: 'Accepted', value: accepted },
-        { name: 'Rejected', value: rejected },
-        { name: 'Pending', value: pending },
-        { name: 'Other', value: other },
-    ].filter((d) => d.value > 0)
-
-    // --- Payment Area Data ---
-    const paymentAreaData = [
-        { name: 'Pending', count: payments.filter((p) => p.status === 'PENDING').length, amount: payments.filter((p) => p.status === 'PENDING').reduce((s, p) => s + (p.amount ?? 0), 0) },
-        { name: 'Processing', count: payments.filter((p) => p.status === 'PROCESSING').length, amount: payments.filter((p) => p.status === 'PROCESSING').reduce((s, p) => s + (p.amount ?? 0), 0) },
-        { name: 'Paid', count: payments.filter((p) => p.status === 'PAID').length, amount: payments.filter((p) => p.status === 'PAID').reduce((s, p) => s + (p.amount ?? 0), 0) },
-        { name: 'Delayed', count: payments.filter((p) => p.status === 'DELAYED').length, amount: payments.filter((p) => p.status === 'DELAYED').reduce((s, p) => s + (p.amount ?? 0), 0) },
-    ]
-
+    const campaignStatusData = buildCampaignStatusData(campaigns)
+    const invitationData = buildInvitationData(sentInvitations)
+    const paymentAreaData = buildPaymentAreaData(payments)
     const hasPaymentData = paymentAreaData.some((d) => d.count > 0)
     const totalSpend = payments.reduce((s, p) => s + (p.amount ?? 0), 0)
-    const formatDollar = (value: number) =>
-        value >= 1000 ? `$${(value / 1000).toFixed(1)}k` : `$${value}`
-
-    const renderPieLabel = (props: PieLabelRenderProps) => {
-        const percent = props.percent ?? 0
-        return percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
-    }
 
     // --- Chart renderers ---
     const renderStatusChart = (height: number, isModal = false) =>
