@@ -8,7 +8,11 @@ import { getMyInfluencerProfile } from '../services/influencerProfileService'
 
 const { Title, Text } = Typography
 
-
+const PRIMARY_COLOR = '#FFFD82'
+const SECONDARY_COLOR = '#BD72EB'
+const TEXT_COLOR = '#ffffff'
+const PAGE_BG = '#000000'
+const CARD_BG = '#141414'
 
 export const Login = () => {
     const [loading, setLoading] = useState(false)
@@ -16,205 +20,107 @@ export const Login = () => {
     const [form] = Form.useForm()
     const navigate = useNavigate()
 
+    const navigateAfterLogin = async (role: string) => {
+        if (role === 'INFLUENCER') {
+            const profile = await getMyInfluencerProfile()
+            const dest = profile?.complete ? '/influencer/dashboard' : '/influencer/profile/edit'
+            navigate(dest, { replace: true })
+        } else if (role === 'BRAND') {
+            navigate('/brand/dashboard', { replace: true })
+        } else {
+            navigate('/', { replace: true })
+        }
+    }
+
+    const saveUserToStorage = (data: { token: string; id: unknown; email: string; role: string; isVerified: boolean }) => {
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role, isVerified: data.isVerified }))
+    }
+
     const submitLogin = async (values: { email?: string; password?: string; rememberMe?: boolean }) => {
         setLoading(true)
         try {
-            const payload = { email: values.email ?? '', password: values.password ?? '', rememberMe: values.rememberMe ?? false };
-            const data = await loginUser(payload);
+            const payload = { email: values.email ?? '', password: values.password ?? '', rememberMe: values.rememberMe ?? false }
+            const data = await loginUser(payload)
             if (!data?.token) {
-                message.error('Invalid response from server');
-                alert('Invalid response from server');
-                return;
+                message.error('Invalid response from server')
+                alert('Invalid response from server')
+                return
             }
-            console.log('Login success:', data);
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role, isVerified: data.isVerified }));
-            message.success('Login successful!');
-            alert('Login successful!');
-
-            if (data.role === 'INFLUENCER') {
-                const profile = await getMyInfluencerProfile();
-                if (!profile?.complete) {
-                    navigate('/influencer/profile/edit', { replace: true });
-                } else {
-                    navigate('/influencer/dashboard', { replace: true });
-                }
-            } else if (data.role === 'BRAND') {
-                navigate('/brand/dashboard', { replace: true });
-            } else {
-                navigate('/', { replace: true });
-            }
+            saveUserToStorage(data)
+            message.success('Login successful!')
+            alert('Login successful!')
+            await navigateAfterLogin(data.role)
         } catch (error) {
-            console.error('Login error:', error);
-            const msg = error instanceof Error ? error.message : 'Login failed';
-            message.error(msg);
-            alert(msg);
+            const msg = error instanceof Error ? error.message : 'Login failed'
+            message.error(msg)
+            alert(msg)
         } finally {
             setLoading(false)
         }
     }
 
-    const onFinish = (values: { email?: string; password?: string; rememberMe?: boolean }) => {
-        submitLogin(values)
-    }
-
     const googleLogin = useGoogleLogin({
         onSuccess: async (tokenResponse) => {
-            console.log('Google Success:', tokenResponse);
             try {
-                // Send access token to backend to verify and get JWT
-                const data = await googleLoginUser(tokenResponse.access_token, googleRole);
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role, isVerified: data.isVerified }));
-                alert("Google Login Successful! Redirecting...");
-
-                if (data.role === 'INFLUENCER') {
-                    const profile = await getMyInfluencerProfile();
-                    if (!profile?.complete) {
-                        navigate('/influencer/profile/edit', { replace: true });
-                    } else {
-                        navigate('/influencer/dashboard', { replace: true });
-                    }
-                } else if (data.role === 'BRAND') {
-                    navigate('/brand/dashboard', { replace: true });
-                } else {
-                    navigate('/', { replace: true });
-                }
+                const data = await googleLoginUser(tokenResponse.access_token, googleRole)
+                saveUserToStorage(data)
+                alert('Google Login Successful! Redirecting...')
+                await navigateAfterLogin(data.role)
             } catch (err) {
-                console.error("Google Backend Error", err);
-                alert("Google Login Failed on Backend");
+                console.error('Google Backend Error', err)
+                alert('Google Login Failed on Backend')
             }
         },
         onError: () => console.log('Google Login Failed'),
-    });
-
-    // Colors from User Palette (Synced with index.css)
-    const primaryColor = '#FFFD82'; // Neon Yellow-Green
-    const secondaryColor = '#BD72EB'; // Soft Purple
-    const textColor = '#ffffff'; // Black (for inside the white card)
-    const pageBackgroundColor = '#000000'; // Primary BG
-    const cardBackgroundColor = '#141414'; // Pure White
+    })
 
     return (
         <ConfigProvider
             theme={{
                 algorithm: theme.darkAlgorithm,
                 token: {
-                    colorPrimary: primaryColor,
-                    colorText: textColor,
+                    colorPrimary: PRIMARY_COLOR,
+                    colorText: TEXT_COLOR,
                     borderRadius: 8,
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                 },
-                components: {
-                    Button: {},
-                    Input: {
-                        paddingBlock: 10,
-                    }
-                }
+                components: { Input: { paddingBlock: 10 } }
             }}
         >
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: '100vh',
-                backgroundColor: pageBackgroundColor
-            }}>
-                <div style={{
-                    width: '100%',
-                    maxWidth: 400,
-                    padding: 40,
-                    backgroundColor: cardBackgroundColor,
-                    borderRadius: 16,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
-                }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: PAGE_BG }}>
+                <div style={{ width: '100%', maxWidth: 400, padding: 40, backgroundColor: CARD_BG, borderRadius: 16, boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
 
-                    {/* Logo Section */}
                     <div style={{ textAlign: 'center', marginBottom: 30 }}>
                         <div style={{ marginBottom: 20 }}>
-                            <div
-                                style={{
-                                    width: 64,
-                                    height: 64,
-                                    borderRadius: 16,
-                                    background: 'linear-gradient(135deg, #FFFD82, #BD72EB)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    margin: '0 auto',
-                                    fontWeight: 900,
-                                    fontSize: 28,
-                                    color: '#000',
-                                }}
-                            >
+                            <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg, #FFFD82, #BD72EB)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', fontWeight: 900, fontSize: 28, color: '#000' }}>
                                 C
                             </div>
                         </div>
-
-                        <Title level={2} style={{ margin: '0 0 8px', color: textColor }}>Collabry</Title>
+                        <Title level={2} style={{ margin: '0 0 8px', color: TEXT_COLOR }}>Collabry</Title>
                         <Text type="secondary">Log in to your account to continue</Text>
                     </div>
 
-                    {/* Form Section */}
-                    <Form
-                        form={form}
-                        name="login"
-                        initialValues={{ rememberMe: true }}
-                        onFinish={onFinish}
-                        layout="vertical"
-                        size="large"
-                    >
-                        <Form.Item
-                            name="email"
-                            rules={[{ required: true, message: 'Please input your Email!' }]}
-                        >
-                            <Input
-                                prefix={<MailOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                                placeholder="Email address"
-                            />
+                    <Form form={form} name="login" initialValues={{ rememberMe: true }} onFinish={submitLogin} layout="vertical" size="large">
+                        <Form.Item name="email" rules={[{ required: true, message: 'Please input your Email!' }]}>
+                            <Input prefix={<MailOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="Email address" />
                         </Form.Item>
 
-                        <Form.Item
-                            name="password"
-                            rules={[{ required: true, message: 'Please input your Password!' }]}
-                        >
-                            <Input.Password
-                                prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                                placeholder="Password"
-                            />
+                        <Form.Item name="password" rules={[{ required: true, message: 'Please input your Password!' }]}>
+                            <Input.Password prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="Password" />
                         </Form.Item>
 
                         <Form.Item>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Form.Item name="rememberMe" valuePropName="checked" noStyle>
-                                    <Checkbox
-                                        style={{
-                                            color: 'textColor',
-                                        }}
-                                        className="custom-checkbox"
-                                    >
-                                        Remember me
-                                    </Checkbox>
+                                    <Checkbox className="custom-checkbox">Remember me</Checkbox>
                                 </Form.Item>
-                                <Link to="/forgot-password" style={{ color: secondaryColor, fontWeight: 500 }}>
-                                    Forgot password?
-                                </Link>
+                                <Link to="/forgot-password" style={{ color: SECONDARY_COLOR, fontWeight: 500 }}>Forgot password?</Link>
                             </div>
                         </Form.Item>
 
                         <Form.Item>
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                block
-                                loading={loading}
-                                style={{
-                                    height: 50,
-                                    fontWeight: 600,
-                                    fontSize: 16,
-                                    color: "#000000"
-                                }}
-                            >
+                            <Button type="primary" htmlType="submit" block loading={loading} style={{ height: 50, fontWeight: 600, fontSize: 16, color: '#000000' }}>
                                 Log In
                             </Button>
                         </Form.Item>
@@ -223,14 +129,8 @@ export const Login = () => {
                     <Divider style={{ color: 'rgba(0,0,0,0.4)', fontSize: 12 }}>OR</Divider>
 
                     <div style={{ marginBottom: 12 }}>
-                        <Text style={{ color: '#888', fontSize: 12, display: 'block', marginBottom: 8 }}>
-                            Signing up with Google? Select your role:
-                        </Text>
-                        <Radio.Group
-                            value={googleRole}
-                            onChange={e => setGoogleRole(e.target.value)}
-                            style={{ width: '100%', display: 'flex', gap: 8 }}
-                        >
+                        <Text style={{ color: '#888', fontSize: 12, display: 'block', marginBottom: 8 }}>Signing up with Google? Select your role:</Text>
+                        <Radio.Group value={googleRole} onChange={e => setGoogleRole(e.target.value)} style={{ width: '100%', display: 'flex', gap: 8 }}>
                             <Radio.Button value="BRAND" style={{ flex: 1, textAlign: 'center', height: 36, lineHeight: '36px', borderRadius: 8 }}>
                                 <RocketOutlined /> Brand
                             </Radio.Button>
@@ -240,25 +140,13 @@ export const Login = () => {
                         </Radio.Group>
                     </div>
 
-                    <Button
-                        block
-                        size="large"
-                        icon={<GoogleOutlined style={{ color: '#000' }} />}
-                        onClick={() => googleLogin()}
-                        style={{
-                            height: 50,
-                            fontWeight: 500,
-                            color: "#000000",
-                            borderColor: '#eee',
-                            backgroundColor: '#fff'
-                        }}
-                    >
+                    <Button block size="large" icon={<GoogleOutlined style={{ color: '#000' }} />} onClick={() => googleLogin()} style={{ height: 50, fontWeight: 500, color: '#000000', borderColor: '#eee', backgroundColor: '#fff' }}>
                         Continue with Google
                     </Button>
 
                     <div style={{ textAlign: 'center', marginTop: 30 }}>
-                        <Text style={{ color: 'textColor' }}>Don't have an account? </Text>
-                        <Link to="/signup" style={{ color: secondaryColor, fontWeight: 500 }}>Sign up</Link>
+                        <Text style={{ color: TEXT_COLOR }}>Don't have an account? </Text>
+                        <Link to="/signup" style={{ color: SECONDARY_COLOR, fontWeight: 500 }}>Sign up</Link>
                     </div>
                 </div>
             </div>
