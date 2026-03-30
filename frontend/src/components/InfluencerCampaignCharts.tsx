@@ -101,7 +101,7 @@ export function InfluencerCampaignCharts({ invitations }: Props) {
                     <Tooltip
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
-                        formatter={(value: number) => [Number(value ?? 0), 'Invitations']}
+                        formatter={(value: any) => [Number(value ?? 0), 'Invitations']}
                     />
                     <Area type="monotone" dataKey="invitations" name="Invitations" stroke="#7c3aed" strokeWidth={2} fill="url(#trendGrad)" dot={{ fill: '#7c3aed', r: 4, strokeWidth: 0 }} activeDot={{ r: 6, stroke: '#7c3aed', strokeWidth: 2, fill: '#0d0d0d' }} />
                 </AreaChart>

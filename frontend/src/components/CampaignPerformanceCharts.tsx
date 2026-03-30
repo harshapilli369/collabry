@@ -198,7 +198,7 @@ export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments
                     <Tooltip
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
-                        formatter={(value: number, name: string) => [Number(value ?? 0), String(name ?? '')]}
+                        formatter={(value: any, name: any) => [Number(value ?? 0), String(name ?? '')]}
                     />
                     <Legend
                         formatter={(value: string) => (
@@ -242,7 +242,7 @@ export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments
                     <Tooltip
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
-                        formatter={(value: number, name: string) => [Number(value ?? 0), String(name ?? '')]}
+                        formatter={(value: any, name: any) => [Number(value ?? 0), String(name ?? '')]}
                     />
                     <Legend
                         formatter={(value: string) => (
@@ -271,7 +271,7 @@ export function CampaignPerformanceCharts({ campaigns, sentInvitations, payments
                     <Tooltip
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
-                        formatter={(value: number) => [`$${Number(value ?? 0).toLocaleString()}`, 'Spend']}
+                        formatter={(value: any) => [`$${Number(value ?? 0).toLocaleString()}`, 'Spend']}
                     />
                     <Area type="monotone" dataKey="amount" name="Spend" stroke="#FFFD82" strokeWidth={2} fill="url(#brandPayGrad)" dot={{ fill: '#FFFD82', r: 4, strokeWidth: 0 }} activeDot={{ r: 6, stroke: '#FFFD82', strokeWidth: 2, fill: '#0d0d0d' }} />
                 </AreaChart>

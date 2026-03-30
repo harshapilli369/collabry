@@ -182,7 +182,7 @@ export function InfluencerPerformanceCharts({ invitations, payments }: Props) {
                     <Tooltip
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
-                        formatter={(value: number, name: string) => [`${Number(value ?? 0)} (${totalInvitations > 0 ? Math.round((Number(value) / totalInvitations) * 100) : 0}%)`, String(name ?? '')]}
+                        formatter={(value: any, name: any) => [`${Number(value ?? 0)} (${totalInvitations > 0 ? Math.round((Number(value) / totalInvitations) * 100) : 0}%)`, String(name ?? '')]}
                     />
                     <Legend
                         verticalAlign="bottom"
@@ -237,7 +237,7 @@ export function InfluencerPerformanceCharts({ invitations, payments }: Props) {
                     <Tooltip
                         contentStyle={TOOLTIP_STYLE}
                         itemStyle={{ color: '#ccc' }}
-                        formatter={(value: number) => {
+                        formatter={(value: any) => {
                             const num = Number(value ?? 0)
                             return [`$${num.toLocaleString()}`, 'Earnings']
                         }}
