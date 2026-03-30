@@ -17,6 +17,8 @@ public final class InfluencerSearchRanker {
     private static final double MAX_ENGAGEMENT_BONUS = 50;
     private static final double MAX_FOLLOWER_BONUS = 30;
     private static final double MAX_CENTER_BAND_BONUS = 40;
+    private static final double ENGAGEMENT_RATE_MULTIPLIER = 2.0;
+    private static final double FOLLOWER_SCALE_DIVISOR = 5000.0;
 
     private InfluencerSearchRanker() {
     }
@@ -55,16 +57,20 @@ public final class InfluencerSearchRanker {
 
     private static double engagementScore(InfluencerProfile p) {
         if (p.getEngagementRate() == null) return 0;
-        return Math.min(p.getEngagementRate().doubleValue() * 2.0, MAX_ENGAGEMENT_BONUS);
+        return Math.min(p.getEngagementRate().doubleValue() * ENGAGEMENT_RATE_MULTIPLIER, MAX_ENGAGEMENT_BONUS);
     }
 
     private static double followerScore(InfluencerProfile p) {
         if (p.getFollowerCount() == null) return 0;
-        return Math.min(p.getFollowerCount() / 5000.0, MAX_FOLLOWER_BONUS);
+        return Math.min(p.getFollowerCount() / FOLLOWER_SCALE_DIVISOR, MAX_FOLLOWER_BONUS);
+    }
+
+    private static boolean hasFollowerBounds(InfluencerProfile p, Long minFollowers, Long maxFollowers) {
+        return minFollowers != null && maxFollowers != null && p.getFollowerCount() != null;
     }
 
     private static double followerCenterScore(InfluencerProfile p, Long minFollowers, Long maxFollowers) {
-        if (minFollowers == null || maxFollowers == null || p.getFollowerCount() == null) return 0;
+        if (!hasFollowerBounds(p, minFollowers, maxFollowers)) return 0;
         double mid = (minFollowers + maxFollowers) / 2.0;
         double dist = Math.abs(p.getFollowerCount() - mid);
         double span = Math.max(maxFollowers - minFollowers, 1L);
