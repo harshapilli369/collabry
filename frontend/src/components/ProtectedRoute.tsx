@@ -4,6 +4,11 @@ interface ProtectedRouteProps {
     allowedRole?: 'INFLUENCER' | 'BRAND';
 }
 
+const ROLE_DASHBOARDS: Record<string, string> = {
+    INFLUENCER: '/influencer/dashboard',
+    BRAND: '/brand/dashboard',
+};
+
 export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
@@ -14,14 +19,8 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
     }
 
     if (allowedRole && user.role !== allowedRole) {
-        // Redirect to the dashboard corresponding to their actual role
-        if (user.role === 'INFLUENCER') {
-            return <Navigate to="/influencer/dashboard" replace />;
-        } else if (user.role === 'BRAND') {
-            return <Navigate to="/brand/dashboard" replace />;
-        }
-        // Fallback
-        return <Navigate to="/" replace />;
+        const redirect = ROLE_DASHBOARDS[user.role] ?? '/';
+        return <Navigate to={redirect} replace />;
     }
 
     return <Outlet />;
