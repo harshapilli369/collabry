@@ -98,40 +98,53 @@ public class AiRecommendationService {
     private List<InfluencerRecommendationDTO> generateMockRecommendations(Campaign campaign) {
         List<InfluencerProfile> allInfluencers = influencerRepository.findAll();
         List<InfluencerRecommendationDTO> recs = new java.util.ArrayList<>();
-        
-        // Find best matches via pure Java filtering
+
         String campaignName = campaign.getName() != null ? campaign.getName().toLowerCase() : "";
         String campaignDesc = campaign.getDescription() != null ? campaign.getDescription().toLowerCase() : "";
         for (InfluencerProfile p : allInfluencers) {
-            int score = 30 + (int)(Math.random() * 20); // Baseline score
-            String reason = "This influencer has a steady following but their primary focus differs from your campaign.";
-            String niche = p.getNiche() != null ? p.getNiche().toLowerCase() : "";
-
-            if (niche.contains("gaming") && campaignName.contains("gaming")) {
-                score = 90 + (int)(Math.random() * 8);
-                reason = "Perfect alignment. Ranked in the top 5% for Gaming audiences with extremely high engagement expected for this launch.";
-            } else if (niche.contains("technology") && campaignName.contains("tech")) {
-                score = 85 + (int)(Math.random() * 10);
-                reason = "Strong match due to heavy overlap in the Technology sector. Their audience converts highly on gadgets and electronics.";
-            } else if (niche.contains("fashion") && campaignName.contains("apparel")) {
-                score = 88 + (int)(Math.random() * 11);
-                reason = "Excellent aesthetic overlap. Their highly curated styling feeds align natively with your campaign goals.";
-            } else if (!niche.isEmpty() && campaignDesc.contains(niche)) {
-                score = 75 + (int)(Math.random() * 15);
-                reason = "Solid secondary match. The campaign mentions their specialty, making them a great crossover candidate.";
-            }
-
-            InfluencerRecommendationDTO dto = new InfluencerRecommendationDTO();
-            dto.setInfluencerId(p.getUserId());
-            dto.setMatchScore(score);
-            dto.setReason(reason);
-            dto.setName(p.getName());
-            dto.setNiche(p.getNiche());
-            dto.setProfilePictureUrl(p.getProfilePictureUrl());
+            int[] scoreAndReason = calculateNicheMatchScore(p, campaignName, campaignDesc);
+            InfluencerRecommendationDTO dto = buildRecommendationDTO(p, scoreAndReason[0],
+                    MOCK_REASONS[scoreAndReason[1]]);
             recs.add(dto);
         }
-        
+
         recs.sort((a, b) -> Integer.compare(b.getMatchScore(), a.getMatchScore()));
-        return recs.subList(0, Math.min(recs.size(), 3)); // Return top 3 matches
+        return recs.subList(0, Math.min(recs.size(), 3));
+    }
+
+    private static final String[] MOCK_REASONS = {
+        "This influencer has a steady following but their primary focus differs from your campaign.",
+        "Solid secondary match. The campaign mentions their specialty, making them a great crossover candidate.",
+        "Strong match due to heavy overlap in the Technology sector. Their audience converts highly on gadgets and electronics.",
+        "Excellent aesthetic overlap. Their highly curated styling feeds align natively with your campaign goals.",
+        "Perfect alignment. Ranked in the top 5% for Gaming audiences with extremely high engagement expected for this launch."
+    };
+
+    private int[] calculateNicheMatchScore(InfluencerProfile p, String campaignName, String campaignDesc) {
+        String niche = p.getNiche() != null ? p.getNiche().toLowerCase() : "";
+        if (niche.contains("gaming") && campaignName.contains("gaming")) {
+            return new int[]{90 + (int)(Math.random() * 8), 4};
+        }
+        if (niche.contains("technology") && campaignName.contains("tech")) {
+            return new int[]{85 + (int)(Math.random() * 10), 2};
+        }
+        if (niche.contains("fashion") && campaignName.contains("apparel")) {
+            return new int[]{88 + (int)(Math.random() * 11), 3};
+        }
+        if (!niche.isEmpty() && campaignDesc.contains(niche)) {
+            return new int[]{75 + (int)(Math.random() * 15), 1};
+        }
+        return new int[]{30 + (int)(Math.random() * 20), 0};
+    }
+
+    private InfluencerRecommendationDTO buildRecommendationDTO(InfluencerProfile p, int score, String reason) {
+        InfluencerRecommendationDTO dto = new InfluencerRecommendationDTO();
+        dto.setInfluencerId(p.getUserId());
+        dto.setMatchScore(score);
+        dto.setReason(reason);
+        dto.setName(p.getName());
+        dto.setNiche(p.getNiche());
+        dto.setProfilePictureUrl(p.getProfilePictureUrl());
+        return dto;
     }
 }

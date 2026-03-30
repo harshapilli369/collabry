@@ -238,21 +238,22 @@ public class InvitationService {
     }
 
     private InvitationDetailResponse toDetailResponse(CollaborationInvitation inv) {
+        InvitationResponse base = toResponse(inv);
         InvitationDetailResponse r = new InvitationDetailResponse();
-        r.setId(inv.getId());
-        r.setCampaignId(inv.getCampaignId());
-        r.setInfluencerId(inv.getInfluencerId());
-        r.setBrandId(inv.getBrandId());
-        r.setStatus(effectiveStatus(inv));
-        r.setBrandMessage(inv.getBrandMessage());
-        r.setProposedAmount(inv.getProposedAmount());
-        r.setProposedTimeline(inv.getProposedTimeline());
-        r.setProposedDeliverables(inv.getProposedDeliverables());
-        r.setPlatform(inv.getPlatform());
-        r.setExpiresAt(inv.getExpiresAt());
-        r.setCreatedAt(inv.getCreatedAt());
-        r.setUpdatedAt(inv.getUpdatedAt());
-        r.setRespondedAt(inv.getRespondedAt());
+        r.setId(base.getId());
+        r.setCampaignId(base.getCampaignId());
+        r.setInfluencerId(base.getInfluencerId());
+        r.setBrandId(base.getBrandId());
+        r.setStatus(base.getStatus());
+        r.setBrandMessage(base.getBrandMessage());
+        r.setProposedAmount(base.getProposedAmount());
+        r.setProposedTimeline(base.getProposedTimeline());
+        r.setProposedDeliverables(base.getProposedDeliverables());
+        r.setPlatform(base.getPlatform());
+        r.setExpiresAt(base.getExpiresAt());
+        r.setCreatedAt(base.getCreatedAt());
+        r.setUpdatedAt(base.getUpdatedAt());
+        r.setRespondedAt(base.getRespondedAt());
         return r;
     }
 }
