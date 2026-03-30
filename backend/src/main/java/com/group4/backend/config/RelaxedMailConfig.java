@@ -19,6 +19,8 @@ import java.util.Properties;
 @ConditionalOnProperty(name = "app.mail.ssl.relaxed", havingValue = "true")
 public class RelaxedMailConfig {
 
+    private static final int SMTP_SSL_PORT = 465;
+
     @Value("${spring.mail.host}")
     private String host;
 
@@ -42,7 +44,7 @@ public class RelaxedMailConfig {
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
-        if (port == 465) {
+        if (port == SMTP_SSL_PORT) {
             props.put("mail.smtp.ssl.enable", "true");
         } else {
             props.put("mail.smtp.starttls.enable", "true");
