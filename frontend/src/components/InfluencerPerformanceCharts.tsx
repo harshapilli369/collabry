@@ -62,6 +62,31 @@ const MODAL_STYLES = {
     body: { padding: '24px 24px 16px' },
 }
 
+const formatDollar = (value: number) =>
+    value >= 1000 ? `$${(value / 1000).toFixed(1)}k` : `$${value}`
+
+function buildInfluencerInvitationData(invitations: InvitationResponse[]) {
+    return [
+        { name: 'Pending', value: invitations.filter((i) => i.status === 'PENDING').length },
+        { name: 'Negotiating', value: invitations.filter((i) => i.status === 'NEGOTIATING').length },
+        { name: 'Accepted', value: invitations.filter((i) => i.status === 'ACCEPTED' || i.status === 'CONFIRMED').length },
+        { name: 'Rejected', value: invitations.filter((i) => i.status === 'REJECTED').length },
+        { name: 'Other', value: invitations.filter((i) => i.status === 'EXPIRED' || i.status === 'WITHDRAWN').length },
+    ].filter((d) => d.value > 0)
+}
+
+function buildInfluencerPaymentData(payments: PaymentResponse[]) {
+    const statuses = ['PENDING', 'PROCESSING', 'PAID', 'DELAYED']
+    return statuses.map((status) => {
+        const filtered = payments.filter((p) => p.status === status)
+        return {
+            name: status.charAt(0) + status.slice(1).toLowerCase(),
+            count: filtered.length,
+            amount: filtered.reduce((s, p) => s + (p.amount ?? 0), 0),
+        }
+    })
+}
+
 function ChartCard({
     title,
     subtitle,
@@ -118,36 +143,11 @@ function EmptyChart() {
 export function InfluencerPerformanceCharts({ invitations, payments }: Props) {
     const [expanded, setExpanded] = useState<ExpandedChart>(null)
 
-    // --- Invitation Status Data ---
-    const accepted = invitations.filter((i) => i.status === 'ACCEPTED' || i.status === 'CONFIRMED').length
-    const pending = invitations.filter((i) => i.status === 'PENDING').length
-    const negotiating = invitations.filter((i) => i.status === 'NEGOTIATING').length
-    const rejected = invitations.filter((i) => i.status === 'REJECTED').length
-    const other = invitations.filter((i) => i.status === 'EXPIRED' || i.status === 'WITHDRAWN').length
-
-    const invitationData = [
-        { name: 'Pending', value: pending },
-        { name: 'Negotiating', value: negotiating },
-        { name: 'Accepted', value: accepted },
-        { name: 'Rejected', value: rejected },
-        { name: 'Other', value: other },
-    ].filter((d) => d.value > 0)
-
+    const invitationData = buildInfluencerInvitationData(invitations)
+    const paymentAreaData = buildInfluencerPaymentData(payments)
     const totalInvitations = invitations.length
-
-    // --- Payment Data for Area Chart ---
-    const paymentAreaData = [
-        { name: 'Pending', count: payments.filter((p) => p.status === 'PENDING').length, amount: payments.filter((p) => p.status === 'PENDING').reduce((s, p) => s + (p.amount ?? 0), 0) },
-        { name: 'Processing', count: payments.filter((p) => p.status === 'PROCESSING').length, amount: payments.filter((p) => p.status === 'PROCESSING').reduce((s, p) => s + (p.amount ?? 0), 0) },
-        { name: 'Paid', count: payments.filter((p) => p.status === 'PAID').length, amount: payments.filter((p) => p.status === 'PAID').reduce((s, p) => s + (p.amount ?? 0), 0) },
-        { name: 'Delayed', count: payments.filter((p) => p.status === 'DELAYED').length, amount: payments.filter((p) => p.status === 'DELAYED').reduce((s, p) => s + (p.amount ?? 0), 0) },
-    ]
-
     const hasPaymentData = paymentAreaData.some((d) => d.count > 0)
     const totalEarnings = payments.reduce((s, p) => s + (p.amount ?? 0), 0)
-
-    const formatDollar = (value: number) =>
-        value >= 1000 ? `$${(value / 1000).toFixed(1)}k` : `$${value}`
 
     // --- Chart renderers ---
     const renderInvitationChart = (height: number, isModal = false) =>
