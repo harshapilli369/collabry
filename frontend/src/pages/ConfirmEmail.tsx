@@ -8,31 +8,36 @@ const { Title, Text } = Typography
 const PRIMARY = '#FFFD82'
 const PURPLE = '#BD72EB'
 
+const ROLE_DESTINATIONS: Record<string, string> = {
+    INFLUENCER: '/influencer/profile/edit',
+    BRAND: '/brand/dashboard',
+}
+
+const handleConfirmSuccess = (
+    data: { token: string; email: string; role: string; id: number },
+    setStatus: (s: 'success') => void,
+    navigate: (path: string, opts: { replace: boolean }) => void
+) => {
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role }))
+    setStatus('success')
+    setTimeout(() => {
+        navigate(ROLE_DESTINATIONS[data.role] ?? '/', { replace: true })
+    }, 2000)
+}
+
 export const ConfirmEmail = () => {
     const [searchParams] = useSearchParams()
     const navigate = useNavigate()
     const token = searchParams.get('token')
-    const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
-    const [errorMessage, setErrorMessage] = useState<string>('')
+    const [status, setStatus] = useState<'loading' | 'success' | 'error'>(token ? 'loading' : 'error')
+    const [errorMessage, setErrorMessage] = useState<string>(token ? '' : 'Missing confirmation link.')
 
     useEffect(() => {
-        if (!token) {
-            setStatus('error')
-            setErrorMessage('Missing confirmation link.')
-            return
-        }
+        if (!token) return
         confirmEmail(token)
             .then((data: { token: string; email: string; role: string; id: number }) => {
-                localStorage.setItem('token', data.token)
-                localStorage.setItem('user', JSON.stringify({ id: data.id, email: data.email, role: data.role }))
-                setStatus('success')
-                setTimeout(() => {
-                    if (data.role === 'INFLUENCER') {
-                        navigate('/influencer/profile/edit', { replace: true })
-                    } else {
-                        navigate('/brand/dashboard', { replace: true })
-                    }
-                }, 2000)
+                handleConfirmSuccess(data, setStatus, navigate)
             })
             .catch((err) => {
                 setStatus('error')
