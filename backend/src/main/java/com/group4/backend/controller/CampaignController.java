@@ -98,14 +98,19 @@ public class CampaignController extends BaseController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         String name = request.getOrDefault("name", "").trim();
-        String goal = request.getOrDefault("goal", "").trim();
-        String budget = request.getOrDefault("budget", "").trim();
-        if (name.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Campaign name is required"));
+        if (name.isEmpty()) throw new IllegalArgumentException("Campaign name is required");
+        if (!groqApiClient.isConfigured()) throw new IllegalArgumentException("AI service is not configured");
+        try {
+            String goal = request.getOrDefault("goal", "").trim();
+            String budget = request.getOrDefault("budget", "").trim();
+            return ResponseEntity.ok(Map.of("description", callDescriptionAi(name, goal, budget)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to generate description: " + e.getMessage()));
         }
-        if (!groqApiClient.isConfigured()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "AI service is not configured"));
-        }
+    }
+
+    private String callDescriptionAi(String name, String goal, String budget) {
         String prompt = "You are a marketing copywriter for brand-influencer campaigns. " +
                 "Generate a professional, compelling campaign description based on the following details. " +
                 "The description should be 3-5 sentences, mention the campaign goal and target audience, " +
@@ -114,16 +119,11 @@ public class CampaignController extends BaseController {
                 "Campaign name: " + name + "\n" +
                 (goal.isEmpty() ? "" : "Campaign goal: " + goal + "\n") +
                 (budget.isEmpty() ? "" : "Budget range: " + budget + "\n");
-        try {
-            String description = groqApiClient.getTextCompletion(prompt).trim();
-            if (description.startsWith("\"") && description.endsWith("\"")) {
-                description = description.substring(1, description.length() - 1);
-            }
-            return ResponseEntity.ok(Map.of("description", description));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Failed to generate description: " + e.getMessage()));
+        String description = groqApiClient.getTextCompletion(prompt).trim();
+        if (description.startsWith("\"") && description.endsWith("\"")) {
+            description = description.substring(1, description.length() - 1);
         }
+        return description;
     }
 
     private boolean isAllowedToCreateCampaigns(User user) {
