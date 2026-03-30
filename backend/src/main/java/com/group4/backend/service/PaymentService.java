@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 @Service
 public class PaymentService {
 
+    private static final int INVOICE_NUMBER_LENGTH = 8;
+
     private final PaymentRepository paymentRepository;
     private final CampaignRepository campaignRepository;
 
@@ -43,7 +45,7 @@ public class PaymentService {
         payment.setAmount(request.getAmount());
         payment.setStatus(PaymentStatus.PENDING);
         payment.setDueDate(request.getDueDate());
-        payment.setInvoiceNumber("INV-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        payment.setInvoiceNumber("INV-" + UUID.randomUUID().toString().substring(0, INVOICE_NUMBER_LENGTH).toUpperCase());
         payment.setNotes(emptyToNull(request.getNotes()));
 
         payment = paymentRepository.save(payment);
