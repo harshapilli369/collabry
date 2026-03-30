@@ -18,6 +18,20 @@ const PASSWORD_RULES = [
     },
 ]
 
+const getSignupErrorMessage = (err: unknown) => {
+    const msg = err instanceof Error ? err.message : 'Registration failed'
+    return /SMTP|send confirmation email/i.test(msg)
+        ? 'Could not send confirmation email. Check backend SMTP config.'
+        : msg
+}
+
+const makeConfirmPasswordRule = (getFieldValue: (name: string) => string) => ({
+    validator(_: unknown, value: string) {
+        if (!value || getFieldValue('password') === value) return Promise.resolve()
+        return Promise.reject(new Error('Passwords do not match'))
+    },
+})
+
 export const Signup = () => {
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
@@ -25,19 +39,11 @@ export const Signup = () => {
     const onFinish = async (values: { email: string; password: string; role: 'BRAND' | 'INFLUENCER' }) => {
         setLoading(true)
         try {
-            const data = await registerUser({
-                email: values.email,
-                password: values.password,
-                role: values.role,
-            })
+            const data = await registerUser({ email: values.email, password: values.password, role: values.role })
             message.success(data.message || 'Account created! Check your email to confirm.')
             navigate('/login')
         } catch (err) {
-            const msg = err instanceof Error ? err.message : 'Registration failed'
-            const isEmailError = /SMTP|send confirmation email/i.test(msg)
-            message.error(isEmailError
-                ? "Could not send confirmation email. Check backend SMTP config."
-                : msg)
+            message.error(getSignupErrorMessage(err))
         } finally {
             setLoading(false)
         }
@@ -135,14 +141,7 @@ export const Signup = () => {
                             dependencies={['password']}
                             rules={[
                                 { required: true, message: 'Please confirm your password!' },
-                                ({ getFieldValue }) => ({
-                                    validator(_, value) {
-                                        if (!value || getFieldValue('password') === value) {
-                                            return Promise.resolve()
-                                        }
-                                        return Promise.reject(new Error('Passwords do not match'))
-                                    },
-                                }),
+                                ({ getFieldValue }) => makeConfirmPasswordRule(getFieldValue),
                             ]}
                         >
                             <Input.Password prefix={<LockOutlined style={{ color: '#555' }} />} placeholder="Confirm password" />
