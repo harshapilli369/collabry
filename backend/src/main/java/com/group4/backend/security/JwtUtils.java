@@ -13,12 +13,19 @@ public class JwtUtils {
     // In production, move this to application.properties
     private static final String SECRET = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
 
+    private static final long MILLIS_PER_SECOND = 1000L;
+    private static final long SECONDS_PER_MINUTE = 60L;
+    private static final long MINUTES_PER_HOUR = 60L;
+    private static final long HOURS_PER_DAY = 24L;
+    private static final long TOKEN_EXPIRY_STANDARD_MS = MILLIS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR * HOURS_PER_DAY;
+    private static final long TOKEN_EXPIRY_REMEMBER_ME_MS = TOKEN_EXPIRY_STANDARD_MS * 7;
+
     private Key getSignInKey() {
         return Keys.hmacShaKeyFor(io.jsonwebtoken.io.Decoders.BASE64.decode(SECRET));
     }
 
     public String generateToken(String email, String role, boolean rememberMe) {
-        long expirationTime = rememberMe ? 1000L * 60 * 60 * 24 * 7 : 1000L * 60 * 60 * 24; // 7 days vs 1 day
+        long expirationTime = rememberMe ? TOKEN_EXPIRY_REMEMBER_ME_MS : TOKEN_EXPIRY_STANDARD_MS;
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
