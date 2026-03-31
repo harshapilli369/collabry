@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -91,13 +92,15 @@ class InfluencerProfileServiceTest {
 
         List<InfluencerProfileResponse> result = influencerProfileService.search(null, null, null, null, null, null);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getName()).isEqualTo("Jane");
-        assertThat(result.get(0).getNiche()).isEqualTo("Fashion");
-        assertThat(result.get(0).getLocation()).isEqualTo("New York");
-        assertThat(result.get(0).getFollowerCount()).isEqualTo(50000L);
-        assertThat(result.get(0).getEngagementRate()).isEqualByComparingTo("3.5");
-        assertThat(result.get(0).isComplete()).isTrue();
+        assertAll(
+                () -> assertThat(result).hasSize(1),
+                () -> assertThat(result.get(0).getName()).isEqualTo("Jane"),
+                () -> assertThat(result.get(0).getNiche()).isEqualTo("Fashion"),
+                () -> assertThat(result.get(0).getLocation()).isEqualTo("New York"),
+                () -> assertThat(result.get(0).getFollowerCount()).isEqualTo(50000L),
+                () -> assertThat(result.get(0).getEngagementRate()).isEqualByComparingTo("3.5"),
+                () -> assertThat(result.get(0).isComplete()).isTrue()
+        );
     }
 
     @Test
@@ -182,10 +185,12 @@ class InfluencerProfileServiceTest {
 
         Optional<InfluencerProfileResponse> opt = influencerProfileService.getByUserId(20L);
 
-        assertThat(opt).isPresent();
-        assertThat(opt.get().getUserId()).isEqualTo(20L);
-        assertThat(opt.get().getName()).isEqualTo("Jane");
-        assertThat(opt.get().getFollowerCount()).isEqualTo(50000L);
+        assertAll(
+                () -> assertThat(opt).isPresent(),
+                () -> assertThat(opt.get().getUserId()).isEqualTo(20L),
+                () -> assertThat(opt.get().getName()).isEqualTo("Jane"),
+                () -> assertThat(opt.get().getFollowerCount()).isEqualTo(50000L)
+        );
     }
 
     @Test
@@ -212,12 +217,14 @@ class InfluencerProfileServiceTest {
 
         Optional<InfluencerProfileResponse> result = influencerProfileService.getByUserId(20L);
 
-        assertThat(result).isPresent();
-        assertThat(result.get().getAverageRating()).isEqualTo(4.5);
-        assertThat(result.get().getTotalRatings()).isEqualTo(2);
-        assertThat(result.get().getRecentReviews()).hasSize(2);
-        assertThat(result.get().getRecentReviews().get(0).getRating()).isEqualTo(5);
-        assertThat(result.get().getRecentReviews().get(0).getReview()).isEqualTo("Great!");
+        assertAll(
+                () -> assertThat(result).isPresent(),
+                () -> assertThat(result.get().getAverageRating()).isEqualTo(4.5),
+                () -> assertThat(result.get().getTotalRatings()).isEqualTo(2),
+                () -> assertThat(result.get().getRecentReviews()).hasSize(2),
+                () -> assertThat(result.get().getRecentReviews().get(0).getRating()).isEqualTo(5),
+                () -> assertThat(result.get().getRecentReviews().get(0).getReview()).isEqualTo("Great!")
+        );
     }
 
     @Test
@@ -298,8 +305,10 @@ class InfluencerProfileServiceTest {
 
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
-        assertThat(response).isNotNull();
-        assertThat(response.isComplete()).isFalse();
+        assertAll(
+                () -> assertThat(response).isNotNull(),
+                () -> assertThat(response.isComplete()).isFalse()
+        );
         verify(influencerProfileRepository).save(any(InfluencerProfile.class));
     }
 
@@ -354,10 +363,12 @@ class InfluencerProfileServiceTest {
 
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
-        assertThat(response).isNotNull();
-        assertThat(response.isComplete()).isTrue();
-        assertThat(response.getInstagramHandle()).isEqualTo("jane_doe");
-        assertThat(response.getRate()).isEqualByComparingTo(BigDecimal.valueOf(500));
+        assertAll(
+                () -> assertThat(response).isNotNull(),
+                () -> assertThat(response.isComplete()).isTrue(),
+                () -> assertThat(response.getInstagramHandle()).isEqualTo("jane_doe"),
+                () -> assertThat(response.getRate()).isEqualByComparingTo(BigDecimal.valueOf(500))
+        );
         verify(influencerProfileRepository).save(any(InfluencerProfile.class));
     }
 
@@ -405,9 +416,11 @@ class InfluencerProfileServiceTest {
 
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
-        assertThat(response).isNotNull();
-        assertThat(response.isComplete()).isTrue();
-        assertThat(response.getRate()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertAll(
+                () -> assertThat(response).isNotNull(),
+                () -> assertThat(response.isComplete()).isTrue(),
+                () -> assertThat(response.getRate()).isEqualByComparingTo(BigDecimal.ZERO)
+        );
     }
 
     private static InfluencerProfileRequest completeRequest() {
