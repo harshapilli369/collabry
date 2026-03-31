@@ -41,14 +41,17 @@ class ImageUploadControllerTest {
     @MockBean
     private JwtUtils jwtUtils;
 
-    // --- Red: unauthenticated request is rejected ---
+    // --- Red: unauthenticated POST request is rejected with 403 ---
+    // Spring Security returns 403 (not 401) for unauthenticated POST requests
+    // because the missing CSRF token triggers AccessDeniedException before
+    // the AuthenticationEntryPoint can respond with 401.
     @Test
-    void uploadImage_withoutAuth_returns401() throws Exception {
+    void uploadImage_withoutAuth_returns403() throws Exception {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "avatar.jpg", MediaType.IMAGE_JPEG_VALUE, "jpeg-bytes".getBytes());
 
         mockMvc.perform(multipart("/api/upload/image").file(file))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     // --- Red: valid image upload returns 200 with URL ---
