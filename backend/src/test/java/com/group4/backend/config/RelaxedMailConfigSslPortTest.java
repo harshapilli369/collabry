@@ -12,6 +12,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest(classes = SliceTestApplication.class)
 @Import(RelaxedMailConfig.class)
@@ -30,11 +31,13 @@ class RelaxedMailConfigSslPortTest {
     @Test
     void javaMailSenderUsesSslWhenPortIs465() {
         JavaMailSenderImpl impl = (JavaMailSenderImpl) javaMailSender;
-        assertThat(impl.getHost()).isEqualTo("smtp.example.com");
-        assertThat(impl.getPort()).isEqualTo(465);
         Properties props = impl.getJavaMailProperties();
-        assertThat(props.getProperty("mail.smtp.ssl.enable")).isEqualTo("true");
-        assertThat(props.getProperty("mail.smtp.starttls.enable")).isNull();
-        assertThat(props.get("mail.smtp.ssl.socketFactory")).isNotNull();
+        assertAll(
+                () -> assertThat(impl.getHost()).isEqualTo("smtp.example.com"),
+                () -> assertThat(impl.getPort()).isEqualTo(465),
+                () -> assertThat(props.getProperty("mail.smtp.ssl.enable")).isEqualTo("true"),
+                () -> assertThat(props.getProperty("mail.smtp.starttls.enable")).isNull(),
+                () -> assertThat(props.get("mail.smtp.ssl.socketFactory")).isNotNull()
+        );
     }
 }
