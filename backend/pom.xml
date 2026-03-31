@@ -96,6 +96,13 @@
 			<version>2.2.0</version>
 		</dependency>
 
+		<!-- Cloudinary image hosting -->
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http45</artifactId>
+			<version>1.39.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
