@@ -11,6 +11,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -33,7 +34,7 @@ class SmtpEmailServiceTest {
 
     @Test
     void logActive_shouldLogWithoutThrowing() {
-        smtpEmailService.logActive();
+        assertThatCode(() -> smtpEmailService.logActive()).doesNotThrowAnyException();
     }
 
     @Test
