@@ -19,6 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -55,11 +56,13 @@ class SecurityConfigTest {
         request.setRequestURI("/api/test");
 
         CorsConfiguration cors = source.getCorsConfiguration(request);
-        assertThat(cors).isNotNull();
-        assertThat(cors.getAllowedOrigins()).contains("http://localhost:5173", "http://localhost:8073");
-        assertThat(cors.getAllowedMethods()).contains("GET", "POST", "PUT", "DELETE", "OPTIONS");
-        assertThat(cors.getAllowedHeaders()).contains("Authorization", "Content-Type");
-        assertThat(cors.getAllowCredentials()).isTrue();
+        assertAll(
+                () -> assertThat(cors).isNotNull(),
+                () -> assertThat(cors.getAllowedOrigins()).contains("http://localhost:5173", "http://localhost:8073"),
+                () -> assertThat(cors.getAllowedMethods()).contains("GET", "POST", "PUT", "DELETE", "OPTIONS"),
+                () -> assertThat(cors.getAllowedHeaders()).contains("Authorization", "Content-Type"),
+                () -> assertThat(cors.getAllowCredentials()).isTrue()
+        );
     }
 
     @Test
