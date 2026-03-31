@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -57,7 +58,9 @@ class DataInitializerTest {
                 .run();
 
         verify(userRepository, times(3)).save(any(User.class));
-        verify(influencerProfileRepository).save(any(InfluencerProfile.class));
+        ArgumentCaptor<InfluencerProfile> profileCap = ArgumentCaptor.forClass(InfluencerProfile.class);
+        verify(influencerProfileRepository).save(profileCap.capture());
+        assertThat(profileCap.getValue().getUserId()).isEqualTo(9L);
     }
 
     @Test
@@ -76,7 +79,9 @@ class DataInitializerTest {
                 .run();
 
         verify(userRepository, never()).save(any(User.class));
-        verify(influencerProfileRepository).save(any(InfluencerProfile.class));
+        ArgumentCaptor<InfluencerProfile> profileCap = ArgumentCaptor.forClass(InfluencerProfile.class);
+        verify(influencerProfileRepository).save(profileCap.capture());
+        assertThat(profileCap.getValue().getUserId()).isEqualTo(42L);
     }
 
     @Test
@@ -123,8 +128,10 @@ class DataInitializerTest {
         ArgumentCaptor<InfluencerProfile> cap = ArgumentCaptor.forClass(InfluencerProfile.class);
         verify(influencerProfileRepository).save(cap.capture());
         InfluencerProfile saved = cap.getValue();
-        assertThat(saved.getName()).isEqualTo("Keep Name");
-        assertThat(saved.getAge()).isEqualTo(30);
-        assertThat(saved.isComplete()).isTrue();
+        assertAll(
+                () -> assertThat(saved.getName()).isEqualTo("Keep Name"),
+                () -> assertThat(saved.getAge()).isEqualTo(30),
+                () -> assertThat(saved.isComplete()).isTrue()
+        );
     }
 }
