@@ -54,9 +54,8 @@ class InfluencerProfileServiceTest {
 
     @BeforeEach
     void setUp() {
-        lenient().when(ratingService.getAverageRating(anyLong())).thenReturn(0.0);
-        lenient().when(ratingService.getRatingsForInfluencer(anyLong())).thenReturn(List.of());
-        lenient().when(ratingService.getRecentReviews(anyLong(), anyInt())).thenReturn(List.of());
+        lenient().when(ratingService.getRatingSummary(anyLong(), anyInt()))
+                .thenReturn(new RatingService.RatingSummary(0.0, 0, List.of()));
 
         influencerUser = new User("influencer@test.com", "pass", Role.INFLUENCER);
         influencerUser.setId(20L);
@@ -201,7 +200,6 @@ class InfluencerProfileServiceTest {
     @Test
     void getByUserId_whenProfileExists_includesRatingDataOnProfile() {
         when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(existingProfile));
-        when(ratingService.getAverageRating(20L)).thenReturn(4.5);
         RatingResponse r1 = new RatingResponse();
         r1.setRating(5);
         r1.setReview("Great!");
@@ -209,8 +207,8 @@ class InfluencerProfileServiceTest {
         r2.setRating(4);
         r2.setReview("Good collaboration");
         List<RatingResponse> reviews = List.of(r1, r2);
-        when(ratingService.getRatingsForInfluencer(20L)).thenReturn(reviews);
-        when(ratingService.getRecentReviews(20L, 5)).thenReturn(reviews);
+        when(ratingService.getRatingSummary(20L, 5))
+                .thenReturn(new RatingService.RatingSummary(4.5, 2, reviews));
 
         Optional<InfluencerProfileResponse> result = influencerProfileService.getByUserId(20L);
 

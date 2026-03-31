@@ -199,9 +199,10 @@ public class InfluencerProfileService {
         response.setCreatedAt(profile.getCreatedAt());
         response.setUpdatedAt(profile.getUpdatedAt());
         long influencerUserId = profile.getUserId();
-        response.setAverageRating(ratingService.getAverageRating(influencerUserId));
-        response.setTotalRatings(ratingService.getRatingsForInfluencer(influencerUserId).size());
-        response.setRecentReviews(ratingService.getRecentReviews(influencerUserId, RECENT_REVIEWS_LIMIT));
+        RatingService.RatingSummary ratingSummary = ratingService.getRatingSummary(influencerUserId, RECENT_REVIEWS_LIMIT);
+        response.setAverageRating(ratingSummary.averageRating());
+        response.setTotalRatings(ratingSummary.totalRatings());
+        response.setRecentReviews(ratingSummary.recentReviews());
         return response;
     }
 }
