@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -70,12 +71,14 @@ class CampaignServiceTest {
 
         CampaignResponse response = campaignService.create(10L, baseRequest);
 
-        assertThat(response.getId()).isEqualTo(101L);
-        assertThat(response.getUserId()).isEqualTo(10L);
-        assertThat(response.getName()).isEqualTo("Summer Promotion");
-        assertThat(response.getDescription()).isEqualTo("seasonal campaign");
-        assertThat(response.getPreferredContentTypes()).isEqualTo("REELS,STORIES");
-        assertThat(response.getStatus()).isEqualTo(CampaignStatus.DRAFT);
+        assertAll(
+                () -> assertThat(response.getId()).isEqualTo(101L),
+                () -> assertThat(response.getUserId()).isEqualTo(10L),
+                () -> assertThat(response.getName()).isEqualTo("Summer Promotion"),
+                () -> assertThat(response.getDescription()).isEqualTo("seasonal campaign"),
+                () -> assertThat(response.getPreferredContentTypes()).isEqualTo("REELS,STORIES"),
+                () -> assertThat(response.getStatus()).isEqualTo(CampaignStatus.DRAFT)
+        );
     }
 
     @Test
@@ -135,10 +138,12 @@ class CampaignServiceTest {
 
         List<CampaignResponse> responses = campaignService.findByUserId(10L);
 
-        assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).getId()).isEqualTo(300L);
-        assertThat(responses.get(0).getName()).isEqualTo("Campaign A");
-        assertThat(responses.get(0).getBudgetRange()).isEqualTo(BudgetRange.FIVE_K_10K);
+        assertAll(
+                () -> assertThat(responses).hasSize(1),
+                () -> assertThat(responses.get(0).getId()).isEqualTo(300L),
+                () -> assertThat(responses.get(0).getName()).isEqualTo("Campaign A"),
+                () -> assertThat(responses.get(0).getBudgetRange()).isEqualTo(BudgetRange.FIVE_K_10K)
+        );
     }
 
     @Test
@@ -148,9 +153,11 @@ class CampaignServiceTest {
 
         Optional<CampaignResponse> response = campaignService.findById(301L);
 
-        assertThat(response).isPresent();
-        assertThat(response.get().getId()).isEqualTo(301L);
-        assertThat(response.get().getStatus()).isEqualTo(CampaignStatus.DRAFT);
+        assertAll(
+                () -> assertThat(response).isPresent(),
+                () -> assertThat(response.get().getId()).isEqualTo(301L),
+                () -> assertThat(response.get().getStatus()).isEqualTo(CampaignStatus.DRAFT)
+        );
     }
 
     @Test
