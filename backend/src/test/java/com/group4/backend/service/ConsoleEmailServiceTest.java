@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 class ConsoleEmailServiceTest {
 
@@ -31,7 +32,7 @@ class ConsoleEmailServiceTest {
 
     @Test
     void logActive_shouldRunWithoutThrowing() {
-        consoleEmailService.logActive();
+        assertThatCode(() -> consoleEmailService.logActive()).doesNotThrowAnyException();
     }
 
     @Test
