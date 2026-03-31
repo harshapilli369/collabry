@@ -130,8 +130,7 @@ export async function updateCollaborationAvailability(openToCollaborations: bool
     return response.json();
 }
 
-/** Search influencers by niche, location, followers, engagement. Brands only. */
-export async function searchInfluencers(params: InfluencerSearchParams): Promise<InfluencerProfileResponse[]> {
+function buildSearchParams(params: InfluencerSearchParams): URLSearchParams {
     const sp = new URLSearchParams();
     if (params.niche != null && params.niche.trim() !== '') sp.set('niche', params.niche.trim());
     if (params.location != null && params.location.trim() !== '') sp.set('location', params.location.trim());
@@ -139,7 +138,12 @@ export async function searchInfluencers(params: InfluencerSearchParams): Promise
     if (params.maxFollowers != null) sp.set('maxFollowers', String(params.maxFollowers));
     if (params.minEngagementRate != null) sp.set('minEngagementRate', String(params.minEngagementRate));
     if (params.availableOnly === true) sp.set('availableOnly', 'true');
-    const qs = sp.toString();
+    return sp;
+}
+
+/** Search influencers by niche, location, followers, engagement. Brands only. */
+export async function searchInfluencers(params: InfluencerSearchParams): Promise<InfluencerProfileResponse[]> {
+    const qs = buildSearchParams(params).toString();
     const url = `${INFLUENCERS_URL}/search${qs ? `?${qs}` : ''}`;
     const response = await fetch(url, { method: 'GET', headers: getAuthHeaders() });
     if (!response.ok) {

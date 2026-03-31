@@ -8,6 +8,13 @@ const { Title, Text } = Typography
 const PRIMARY = '#FFFD82'
 const PURPLE = '#BD72EB'
 
+const makeConfirmPasswordRule = (getFieldValue: (name: string) => string) => ({
+    validator(_: unknown, value: string) {
+        if (!value || getFieldValue('password') === value) return Promise.resolve()
+        return Promise.reject(new Error('Passwords do not match!'))
+    },
+})
+
 export const ResetPassword = () => {
     const [loading, setLoading] = useState(false)
     const queryParameters = new URLSearchParams(window.location.search)
@@ -78,12 +85,7 @@ export const ResetPassword = () => {
                                     hasFeedback
                                     rules={[
                                         { required: true, message: 'Please confirm your password!' },
-                                        ({ getFieldValue }) => ({
-                                            validator(_, value) {
-                                                if (!value || getFieldValue('password') === value) return Promise.resolve()
-                                                return Promise.reject(new Error('Passwords do not match!'))
-                                            },
-                                        }),
+                                        ({ getFieldValue }) => makeConfirmPasswordRule(getFieldValue),
                                     ]}
                                 >
                                     <Input.Password prefix={<LockOutlined style={{ color: '#555' }} />} placeholder="Confirm Password" />

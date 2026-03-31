@@ -64,11 +64,12 @@ public class BrandProfileService {
         if (website == null) return null;
         String s = website.trim();
         if (s.isEmpty()) return s;
-        String lower = s.toLowerCase();
-        if (lower.startsWith("http://") || lower.startsWith("https://") || lower.startsWith("ftp://")) {
-            return s;
-        }
+        if (hasKnownScheme(s.toLowerCase())) return s;
         return "https://" + s;
+    }
+
+    private static boolean hasKnownScheme(String lower) {
+        return lower.startsWith("http://") || lower.startsWith("https://") || lower.startsWith("ftp://");
     }
 
     private static String emptyToNull(String value) {

@@ -16,6 +16,11 @@ import java.util.Map;
 @Component
 public class GroqApiClient {
 
+    /** Low temperature for structured JSON responses (deterministic). */
+    private static final double TEMPERATURE_JSON = 0.1;
+    /** Higher temperature for creative text completions. */
+    private static final double TEMPERATURE_TEXT = 0.7;
+
     @Value("${spring.ai.groq.api-key:dummy}")
     private String apiKey;
 
@@ -55,7 +60,7 @@ public class GroqApiClient {
         requestBody.put("model", "llama-3.3-70b-versatile");
         requestBody.put("messages", List.of(message));
         requestBody.put("response_format", Map.of("type", "json_object"));
-        requestBody.put("temperature", 0.1);
+        requestBody.put("temperature", TEMPERATURE_JSON);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
@@ -83,7 +88,7 @@ public class GroqApiClient {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", "llama-3.3-70b-versatile");
         requestBody.put("messages", List.of(message));
-        requestBody.put("temperature", 0.7);
+        requestBody.put("temperature", TEMPERATURE_TEXT);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 

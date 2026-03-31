@@ -18,6 +18,9 @@ public class InvitationService {
     private static final List<InvitationStatus> COLLABORATION_HISTORY_STATUSES =
             List.of(InvitationStatus.ACCEPTED, InvitationStatus.CONFIRMED);
 
+    private static final int DEFAULT_EXPIRY_DAYS = 14;
+    private static final long SECONDS_PER_DAY = 86400L;
+
     private final InvitationRepository invitationRepository;
     private final CampaignRepository campaignRepository;
     private final UserRepository userRepository;
@@ -66,8 +69,8 @@ public class InvitationService {
         inv.setProposedTimeline(emptyToNull(request.getProposedTimeline()));
         inv.setProposedDeliverables(emptyToNull(request.getProposedDeliverables()));
         inv.setPlatform(emptyToNull(request.getPlatform()));
-        int days = request.getExpiresInDays() != null && request.getExpiresInDays() > 0 ? request.getExpiresInDays() : 14;
-        inv.setExpiresAt(java.time.Instant.now().plusSeconds(days * 86400L));
+        int days = request.getExpiresInDays() != null && request.getExpiresInDays() > 0 ? request.getExpiresInDays() : DEFAULT_EXPIRY_DAYS;
+        inv.setExpiresAt(java.time.Instant.now().plusSeconds(days * SECONDS_PER_DAY));
 
         inv = invitationRepository.save(inv);
         return toResponse(inv);
@@ -230,29 +233,35 @@ public class InvitationService {
     }
 
     private InvitationStatus effectiveStatus(CollaborationInvitation inv) {
-        if (inv.getStatus() == InvitationStatus.PENDING && inv.getExpiresAt() != null
-                && java.time.Instant.now().isAfter(inv.getExpiresAt())) {
+        if (isPendingAndExpired(inv)) {
             return InvitationStatus.EXPIRED;
         }
         return inv.getStatus();
     }
 
+    private static boolean isPendingAndExpired(CollaborationInvitation inv) {
+        return inv.getStatus() == InvitationStatus.PENDING
+                && inv.getExpiresAt() != null
+                && java.time.Instant.now().isAfter(inv.getExpiresAt());
+    }
+
     private InvitationDetailResponse toDetailResponse(CollaborationInvitation inv) {
+        InvitationResponse base = toResponse(inv);
         InvitationDetailResponse r = new InvitationDetailResponse();
-        r.setId(inv.getId());
-        r.setCampaignId(inv.getCampaignId());
-        r.setInfluencerId(inv.getInfluencerId());
-        r.setBrandId(inv.getBrandId());
-        r.setStatus(effectiveStatus(inv));
-        r.setBrandMessage(inv.getBrandMessage());
-        r.setProposedAmount(inv.getProposedAmount());
-        r.setProposedTimeline(inv.getProposedTimeline());
-        r.setProposedDeliverables(inv.getProposedDeliverables());
-        r.setPlatform(inv.getPlatform());
-        r.setExpiresAt(inv.getExpiresAt());
-        r.setCreatedAt(inv.getCreatedAt());
-        r.setUpdatedAt(inv.getUpdatedAt());
-        r.setRespondedAt(inv.getRespondedAt());
+        r.setId(base.getId());
+        r.setCampaignId(base.getCampaignId());
+        r.setInfluencerId(base.getInfluencerId());
+        r.setBrandId(base.getBrandId());
+        r.setStatus(base.getStatus());
+        r.setBrandMessage(base.getBrandMessage());
+        r.setProposedAmount(base.getProposedAmount());
+        r.setProposedTimeline(base.getProposedTimeline());
+        r.setProposedDeliverables(base.getProposedDeliverables());
+        r.setPlatform(base.getPlatform());
+        r.setExpiresAt(base.getExpiresAt());
+        r.setCreatedAt(base.getCreatedAt());
+        r.setUpdatedAt(base.getUpdatedAt());
+        r.setRespondedAt(base.getRespondedAt());
         return r;
     }
 }

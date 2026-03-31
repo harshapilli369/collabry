@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 @Service
 public class InfluencerProfileService {
 
+    private static final int RECENT_REVIEWS_LIMIT = 5;
+
     private final InfluencerProfileRepository influencerProfileRepository;
     private final UserRepository userRepository;
     private final RatingService ratingService;
@@ -49,22 +51,36 @@ public class InfluencerProfileService {
      */
     public List<InfluencerProfileResponse> search(String niche, String location, Long minFollowers, Long maxFollowers,
                                                    java.math.BigDecimal minEngagementRate, Boolean availableOnly) {
-        if (minFollowers != null && maxFollowers != null && minFollowers > maxFollowers) {
+        if (isInvalidFollowerRange(minFollowers, maxFollowers)) {
             throw new IllegalArgumentException("minFollowers cannot be greater than maxFollowers");
         }
-        Specification<InfluencerProfile> spec = (root, query, cb) -> {
+        Specification<InfluencerProfile> spec = buildSearchSpec(
+                niche, location, minFollowers, maxFollowers, minEngagementRate, availableOnly);
+        List<InfluencerProfile> profiles = new ArrayList<>(influencerProfileRepository.findAll(spec));
+        profiles.sort(Comparator
+                .comparingDouble((InfluencerProfile p) ->
+                        -InfluencerSearchRanker.relevanceScore(p, niche, location, minFollowers, maxFollowers))
+                .thenComparing(InfluencerProfile::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
+        return profiles.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    private Specification<InfluencerProfile> buildSearchSpec(String niche, String location,
+                                                               Long minFollowers, Long maxFollowers,
+                                                               java.math.BigDecimal minEngagementRate,
+                                                               Boolean availableOnly) {
+        return (root, query, cb) -> {
             var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
             predicates.add(cb.isTrue(root.get("isComplete")));
             if (Boolean.TRUE.equals(availableOnly)) {
-                // Match entity: null means legacy row → treat as open to collaborations
                 predicates.add(cb.or(
                         cb.isTrue(root.get("openToCollaborations")),
                         cb.isNull(root.get("openToCollaborations"))
                 ));
             }
             if (niche != null && !niche.isBlank()) {
-                String nicheTerm = "%" + niche.trim().toLowerCase() + "%";
-                predicates.add(cb.like(cb.lower(root.get("niche")), nicheTerm));
+                predicates.add(cb.like(cb.lower(root.get("niche")), "%" + niche.trim().toLowerCase() + "%"));
             }
             if (location != null && !location.isBlank()) {
                 predicates.add(cb.like(cb.lower(root.get("location")), "%" + location.trim().toLowerCase() + "%"));
@@ -80,14 +96,6 @@ public class InfluencerProfileService {
             }
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
-        List<InfluencerProfile> profiles = new ArrayList<>(influencerProfileRepository.findAll(spec));
-        profiles.sort(Comparator
-                .comparingDouble((InfluencerProfile p) ->
-                        -InfluencerSearchRanker.relevanceScore(p, niche, location, minFollowers, maxFollowers))
-                .thenComparing(InfluencerProfile::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
-        return profiles.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -100,12 +108,19 @@ public class InfluencerProfileService {
 
         InfluencerProfile profile = influencerProfileRepository.findByUserId(userId)
                 .orElseGet(InfluencerProfile::new);
-
         profile.setUserId(userId);
-        profile.setName(emptyToNull(request.getName()) != null ? request.getName().trim() : profile.getName());
-        profile.setAge(request.getAge() != null ? request.getAge() : profile.getAge());
-        profile.setLocation(emptyToNull(request.getLocation()) != null ? request.getLocation().trim() : profile.getLocation());
-        profile.setNiche(emptyToNull(request.getNiche()) != null ? request.getNiche().trim() : profile.getNiche());
+        applyFieldsFromRequest(profile, request);
+        updateCompletionStatus(profile, request.isSaveAsDraft());
+
+        profile = influencerProfileRepository.save(profile);
+        return toResponse(profile);
+    }
+
+    private void applyFieldsFromRequest(InfluencerProfile profile, InfluencerProfileRequest request) {
+        if (emptyToNull(request.getName()) != null) profile.setName(request.getName().trim());
+        if (request.getAge() != null) profile.setAge(request.getAge());
+        if (emptyToNull(request.getLocation()) != null) profile.setLocation(request.getLocation().trim());
+        if (emptyToNull(request.getNiche()) != null) profile.setNiche(request.getNiche().trim());
         profile.setBio(emptyToNull(request.getBio()));
         profile.setProfilePictureUrl(emptyToNull(request.getProfilePictureUrl()));
         profile.setInstagramHandle(emptyToNull(request.getInstagramHandle()));
@@ -115,23 +130,20 @@ public class InfluencerProfileService {
         profile.setFollowerCount(request.getFollowerCount());
         profile.setEngagementRate(request.getEngagementRate());
         profile.setAudienceInfo(emptyToNull(request.getAudienceInfo()));
+    }
 
-        if (request.isSaveAsDraft()) {
+    private void updateCompletionStatus(InfluencerProfile profile, boolean saveAsDraft) {
+        if (saveAsDraft) {
             profile.setComplete(false);
-        } else {
-            // Validate completeness: need at least one social handle and rate
-            boolean hasSocialHandle = hasAny(profile.getInstagramHandle(), profile.getYoutubeHandle(), profile.getTiktokHandle());
-            if (!hasSocialHandle) {
-                throw new IllegalArgumentException("At least one social media handle is required to complete your profile");
-            }
-            if (profile.getRate() == null || profile.getRate().compareTo(java.math.BigDecimal.ZERO) < 0) {
-                throw new IllegalArgumentException("Rate is required and must be zero or greater to complete your profile");
-            }
-            profile.setComplete(true);
+            return;
         }
-
-        profile = influencerProfileRepository.save(profile);
-        return toResponse(profile);
+        if (!hasAny(profile.getInstagramHandle(), profile.getYoutubeHandle(), profile.getTiktokHandle())) {
+            throw new IllegalArgumentException("At least one social media handle is required to complete your profile");
+        }
+        if (profile.getRate() == null || profile.getRate().compareTo(java.math.BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Rate is required and must be zero or greater to complete your profile");
+        }
+        profile.setComplete(true);
     }
 
     @Transactional
@@ -146,6 +158,10 @@ public class InfluencerProfileService {
         profile.setOpenToCollaborations(openToCollaborations);
         profile = influencerProfileRepository.save(profile);
         return toResponse(profile);
+    }
+
+    private static boolean isInvalidFollowerRange(Long minFollowers, Long maxFollowers) {
+        return minFollowers != null && maxFollowers != null && minFollowers > maxFollowers;
     }
 
     private static boolean hasAny(String... values) {
@@ -183,9 +199,10 @@ public class InfluencerProfileService {
         response.setCreatedAt(profile.getCreatedAt());
         response.setUpdatedAt(profile.getUpdatedAt());
         long influencerUserId = profile.getUserId();
-        response.setAverageRating(ratingService.getAverageRating(influencerUserId));
-        response.setTotalRatings(ratingService.getRatingsForInfluencer(influencerUserId).size());
-        response.setRecentReviews(ratingService.getRecentReviews(influencerUserId, 5));
+        RatingService.RatingSummary ratingSummary = ratingService.getRatingSummary(influencerUserId, RECENT_REVIEWS_LIMIT);
+        response.setAverageRating(ratingSummary.averageRating());
+        response.setTotalRatings(ratingSummary.totalRatings());
+        response.setRecentReviews(ratingSummary.recentReviews());
         return response;
     }
 }

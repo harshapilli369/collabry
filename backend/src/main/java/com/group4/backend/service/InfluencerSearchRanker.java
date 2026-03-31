@@ -17,6 +17,8 @@ public final class InfluencerSearchRanker {
     private static final double MAX_ENGAGEMENT_BONUS = 50;
     private static final double MAX_FOLLOWER_BONUS = 30;
     private static final double MAX_CENTER_BAND_BONUS = 40;
+    private static final double ENGAGEMENT_RATE_MULTIPLIER = 2.0;
+    private static final double FOLLOWER_SCALE_DIVISOR = 5000.0;
 
     private InfluencerSearchRanker() {
     }
@@ -29,43 +31,50 @@ public final class InfluencerSearchRanker {
      */
     public static double relevanceScore(InfluencerProfile p, String nicheQuery, String locationQuery,
                                         Long minFollowers, Long maxFollowers) {
-        double score = 0;
+        return nicheScore(p, nicheQuery)
+                + locationScore(p, locationQuery)
+                + engagementScore(p)
+                + followerScore(p)
+                + followerCenterScore(p, minFollowers, maxFollowers);
+    }
+
+    private static double nicheScore(InfluencerProfile p, String nicheQuery) {
         String nq = nicheQuery != null ? nicheQuery.trim().toLowerCase() : "";
-        if (!nq.isEmpty()) {
-            String niche = p.getNiche() != null ? p.getNiche().toLowerCase() : "";
-            if (niche.equals(nq)) {
-                score += NICHE_EXACT;
-            } else if (niche.startsWith(nq)) {
-                score += NICHE_PREFIX;
-            } else if (niche.contains(nq)) {
-                score += NICHE_SUBSTRING;
-            }
-        }
+        if (nq.isEmpty()) return 0;
+        String niche = p.getNiche() != null ? p.getNiche().toLowerCase() : "";
+        if (niche.equals(nq)) return NICHE_EXACT;
+        if (niche.startsWith(nq)) return NICHE_PREFIX;
+        if (niche.contains(nq)) return NICHE_SUBSTRING;
+        return 0;
+    }
 
+    private static double locationScore(InfluencerProfile p, String locationQuery) {
         String lq = locationQuery != null ? locationQuery.trim().toLowerCase() : "";
-        if (!lq.isEmpty()) {
-            String loc = p.getLocation() != null ? p.getLocation().toLowerCase() : "";
-            if (loc.contains(lq)) {
-                score += LOCATION_MATCH;
-            }
-        }
+        if (lq.isEmpty()) return 0;
+        String loc = p.getLocation() != null ? p.getLocation().toLowerCase() : "";
+        return loc.contains(lq) ? LOCATION_MATCH : 0;
+    }
 
-        if (p.getEngagementRate() != null) {
-            double er = p.getEngagementRate().doubleValue();
-            score += Math.min(er * 2.0, MAX_ENGAGEMENT_BONUS);
-        }
-        if (p.getFollowerCount() != null) {
-            score += Math.min(p.getFollowerCount() / 5000.0, MAX_FOLLOWER_BONUS);
-        }
+    private static double engagementScore(InfluencerProfile p) {
+        if (p.getEngagementRate() == null) return 0;
+        return Math.min(p.getEngagementRate().doubleValue() * ENGAGEMENT_RATE_MULTIPLIER, MAX_ENGAGEMENT_BONUS);
+    }
 
-        if (minFollowers != null && maxFollowers != null && p.getFollowerCount() != null) {
-            double mid = (minFollowers + maxFollowers) / 2.0;
-            double dist = Math.abs(p.getFollowerCount() - mid);
-            double span = Math.max(maxFollowers - minFollowers, 1L);
-            double closeness = 1.0 - Math.min(dist / span, 1.0);
-            score += closeness * MAX_CENTER_BAND_BONUS;
-        }
+    private static double followerScore(InfluencerProfile p) {
+        if (p.getFollowerCount() == null) return 0;
+        return Math.min(p.getFollowerCount() / FOLLOWER_SCALE_DIVISOR, MAX_FOLLOWER_BONUS);
+    }
 
-        return score;
+    private static boolean hasFollowerBounds(InfluencerProfile p, Long minFollowers, Long maxFollowers) {
+        return minFollowers != null && maxFollowers != null && p.getFollowerCount() != null;
+    }
+
+    private static double followerCenterScore(InfluencerProfile p, Long minFollowers, Long maxFollowers) {
+        if (!hasFollowerBounds(p, minFollowers, maxFollowers)) return 0;
+        double mid = (minFollowers + maxFollowers) / 2.0;
+        double dist = Math.abs(p.getFollowerCount() - mid);
+        double span = Math.max(maxFollowers - minFollowers, 1L);
+        double closeness = 1.0 - Math.min(dist / span, 1.0);
+        return closeness * MAX_CENTER_BAND_BONUS;
     }
 }

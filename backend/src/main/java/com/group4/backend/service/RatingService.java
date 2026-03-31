@@ -67,6 +67,16 @@ public class RatingService {
                 .collect(Collectors.toList());
     }
 
+    public RatingSummary getRatingSummary(Long influencerId, int recentLimit) {
+        List<InfluencerRating> all = ratingRepository.findByInfluencerIdOrderByCreatedAtDesc(influencerId);
+        double average = all.isEmpty() ? 0.0 : all.stream().mapToInt(InfluencerRating::getRating).average().orElse(0.0);
+        int total = all.size();
+        List<RatingResponse> recent = all.stream().limit(recentLimit).map(this::toResponse).collect(Collectors.toList());
+        return new RatingSummary(average, total, recent);
+    }
+
+    public record RatingSummary(double averageRating, int totalRatings, List<RatingResponse> recentReviews) {}
+
     private RatingResponse toResponse(InfluencerRating r) {
         RatingResponse resp = new RatingResponse();
         resp.setId(r.getId());
