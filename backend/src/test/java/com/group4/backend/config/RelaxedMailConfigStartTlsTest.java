@@ -12,6 +12,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest(classes = SliceTestApplication.class)
 @Import(RelaxedMailConfig.class)
@@ -30,9 +31,11 @@ class RelaxedMailConfigStartTlsTest {
     @Test
     void javaMailSenderUsesStartTlsWhenPortIsNot465() {
         JavaMailSenderImpl impl = (JavaMailSenderImpl) javaMailSender;
-        assertThat(impl.getPort()).isEqualTo(587);
         Properties props = impl.getJavaMailProperties();
-        assertThat(props.getProperty("mail.smtp.starttls.enable")).isEqualTo("true");
-        assertThat(props.getProperty("mail.smtp.ssl.enable")).isNull();
+        assertAll(
+                () -> assertThat(impl.getPort()).isEqualTo(587),
+                () -> assertThat(props.getProperty("mail.smtp.starttls.enable")).isEqualTo("true"),
+                () -> assertThat(props.getProperty("mail.smtp.ssl.enable")).isNull()
+        );
     }
 }
