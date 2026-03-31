@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -56,10 +57,12 @@ class UserServiceTest {
 
         List<InfluencerSearchResult> results = userService.listInfluencers();
 
-        assertThat(results).hasSize(1);
-        assertThat(results.get(0).getId()).isEqualTo(1L);
-        assertThat(results.get(0).getEmail()).isEqualTo("inf1@test.com");
-        assertThat(results.get(0).getDisplayName()).isEqualTo("Creator One");
+        assertAll(
+                () -> assertThat(results).hasSize(1),
+                () -> assertThat(results.get(0).getId()).isEqualTo(1L),
+                () -> assertThat(results.get(0).getEmail()).isEqualTo("inf1@test.com"),
+                () -> assertThat(results.get(0).getDisplayName()).isEqualTo("Creator One")
+        );
     }
 
     @Test
@@ -91,9 +94,11 @@ class UserServiceTest {
 
         List<InfluencerSearchResult> results = userService.listInfluencers();
 
-        assertThat(results).hasSize(2);
-        assertThat(results.get(0).getDisplayName()).isEqualTo("a@test.com");
-        assertThat(results.get(1).getDisplayName()).isEqualTo("B Name");
+        assertAll(
+                () -> assertThat(results).hasSize(2),
+                () -> assertThat(results.get(0).getDisplayName()).isEqualTo("a@test.com"),
+                () -> assertThat(results.get(1).getDisplayName()).isEqualTo("B Name")
+        );
     }
 
     @Test
