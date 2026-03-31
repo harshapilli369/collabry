@@ -67,26 +67,26 @@ public class DatabaseSeeder implements CommandLineRunner {
     private void seedInfluencers() {
         String password = passwordEncoder.encode("password123");
         for (MockInfluencer m : buildMockInfluencers()) {
-            if (userRepository.existsByEmail(m.email)) continue;
-            User u = new User(m.email, password, Role.INFLUENCER);
+            if (userRepository.existsByEmail(m.email())) continue;
+            User u = new User(m.email(), password, Role.INFLUENCER);
             u.setVerified(true);
             u = userRepository.save(u);
             saveInfluencerProfile(u.getId(), m);
-            System.out.println(" => Seeded Influencer: " + m.email + " (" + m.niche + ")");
+            System.out.println(" => Seeded Influencer: " + m.email() + " (" + m.niche() + ")");
         }
     }
 
     private void saveInfluencerProfile(Long userId, MockInfluencer m) {
         InfluencerProfile p = new InfluencerProfile();
         p.setUserId(userId);
-        p.setName(m.name);
+        p.setName(m.name());
         p.setAge(SEED_INFLUENCER_AGE);
-        p.setNiche(m.niche);
-        p.setBio(m.bio);
-        p.setLocation(m.location);
-        p.setAudienceInfo(m.audienceInfo);
-        p.setRate(BigDecimal.valueOf(m.rate));
-        p.setProfilePictureUrl(m.picUrl);
+        p.setNiche(m.niche());
+        p.setBio(m.bio());
+        p.setLocation(m.location());
+        p.setAudienceInfo(m.audienceInfo());
+        p.setRate(BigDecimal.valueOf(m.rate()));
+        p.setProfilePictureUrl(m.picUrl());
         p.setOpenToCollaborations(true);
         influencerProfileRepository.save(p);
     }
@@ -142,14 +142,6 @@ public class DatabaseSeeder implements CommandLineRunner {
         );
     }
 
-    private static class MockInfluencer {
-        String email, name, niche, bio, location, audienceInfo, picUrl;
-        Double rate;
-        MockInfluencer(String email, String name, String niche, String bio, String location,
-                        String audienceInfo, Double rate, String picUrl) {
-            this.email = email; this.name = name; this.niche = niche; this.bio = bio;
-            this.location = location; this.audienceInfo = audienceInfo;
-            this.rate = rate; this.picUrl = picUrl;
-        }
-    }
+    private record MockInfluencer(String email, String name, String niche, String bio,
+                                   String location, String audienceInfo, Double rate, String picUrl) {}
 }
