@@ -75,8 +75,10 @@ class UserServiceTest {
 
         List<InfluencerSearchResult> results = userService.listInfluencers();
 
-        assertThat(results).hasSize(1);
-        assertThat(results.get(0).getDisplayName()).isEqualTo("inf2@test.com");
+        assertAll(
+                () -> assertThat(results).hasSize(1),
+                () -> assertThat(results.get(0).getDisplayName()).isEqualTo("inf2@test.com")
+        );
     }
 
     @Test
