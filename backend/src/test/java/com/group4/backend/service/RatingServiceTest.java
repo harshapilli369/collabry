@@ -135,8 +135,10 @@ class RatingServiceTest {
 
         RatingResponse response = ratingService.submitRating(brandId, request);
 
-        assertThat(response.getRating()).isEqualTo(4);
-        assertThat(response.getReview()).isEqualTo("Good work");
+        assertAll(
+                () -> assertThat(response.getRating()).isEqualTo(4),
+                () -> assertThat(response.getReview()).isEqualTo("Good work")
+        );
     }
 
     @Test
