@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, Button, Typography, Select, message, Modal } from 'antd'
-import { ArrowLeftOutlined, InstagramOutlined, LinkedinOutlined, TwitterOutlined, CheckCircleFilled, GlobalOutlined } from '@ant-design/icons'
+import { Form, Input, Button, Typography, Select, message, Modal, Upload, Avatar } from 'antd'
+import { ArrowLeftOutlined, InstagramOutlined, LinkedinOutlined, TwitterOutlined, CheckCircleFilled, GlobalOutlined, CameraOutlined, LoadingOutlined } from '@ant-design/icons'
+import type { UploadFile, RcFile } from 'antd/es/upload/interface'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import {
@@ -10,6 +11,7 @@ import {
     type BrandProfileRequest,
     type BrandProfileResponse,
 } from '../services/brandService'
+import { uploadProfileImage } from '../services/imageUploadService'
 import { userService } from '../services/userService'
 
 const { Title, Text } = Typography
@@ -22,6 +24,8 @@ export const BrandProfile = () => {
     const [loading, setLoading] = useState(false)
     const [fetching, setFetching] = useState(true)
     const [isEdit, setIsEdit] = useState(false)
+    const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined)
+    const [uploadingLogo, setUploadingLogo] = useState(false)
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -29,6 +33,7 @@ export const BrandProfile = () => {
             .then((profile: BrandProfileResponse | null) => {
                 if (profile) {
                     setIsEdit(true)
+                    setLogoUrl(profile.logoUrl ?? undefined)
                     form.setFieldsValue({
                         name: profile.name,
                         industry: profile.industry,
@@ -160,8 +165,57 @@ export const BrandProfile = () => {
                         <Text style={{ color: '#666', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 16 }}>
                             Brand Details
                         </Text>
-                        <Form.Item name="logoUrl" label="Logo URL">
-                            <Input placeholder="https://example.com/logo.png" />
+                        <Form.Item name="logoUrl" label="Company logo">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                <div style={{ position: 'relative', flexShrink: 0 }}>
+                                    <Avatar
+                                        size={72}
+                                        src={logoUrl}
+                                        icon={<GlobalOutlined />}
+                                        style={{ background: '#1a1a1a', border: `2px solid ${PRIMARY}30`, borderRadius: 12 }}
+                                    />
+                                    {uploadingLogo && (
+                                        <div style={{
+                                            position: 'absolute', inset: 0, borderRadius: 12,
+                                            background: 'rgba(0,0,0,0.5)', display: 'flex',
+                                            alignItems: 'center', justifyContent: 'center',
+                                        }}>
+                                            <LoadingOutlined style={{ color: '#fff' }} />
+                                        </div>
+                                    )}
+                                </div>
+                                <Upload
+                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                    showUploadList={false}
+                                    beforeUpload={async (file: RcFile) => {
+                                        if (file.size > 10 * 1024 * 1024) {
+                                            message.error('Logo must be smaller than 10 MB')
+                                            return Upload.LIST_IGNORE
+                                        }
+                                        setUploadingLogo(true)
+                                        try {
+                                            const url = await uploadProfileImage(file, 'brand-logos')
+                                            setLogoUrl(url)
+                                            form.setFieldValue('logoUrl', url)
+                                            message.success('Logo uploaded!')
+                                        } catch (e) {
+                                            message.error(e instanceof Error ? e.message : 'Upload failed')
+                                        } finally {
+                                            setUploadingLogo(false)
+                                        }
+                                        return false
+                                    }}
+                                    fileList={[] as UploadFile[]}
+                                >
+                                    <Button
+                                        icon={<CameraOutlined />}
+                                        loading={uploadingLogo}
+                                        style={{ borderRadius: 8 }}
+                                    >
+                                        {logoUrl ? 'Change logo' : 'Upload logo'}
+                                    </Button>
+                                </Upload>
+                            </div>
                         </Form.Item>
                         <Form.Item name="description" label="Description">
                             <TextArea rows={4} placeholder="Tell influencers about your brand and campaigns" />

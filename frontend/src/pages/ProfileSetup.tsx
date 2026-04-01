@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message, theme, Modal } from 'antd'
-import { UserOutlined, LinkOutlined, DollarOutlined, ArrowLeftOutlined, CheckCircleFilled, InstagramOutlined, YoutubeOutlined, RobotOutlined } from '@ant-design/icons'
+import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message, theme, Modal, Upload, Avatar } from 'antd'
+import { UserOutlined, LinkOutlined, DollarOutlined, ArrowLeftOutlined, CheckCircleFilled, InstagramOutlined, YoutubeOutlined, RobotOutlined, CameraOutlined, LoadingOutlined } from '@ant-design/icons'
+import type { UploadFile, RcFile } from 'antd/es/upload/interface'
 import { useNavigate } from 'react-router-dom'
 import {
     getMyInfluencerProfile,
@@ -9,6 +10,7 @@ import {
     type InfluencerProfileRequest,
     type InfluencerProfileResponse,
 } from '../services/influencerProfileService'
+import { uploadProfileImage } from '../services/imageUploadService'
 import { userService } from '../services/userService'
 
 const { Title, Text } = Typography
@@ -31,6 +33,8 @@ export const ProfileSetup = () => {
     const navigate = useNavigate()
     const [enhancingBio, setEnhancingBio] = useState(false)
     const [enhancedBio, setEnhancedBio] = useState<string | null>(null)
+    const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined)
+    const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
@@ -49,6 +53,7 @@ export const ProfileSetup = () => {
             .then((profile: InfluencerProfileResponse | null) => {
                 if (profile) {
                     setIsEdit(true)
+                    setAvatarUrl(profile.profilePictureUrl ?? undefined)
                     form.setFieldsValue({
                         name: profile.name,
                         age: profile.age,
@@ -384,8 +389,57 @@ export const ProfileSetup = () => {
                                         </div>
                                     </div>
                                 )}
-                                <Form.Item name="profilePictureUrl" label="Profile picture URL">
-                                    <Input placeholder="https://..." />
+                                <Form.Item name="profilePictureUrl" label="Profile picture">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                        <div style={{ position: 'relative', flexShrink: 0 }}>
+                                            <Avatar
+                                                size={72}
+                                                src={avatarUrl}
+                                                icon={<UserOutlined />}
+                                                style={{ background: '#222', border: `2px solid ${PRIMARY}30` }}
+                                            />
+                                            {uploadingAvatar && (
+                                                <div style={{
+                                                    position: 'absolute', inset: 0, borderRadius: '50%',
+                                                    background: 'rgba(0,0,0,0.5)', display: 'flex',
+                                                    alignItems: 'center', justifyContent: 'center',
+                                                }}>
+                                                    <LoadingOutlined style={{ color: '#fff' }} />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <Upload
+                                            accept="image/jpeg,image/png,image/gif,image/webp"
+                                            showUploadList={false}
+                                            beforeUpload={async (file: RcFile) => {
+                                                if (file.size > 10 * 1024 * 1024) {
+                                                    message.error('Image must be smaller than 10 MB')
+                                                    return Upload.LIST_IGNORE
+                                                }
+                                                setUploadingAvatar(true)
+                                                try {
+                                                    const url = await uploadProfileImage(file, 'profile-pictures')
+                                                    setAvatarUrl(url)
+                                                    form.setFieldValue('profilePictureUrl', url)
+                                                    message.success('Photo uploaded!')
+                                                } catch (e) {
+                                                    message.error(e instanceof Error ? e.message : 'Upload failed')
+                                                } finally {
+                                                    setUploadingAvatar(false)
+                                                }
+                                                return false
+                                            }}
+                                            fileList={[] as UploadFile[]}
+                                        >
+                                            <Button
+                                                icon={<CameraOutlined />}
+                                                loading={uploadingAvatar}
+                                                style={{ borderRadius: 8 }}
+                                            >
+                                                {avatarUrl ? 'Change photo' : 'Upload photo'}
+                                            </Button>
+                                        </Upload>
+                                    </div>
                                 </Form.Item>
                             </div>
                         </div>

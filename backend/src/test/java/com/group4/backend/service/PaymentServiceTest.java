@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -69,12 +70,14 @@ class PaymentServiceTest {
 
         PaymentResponse response = paymentService.createPayment(10L, request);
 
-        assertThat(response.getId()).isEqualTo(99L);
-        assertThat(response.getStatus()).isEqualTo(PaymentStatus.PENDING);
-        assertThat(response.getMilestoneName()).isEqualTo("Publish Reel");
-        assertThat(response.getNotes()).isNull();
-        assertThat(response.getInvoiceNumber()).startsWith("INV-");
-        assertThat(response.getCampaignName()).isEqualTo("Spring Launch");
+        assertAll(
+                () -> assertThat(response.getId()).isEqualTo(99L),
+                () -> assertThat(response.getStatus()).isEqualTo(PaymentStatus.PENDING),
+                () -> assertThat(response.getMilestoneName()).isEqualTo("Publish Reel"),
+                () -> assertThat(response.getNotes()).isNull(),
+                () -> assertThat(response.getInvoiceNumber()).startsWith("INV-"),
+                () -> assertThat(response.getCampaignName()).isEqualTo("Spring Launch")
+        );
     }
 
     @Test
