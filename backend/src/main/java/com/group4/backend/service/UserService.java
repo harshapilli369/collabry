@@ -4,8 +4,8 @@ import com.group4.backend.dto.InfluencerSearchResult;
 import com.group4.backend.dto.SocialLinkRequest;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.InfluencerProfileRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.profile.InfluencerProfileRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.group4.backend.repository;
+package com.group4.backend.repository.payment;
 
 import com.group4.backend.model.Payment;
 import com.group4.backend.model.PaymentStatus;

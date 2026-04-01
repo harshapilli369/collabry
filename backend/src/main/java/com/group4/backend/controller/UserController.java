@@ -4,7 +4,7 @@ import com.group4.backend.dto.InfluencerSearchResult;
 import com.group4.backend.dto.SocialLinkRequest;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

@@ -6,8 +6,8 @@ import com.group4.backend.model.Campaign;
 import com.group4.backend.model.CampaignStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.CampaignRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.campaign.CampaignRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

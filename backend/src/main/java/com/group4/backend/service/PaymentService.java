@@ -5,8 +5,8 @@ import com.group4.backend.dto.PaymentResponse;
 import com.group4.backend.model.Campaign;
 import com.group4.backend.model.Payment;
 import com.group4.backend.model.PaymentStatus;
-import com.group4.backend.repository.CampaignRepository;
-import com.group4.backend.repository.PaymentRepository;
+import com.group4.backend.repository.campaign.CampaignRepository;
+import com.group4.backend.repository.payment.PaymentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

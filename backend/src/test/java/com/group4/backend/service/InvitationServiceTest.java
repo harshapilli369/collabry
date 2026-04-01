@@ -2,10 +2,10 @@ package com.group4.backend.service;
 
 import com.group4.backend.dto.*;
 import com.group4.backend.model.*;
-import com.group4.backend.repository.CampaignRepository;
-import com.group4.backend.repository.InfluencerRatingRepository;
-import com.group4.backend.repository.InvitationRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.campaign.CampaignRepository;
+import com.group4.backend.repository.profile.InfluencerRatingRepository;
+import com.group4.backend.repository.campaign.InvitationRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

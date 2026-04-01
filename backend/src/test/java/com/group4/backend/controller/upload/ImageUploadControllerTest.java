@@ -1,6 +1,6 @@
 package com.group4.backend.controller.upload;
 
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.CloudinaryService;
 import org.junit.jupiter.api.Test;

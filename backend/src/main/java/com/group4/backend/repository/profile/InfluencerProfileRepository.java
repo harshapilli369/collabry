@@ -1,4 +1,4 @@
-package com.group4.backend.repository;
+package com.group4.backend.repository.profile;
 
 import com.group4.backend.model.InfluencerProfile;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package com.group4.backend.repository;
+package com.group4.backend.repository.campaign;
 
 import com.group4.backend.model.Campaign;
 import org.springframework.data.jpa.repository.JpaRepository;

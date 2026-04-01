@@ -1,4 +1,4 @@
-package com.group4.backend.repository;
+package com.group4.backend.repository.user;
 
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;

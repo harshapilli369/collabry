@@ -1,8 +1,8 @@
 package com.group4.backend.service;
 
 import com.group4.backend.model.PasswordResetToken;
-import com.group4.backend.repository.PasswordResetTokenRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.user.PasswordResetTokenRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;

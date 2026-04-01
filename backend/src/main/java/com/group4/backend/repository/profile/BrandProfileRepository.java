@@ -1,4 +1,4 @@
-package com.group4.backend.repository;
+package com.group4.backend.repository.profile;
 
 import com.group4.backend.model.BrandProfile;
 import org.springframework.data.jpa.repository.JpaRepository;

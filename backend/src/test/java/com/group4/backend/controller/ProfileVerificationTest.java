@@ -5,7 +5,7 @@ import com.group4.backend.dto.CampaignRequest;
 import com.group4.backend.model.BudgetRange;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.AiRecommendationService;
 import com.group4.backend.service.CampaignService;

@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group4.backend.dto.InfluencerRecommendationDTO;
 import com.group4.backend.model.Campaign;
 import com.group4.backend.model.InfluencerProfile;
-import com.group4.backend.repository.CampaignRepository;
-import com.group4.backend.repository.InfluencerProfileRepository;
+import com.group4.backend.repository.campaign.CampaignRepository;
+import com.group4.backend.repository.profile.InfluencerProfileRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;

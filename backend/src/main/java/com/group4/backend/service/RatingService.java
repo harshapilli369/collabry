@@ -5,8 +5,8 @@ import com.group4.backend.dto.RatingResponse;
 import com.group4.backend.model.CollaborationInvitation;
 import com.group4.backend.model.InfluencerRating;
 import com.group4.backend.model.InvitationStatus;
-import com.group4.backend.repository.InfluencerRatingRepository;
-import com.group4.backend.repository.InvitationRepository;
+import com.group4.backend.repository.profile.InfluencerRatingRepository;
+import com.group4.backend.repository.campaign.InvitationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

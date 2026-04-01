@@ -4,7 +4,7 @@ import com.group4.backend.dto.InvitationResponse;
 import com.group4.backend.model.InvitationStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.InvitationService;
 import org.junit.jupiter.api.BeforeEach;

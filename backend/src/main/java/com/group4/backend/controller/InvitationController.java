@@ -3,7 +3,7 @@ package com.group4.backend.controller;
 import com.group4.backend.dto.*;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.service.InvitationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

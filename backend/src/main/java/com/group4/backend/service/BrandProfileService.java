@@ -5,8 +5,8 @@ import com.group4.backend.dto.BrandProfileResponse;
 import com.group4.backend.model.BrandProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.BrandProfileRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.profile.BrandProfileRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

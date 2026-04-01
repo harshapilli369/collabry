@@ -1,7 +1,6 @@
-package com.group4.backend.repository;
+package com.group4.backend.repository.user;
 
 import com.group4.backend.model.PasswordResetToken;
-import com.group4.backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

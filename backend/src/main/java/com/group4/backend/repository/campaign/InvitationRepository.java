@@ -1,4 +1,4 @@
-package com.group4.backend.repository;
+package com.group4.backend.repository.campaign;
 
 import com.group4.backend.model.CollaborationInvitation;
 import com.group4.backend.model.InvitationStatus;

@@ -6,7 +6,7 @@ import com.group4.backend.dto.PaymentResponse;
 import com.group4.backend.model.PaymentStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
