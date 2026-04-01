@@ -48,6 +48,20 @@ export interface InvitationResponse {
     respondedAt?: string;
     /** True if the brand has already submitted a rating for this invitation. */
     rated?: boolean;
+
+    // Brand profile fields
+    brandName?: string;
+    brandLogo?: string;
+    brandNiche?: string;
+
+    // Influencer profile fields
+    influencerName?: string;
+    influencerProfilePicture?: string;
+    influencerNiche?: string;
+    influencerRate?: string;
+
+    // Campaign name
+    campaignName?: string;
 }
 
 export interface CampaignResponse {

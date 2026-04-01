@@ -23,6 +23,20 @@ public class InvitationResponse {
     private Instant respondedAt;
     private Boolean rated;
 
+    // Brand profile fields
+    private String brandName;
+    private String brandLogo;
+    private String brandNiche;
+
+    // Influencer profile fields
+    private String influencerName;
+    private String influencerProfilePicture;
+    private String influencerNiche;
+    private String influencerRate;
+
+    // Campaign name for list views
+    private String campaignName;
+
     public InvitationResponse() {
     }
 
@@ -56,4 +70,23 @@ public class InvitationResponse {
     public void setRespondedAt(Instant respondedAt) { this.respondedAt = respondedAt; }
     public Boolean getRated() { return rated; }
     public void setRated(Boolean rated) { this.rated = rated; }
+
+    public String getBrandName() { return brandName; }
+    public void setBrandName(String brandName) { this.brandName = brandName; }
+    public String getBrandLogo() { return brandLogo; }
+    public void setBrandLogo(String brandLogo) { this.brandLogo = brandLogo; }
+    public String getBrandNiche() { return brandNiche; }
+    public void setBrandNiche(String brandNiche) { this.brandNiche = brandNiche; }
+
+    public String getInfluencerName() { return influencerName; }
+    public void setInfluencerName(String influencerName) { this.influencerName = influencerName; }
+    public String getInfluencerProfilePicture() { return influencerProfilePicture; }
+    public void setInfluencerProfilePicture(String influencerProfilePicture) { this.influencerProfilePicture = influencerProfilePicture; }
+    public String getInfluencerNiche() { return influencerNiche; }
+    public void setInfluencerNiche(String influencerNiche) { this.influencerNiche = influencerNiche; }
+    public String getInfluencerRate() { return influencerRate; }
+    public void setInfluencerRate(String influencerRate) { this.influencerRate = influencerRate; }
+
+    public String getCampaignName() { return campaignName; }
+    public void setCampaignName(String campaignName) { this.campaignName = campaignName; }
 }

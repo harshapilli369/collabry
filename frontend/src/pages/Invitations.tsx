@@ -45,7 +45,13 @@ const InvitationCard = ({ inv, navigate }: { inv: InvitationResponse; navigate: 
     >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
             <div>
-                <Text strong style={{ color: '#fff', fontSize: 16 }}>Campaign #{inv.campaignId}</Text>
+                <Text strong style={{ color: '#fff', fontSize: 16 }}>{inv.campaignName || `Campaign #${inv.campaignId}`}</Text>
+                {inv.brandName && (
+                    <span style={{ marginLeft: 8 }}>
+                        <Text type="secondary" style={{ fontSize: 13 }}>by {inv.brandName}</Text>
+                        {inv.brandNiche && <Tag style={{ marginLeft: 6, fontSize: 11 }}>{inv.brandNiche}</Tag>}
+                    </span>
+                )}
                 {inv.brandMessage && (
                     <div style={{ marginTop: 6 }}>
                         <Text type="secondary" style={{ fontSize: 13 }}>{inv.brandMessage.slice(0, 120)}{inv.brandMessage.length > 120 ? '...' : ''}</Text>

@@ -113,13 +113,34 @@ export const InvitationDetail = () => {
                 <Tag color={invitation.status === 'PENDING' || invitation.status === 'NEGOTIATING' ? 'gold' : invitation.status === 'ACCEPTED' || invitation.status === 'CONFIRMED' ? 'green' : 'default'}>
                     {INVITATION_STATUS_LABELS[invitation.status as InvitationStatus]}
                 </Tag>
-                <Title level={3} style={{ color: '#fff', margin: '8px 0 0' }}>Invitation #{invitation.id}</Title>
+                <Title level={3} style={{ color: '#fff', margin: '8px 0 0' }}>
+                    {invitation.campaignName || `Invitation #${invitation.id}`}
+                </Title>
                 <Text type="secondary" style={{ display: 'block', marginTop: 4 }}>Received {formatDate(invitation.createdAt)}</Text>
             </div>
 
             {invitation.brandMessage && (
                 <Card title="Message from brand" size="small" style={{ marginBottom: 24, background: '#1c1c1c', borderRadius: 8, borderColor: '#333' }}>
                     <Text style={{ color: '#ccc' }}>{invitation.brandMessage}</Text>
+                </Card>
+            )}
+
+            {/* Brand Details Card */}
+            {invitation.brandName && (
+                <Card title="Brand details" size="small" style={{ marginBottom: 24, background: '#1c1c1c', borderRadius: 8, borderColor: '#333' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        {invitation.brandLogo && (
+                            <img src={invitation.brandLogo} alt={invitation.brandName} style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover', border: '1px solid #333' }} />
+                        )}
+                        <div>
+                            <Text strong style={{ color: '#fff', fontSize: 16 }}>{invitation.brandName}</Text>
+                            {invitation.brandNiche && (
+                                <div style={{ marginTop: 4 }}>
+                                    <Tag>{invitation.brandNiche}</Tag>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </Card>
             )}
 
