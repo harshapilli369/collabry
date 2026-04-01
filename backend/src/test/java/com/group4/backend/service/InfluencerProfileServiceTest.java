@@ -1,4 +1,6 @@
-package com.group4.backend.service;
+﻿package com.group4.backend.service;
+import com.group4.backend.service.profile.InfluencerProfileService;
+import com.group4.backend.service.profile.RatingService;
 
 import com.group4.backend.dto.InfluencerProfileRequest;
 import com.group4.backend.dto.InfluencerProfileResponse;

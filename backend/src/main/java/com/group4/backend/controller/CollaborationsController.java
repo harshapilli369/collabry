@@ -1,10 +1,10 @@
-package com.group4.backend.controller;
+﻿package com.group4.backend.controller;
 
 import com.group4.backend.dto.InvitationResponse;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;
-import com.group4.backend.service.InvitationService;
+import com.group4.backend.service.campaign.InvitationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

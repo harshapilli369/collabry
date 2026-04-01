@@ -1,4 +1,4 @@
-package com.group4.backend.service;
+﻿package com.group4.backend.service.campaign;
 
 import com.group4.backend.dto.*;
 import com.group4.backend.model.*;

@@ -1,4 +1,5 @@
-package com.group4.backend.service;
+﻿package com.group4.backend.service;
+import com.group4.backend.service.profile.RatingService;
 
 import com.group4.backend.dto.RatingRequest;
 import com.group4.backend.dto.RatingResponse;

@@ -1,8 +1,8 @@
-package com.group4.backend.controller.upload;
+﻿package com.group4.backend.controller.upload;
 
 import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
-import com.group4.backend.service.CloudinaryService;
+import com.group4.backend.service.media.CloudinaryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * TDD tests written before implementation.
- * Red → Green → Refactor cycle for ImageUploadController.
+ * Red â†’ Green â†’ Refactor cycle for ImageUploadController.
  */
 @WebMvcTest(ImageUploadController.class)
 class ImageUploadControllerTest {

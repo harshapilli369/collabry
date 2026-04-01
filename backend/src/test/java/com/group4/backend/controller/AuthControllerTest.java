@@ -1,13 +1,13 @@
-package com.group4.backend.controller;
+﻿package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group4.backend.dto.*;
 import com.group4.backend.exception.DuplicateEmailException;
 import com.group4.backend.model.Role;
 import com.group4.backend.security.JwtUtils;
-import com.group4.backend.service.AuthService;
-import com.group4.backend.service.PasswordResetService;
-import com.group4.backend.service.RegistrationService;
+import com.group4.backend.service.auth.AuthService;
+import com.group4.backend.service.auth.PasswordResetService;
+import com.group4.backend.service.auth.RegistrationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

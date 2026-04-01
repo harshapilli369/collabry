@@ -1,4 +1,4 @@
-package com.group4.backend.controller;
+﻿package com.group4.backend.controller;
 
 import com.group4.backend.dto.CampaignRequest;
 import com.group4.backend.dto.CampaignResponse;
@@ -8,10 +8,10 @@ import com.group4.backend.dto.InfluencerRecommendationDTO;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;
-import com.group4.backend.service.AiRecommendationService;
-import com.group4.backend.service.CampaignService;
-import com.group4.backend.service.GroqApiClient;
-import com.group4.backend.service.InvitationService;
+import com.group4.backend.service.ai.AiRecommendationService;
+import com.group4.backend.service.campaign.CampaignService;
+import com.group4.backend.service.ai.GroqApiClient;
+import com.group4.backend.service.campaign.InvitationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

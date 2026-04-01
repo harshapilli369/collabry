@@ -1,4 +1,5 @@
-package com.group4.backend.service;
+﻿package com.group4.backend.service;
+import com.group4.backend.service.media.CloudinaryService;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Uploader;
@@ -23,7 +24,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * TDD tests written before implementation.
- * Red → Green → Refactor cycle for CloudinaryService.
+ * Red â†’ Green â†’ Refactor cycle for CloudinaryService.
  */
 @ExtendWith(MockitoExtension.class)
 class CloudinaryServiceTest {

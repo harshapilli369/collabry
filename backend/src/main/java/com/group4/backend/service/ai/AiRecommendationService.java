@@ -1,4 +1,4 @@
-package com.group4.backend.service;
+﻿package com.group4.backend.service.ai;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;

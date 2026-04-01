@@ -1,4 +1,6 @@
-package com.group4.backend.service;
+﻿package com.group4.backend.service;
+import com.group4.backend.service.ai.AiRecommendationService;
+import com.group4.backend.service.ai.GroqApiClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group4.backend.dto.InfluencerRecommendationDTO;

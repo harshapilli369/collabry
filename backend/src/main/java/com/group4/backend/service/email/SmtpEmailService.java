@@ -1,4 +1,4 @@
-package com.group4.backend.service;
+﻿package com.group4.backend.service.email;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +49,7 @@ public class SmtpEmailService implements EmailService {
                 "Please confirm your email by clicking the link below:\n\n" +
                 confirmationLinkOrToken + "\n\n" +
                 "If you did not create an account, you can ignore this email.\n\n" +
-                "— The Collabry Team"
+                "â€” The Collabry Team"
         );
         try {
             mailSender.send(message);
@@ -73,7 +73,7 @@ public class SmtpEmailService implements EmailService {
                 "Click the link below to set a new password:\n\n" +
                 resetLink + "\n\n" +
                 "This link expires in 1 hour. If you did not request a reset, you can ignore this email.\n\n" +
-                "— The Collabry Team"
+                "â€” The Collabry Team"
         );
         try {
             mailSender.send(message);

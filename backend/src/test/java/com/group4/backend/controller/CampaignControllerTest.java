@@ -1,4 +1,4 @@
-package com.group4.backend.controller;
+﻿package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group4.backend.dto.CampaignRequest;
@@ -12,13 +12,13 @@ import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
-import com.group4.backend.service.CampaignService;
-import com.group4.backend.service.InvitationService;
-import com.group4.backend.service.AiRecommendationService;
+import com.group4.backend.service.campaign.CampaignService;
+import com.group4.backend.service.campaign.InvitationService;
+import com.group4.backend.service.ai.AiRecommendationService;
 import com.group4.backend.dto.InfluencerRecommendationDTO;
-import com.group4.backend.service.InvitationService;
-import com.group4.backend.service.AiRecommendationService;
-import com.group4.backend.service.GroqApiClient;
+import com.group4.backend.service.campaign.InvitationService;
+import com.group4.backend.service.ai.AiRecommendationService;
+import com.group4.backend.service.ai.GroqApiClient;
 import com.group4.backend.dto.InfluencerRecommendationDTO;
 import com.group4.backend.dto.InfluencerRecommendationDTO;
 import org.junit.jupiter.api.BeforeEach;

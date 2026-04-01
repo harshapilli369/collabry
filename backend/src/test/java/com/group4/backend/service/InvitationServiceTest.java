@@ -1,4 +1,6 @@
-package com.group4.backend.service;
+﻿package com.group4.backend.service;
+import com.group4.backend.service.campaign.InvitationService;
+import com.group4.backend.service.campaign.CampaignService;
 
 import com.group4.backend.dto.*;
 import com.group4.backend.model.*;

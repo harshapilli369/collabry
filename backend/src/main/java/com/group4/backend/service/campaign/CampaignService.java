@@ -1,4 +1,4 @@
-package com.group4.backend.service;
+﻿package com.group4.backend.service.campaign;
 
 import com.group4.backend.dto.CampaignRequest;
 import com.group4.backend.dto.CampaignResponse;

@@ -1,4 +1,4 @@
-package com.group4.backend.service;
+﻿package com.group4.backend.service.media;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;

@@ -1,5 +1,6 @@
-package com.group4.backend.service;
+﻿package com.group4.backend.service.auth;
 
+import com.group4.backend.service.email.EmailService;
 import com.group4.backend.dto.AuthResponse;
 import com.group4.backend.dto.SignupRequest;
 import com.group4.backend.dto.SignupResponse;

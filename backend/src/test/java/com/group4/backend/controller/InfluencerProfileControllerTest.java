@@ -1,4 +1,4 @@
-package com.group4.backend.controller;
+﻿package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group4.backend.dto.CollaborationAvailabilityRequest;
@@ -8,8 +8,8 @@ import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
-import com.group4.backend.service.GroqApiClient;
-import com.group4.backend.service.InfluencerProfileService;
+import com.group4.backend.service.ai.GroqApiClient;
+import com.group4.backend.service.profile.InfluencerProfileService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
