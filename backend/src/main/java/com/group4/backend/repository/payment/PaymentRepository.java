@@ -17,4 +17,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByStatusAndDueDateBefore(PaymentStatus status, LocalDate date);
 
     List<Payment> findByBrandIdAndStatus(Long brandId, PaymentStatus status);
+
+    long countByStatus(PaymentStatus status);
 }

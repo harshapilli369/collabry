@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Typography, Button, Card, Tabs, Modal, Form, Input, InputNumber, Select, Table, message } from 'antd'
-import { PlusCircleOutlined, FundProjectionScreenOutlined, MailOutlined, ArrowLeftOutlined, EditOutlined, CheckCircleOutlined, RocketOutlined, StopOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined, FundProjectionScreenOutlined, MailOutlined, ArrowLeftOutlined, EditOutlined, CheckCircleOutlined, RocketOutlined, StopOutlined, DownloadOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import { getMyBrandProfile, type BrandProfileResponse } from '../services/brandService'
 import {
     getMyCampaigns,
+    downloadCampaignReport,
     CAMPAIGN_STATUS_LABELS,
     BUDGET_RANGE_OPTIONS,
     PREFERRED_CONTENT_OPTIONS,
@@ -109,6 +110,15 @@ export const BrandMyCampaigns = () => {
             message.error(e instanceof Error ? e.message : 'Failed to send invitation')
         } finally {
             setInviteSubmitting(false)
+        }
+    }
+
+    const onDownloadReport = async (campaignId: number) => {
+        try {
+            await downloadCampaignReport(campaignId)
+            message.success('Campaign report downloaded')
+        } catch (e) {
+            message.error(e instanceof Error ? e.message : 'Failed to download report')
         }
     }
 
@@ -223,6 +233,9 @@ export const BrandMyCampaigns = () => {
                                                         </Text>
                                                         <Button type="default" size="small" icon={<MailOutlined />} onClick={() => openInviteModal(campaign.id)} style={{ borderRadius: 8 }}>
                                                             Invite
+                                                        </Button>
+                                                        <Button type="default" size="small" icon={<DownloadOutlined />} onClick={() => onDownloadReport(campaign.id)} style={{ borderRadius: 8 }}>
+                                                            Download report
                                                         </Button>
                                                     </div>
                                                 </div>

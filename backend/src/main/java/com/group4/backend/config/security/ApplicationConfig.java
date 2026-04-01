@@ -29,6 +29,7 @@ public class ApplicationConfig {
                         .username(user.getEmail())
                         .password(user.getPassword())
                         .roles(user.getRole().name())
+                        .disabled(!user.isActive())
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }

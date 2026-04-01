@@ -7,6 +7,7 @@ import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,10 @@ public class AuthService {
             var newUser = new User(email, "GOOGLE_AUTH_PLACEHOLDER", assignedRole);
             return userRepository.save(newUser);
         });
+
+        if (!user.isActive()) {
+            throw new DisabledException("Account deactivated");
+        }
 
         var jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), false);
         return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId(),

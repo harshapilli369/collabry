@@ -9,6 +9,7 @@ import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.ai.AiRecommendationService;
 import com.group4.backend.service.campaign.CampaignService;
+import com.group4.backend.service.campaign.CampaignReportService;
 import com.group4.backend.service.ai.GroqApiClient;
 import com.group4.backend.service.campaign.InvitationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +39,8 @@ public class ProfileVerificationTest {
 
     @MockBean
     private CampaignService campaignService;
+    @MockBean
+    private CampaignReportService campaignReportService;
 
     @MockBean
     private AiRecommendationService aiRecommendationService;
