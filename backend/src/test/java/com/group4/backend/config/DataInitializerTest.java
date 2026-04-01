@@ -96,6 +96,8 @@ class DataInitializerTest {
                 .run();
 
         verify(influencerProfileRepository, never()).save(any());
+        ArgumentCaptor<InfluencerProfile> profileCap = ArgumentCaptor.forClass(InfluencerProfile.class);
+        assertThat(profileCap.getAllValues()).isEmpty();
     }
 
     @Test
