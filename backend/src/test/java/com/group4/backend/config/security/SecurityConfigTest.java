@@ -1,4 +1,4 @@
-package com.group4.backend.config;
+package com.group4.backend.config.security;
 
 import com.group4.backend.security.JwtAuthenticationFilter;
 import com.group4.backend.security.JwtUtils;

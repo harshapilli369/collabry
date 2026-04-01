@@ -1,4 +1,4 @@
-package com.group4.backend.config;
+package com.group4.backend.config.cloudinary;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;

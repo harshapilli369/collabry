@@ -1,5 +1,5 @@
 
-package com.group4.backend.config;
+package com.group4.backend.config.security;
 
 import com.group4.backend.repository.UserRepository;
 import org.springframework.context.annotation.Bean;

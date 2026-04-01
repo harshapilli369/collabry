@@ -1,4 +1,4 @@
-package com.group4.backend.config;
+package com.group4.backend.config.init;
 
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;

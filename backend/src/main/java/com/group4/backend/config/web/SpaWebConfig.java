@@ -1,4 +1,4 @@
-package com.group4.backend.config;
+package com.group4.backend.config.web;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;

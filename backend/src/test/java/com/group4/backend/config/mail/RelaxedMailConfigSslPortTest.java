@@ -1,4 +1,4 @@
-package com.group4.backend.config;
+package com.group4.backend.config.mail;
 
 import com.group4.backend.testsupport.SliceTestApplication;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package com.group4.backend.config;
+package com.group4.backend.config.security;
 
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;

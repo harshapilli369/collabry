@@ -1,4 +1,4 @@
-package com.group4.backend.config;
+package com.group4.backend.config.web;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

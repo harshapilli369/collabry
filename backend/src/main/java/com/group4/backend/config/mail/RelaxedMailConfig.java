@@ -1,4 +1,4 @@
-package com.group4.backend.config;
+package com.group4.backend.config.mail;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
