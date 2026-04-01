@@ -195,7 +195,7 @@ export function BrandPortalLayout({
                     }}
                 >
                     {/* Logo */}
-                    <div style={{ padding: '24px 20px 8px', textAlign: 'center' }}>
+                    <div style={{ padding: '24px 20px 8px', textAlign: 'center', cursor: 'pointer' }} onClick={() => navigate('/brand/dashboard')}>
                         <div
                             style={{
                                 width: 44,
