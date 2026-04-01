@@ -1,4 +1,4 @@
-﻿package com.group4.backend.controller.upload;
+package com.group4.backend.controller.upload;
 
 import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;

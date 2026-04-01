@@ -1,4 +1,4 @@
-﻿package com.group4.backend.service;
+package com.group4.backend.service;
 import com.group4.backend.service.email.SmtpEmailService;
 
 import org.junit.jupiter.api.BeforeEach;

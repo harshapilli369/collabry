@@ -1,4 +1,4 @@
-﻿package com.group4.backend.service.email;
+package com.group4.backend.service.email;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-﻿package com.group4.backend.controller;
+package com.group4.backend.controller;
 
 import com.group4.backend.dto.BrandProfileRequest;
 import com.group4.backend.dto.BrandProfileResponse;

@@ -1,4 +1,4 @@
-﻿package com.group4.backend.service;
+package com.group4.backend.service;
 import com.group4.backend.service.ai.AiRecommendationService;
 import com.group4.backend.service.ai.GroqApiClient;
 

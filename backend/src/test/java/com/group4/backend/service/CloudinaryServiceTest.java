@@ -1,4 +1,4 @@
-﻿package com.group4.backend.service;
+package com.group4.backend.service;
 import com.group4.backend.service.media.CloudinaryService;
 
 import com.cloudinary.Cloudinary;

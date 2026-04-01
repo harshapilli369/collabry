@@ -1,4 +1,4 @@
-﻿package com.group4.backend.service;
+package com.group4.backend.service;
 import com.group4.backend.service.user.UserService;
 
 import com.group4.backend.dto.InfluencerSearchResult;

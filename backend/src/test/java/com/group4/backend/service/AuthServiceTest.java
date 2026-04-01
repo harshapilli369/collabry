@@ -1,4 +1,4 @@
-﻿package com.group4.backend.service;
+package com.group4.backend.service;
 import com.group4.backend.service.auth.AuthService;
 
 import com.group4.backend.dto.AuthResponse;

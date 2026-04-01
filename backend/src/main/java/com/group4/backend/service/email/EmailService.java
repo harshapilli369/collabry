@@ -1,4 +1,4 @@
-﻿package com.group4.backend.service.email;
+package com.group4.backend.service.email;
 
 public interface EmailService {
 

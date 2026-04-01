@@ -1,4 +1,4 @@
-﻿package com.group4.backend.controller.upload;
+package com.group4.backend.controller.upload;
 
 import com.group4.backend.service.media.CloudinaryService;
 import org.springframework.http.ResponseEntity;

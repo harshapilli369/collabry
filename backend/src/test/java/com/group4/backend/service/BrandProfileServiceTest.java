@@ -1,4 +1,4 @@
-﻿package com.group4.backend.service;
+package com.group4.backend.service;
 import com.group4.backend.service.profile.BrandProfileService;
 
 import com.group4.backend.dto.BrandProfileRequest;
