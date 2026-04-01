@@ -1,6 +1,7 @@
 package com.group4.backend.service;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,18 +26,15 @@ public class CloudinaryService {
      * @return the secure HTTPS URL of the uploaded image
      * @throws IOException if the upload fails or the file cannot be read
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public String uploadImage(MultipartFile file, String folder) throws IOException {
+        Transformation transformation = new Transformation()
+                .width(800).height(800).crop("limit").quality("auto").fetchFormat("auto");
         Map<String, Object> options = ObjectUtils.asMap(
                 "folder", folder,
                 "resource_type", "image",
                 "allowed_formats", new String[]{"jpg", "jpeg", "png", "gif", "webp"},
-                "transformation", ObjectUtils.asMap(
-                        "width", 800,
-                        "height", 800,
-                        "crop", "limit",
-                        "quality", "auto",
-                        "fetch_format", "auto"));
+                "transformation", transformation);
 
         Map<String, Object> result = cloudinary.uploader().upload(file.getBytes(), options);
         String url = (String) result.get("secure_url");
