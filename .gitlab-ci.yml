@@ -12,6 +12,13 @@
 include:
   - template: Jobs/Code-Quality.gitlab-ci.yml
 
+# Override the built-in code_quality job to allow failure.
+# The CodeClimate engine requires ~15 GB of free disk space on the runner.
+# When the shared runner has insufficient space this job fails with
+# "No space left on device" — an infra issue outside our control.
+code_quality:
+  allow_failure: true
+
 stages:
   - build
   - test
