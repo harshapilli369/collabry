@@ -1,12 +1,13 @@
 package com.group4.backend.service;
+import com.group4.backend.service.profile.RatingService;
 
 import com.group4.backend.dto.RatingRequest;
 import com.group4.backend.dto.RatingResponse;
 import com.group4.backend.model.CollaborationInvitation;
 import com.group4.backend.model.InfluencerRating;
 import com.group4.backend.model.InvitationStatus;
-import com.group4.backend.repository.InfluencerRatingRepository;
-import com.group4.backend.repository.InvitationRepository;
+import com.group4.backend.repository.profile.InfluencerRatingRepository;
+import com.group4.backend.repository.campaign.InvitationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -135,8 +136,10 @@ class RatingServiceTest {
 
         RatingResponse response = ratingService.submitRating(brandId, request);
 
-        assertThat(response.getRating()).isEqualTo(4);
-        assertThat(response.getReview()).isEqualTo("Good work");
+        assertAll(
+                () -> assertThat(response.getRating()).isEqualTo(4),
+                () -> assertThat(response.getReview()).isEqualTo("Good work")
+        );
     }
 
     @Test

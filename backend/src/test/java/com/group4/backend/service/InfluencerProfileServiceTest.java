@@ -1,4 +1,6 @@
 package com.group4.backend.service;
+import com.group4.backend.service.profile.InfluencerProfileService;
+import com.group4.backend.service.profile.RatingService;
 
 import com.group4.backend.dto.InfluencerProfileRequest;
 import com.group4.backend.dto.InfluencerProfileResponse;
@@ -6,8 +8,8 @@ import com.group4.backend.dto.RatingResponse;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.InfluencerProfileRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.profile.InfluencerProfileRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -174,9 +176,11 @@ class InfluencerProfileServiceTest {
 
         List<InfluencerProfileResponse> result = influencerProfileService.search("gaming", null, null, null, null, null);
 
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getNiche()).isEqualTo("Gaming");
-        assertThat(result.get(1).getNiche()).isEqualTo("Retro Gaming");
+        assertAll(
+                () -> assertThat(result).hasSize(2),
+                () -> assertThat(result.get(0).getNiche()).isEqualTo("Gaming"),
+                () -> assertThat(result.get(1).getNiche()).isEqualTo("Retro Gaming")
+        );
     }
 
     @Test
@@ -385,8 +389,10 @@ class InfluencerProfileServiceTest {
 
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
-        assertThat(response).isNotNull();
-        assertThat(response.isComplete()).isTrue();
+        assertAll(
+                () -> assertThat(response).isNotNull(),
+                () -> assertThat(response.isComplete()).isTrue()
+        );
     }
 
     @Test
@@ -400,8 +406,10 @@ class InfluencerProfileServiceTest {
 
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
-        assertThat(response).isNotNull();
-        assertThat(response.getName()).isEqualTo("Jane Updated");
+        assertAll(
+                () -> assertThat(response).isNotNull(),
+                () -> assertThat(response.getName()).isEqualTo("Jane Updated")
+        );
         verify(influencerProfileRepository).save(any(InfluencerProfile.class));
     }
 

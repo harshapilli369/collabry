@@ -1,11 +1,13 @@
 package com.group4.backend.service;
+import com.group4.backend.service.ai.AiRecommendationService;
+import com.group4.backend.service.ai.GroqApiClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group4.backend.dto.InfluencerRecommendationDTO;
 import com.group4.backend.model.Campaign;
 import com.group4.backend.model.InfluencerProfile;
-import com.group4.backend.repository.CampaignRepository;
-import com.group4.backend.repository.InfluencerProfileRepository;
+import com.group4.backend.repository.campaign.CampaignRepository;
+import com.group4.backend.repository.profile.InfluencerProfileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -205,8 +207,10 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getMatchScore()).isBetween(30, 49);
+        assertAll(
+                () -> assertThat(result).hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).isBetween(30, 49)
+        );
     }
 
     @Test
@@ -232,8 +236,10 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).isNotEmpty();
-        assertThat(result.get(0).getInfluencerId()).isEqualTo(10L);
+        assertAll(
+                () -> assertThat(result).isNotEmpty(),
+                () -> assertThat(result.get(0).getInfluencerId()).isEqualTo(10L)
+        );
     }
 
     @Test
