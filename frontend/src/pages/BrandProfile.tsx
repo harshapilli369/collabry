@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, Button, Typography, Select, message, Modal, Upload, Avatar } from 'antd'
+import { Form, Input, Button, Typography, Select, Modal, Upload, Avatar, notification } from 'antd'
 import { ArrowLeftOutlined, InstagramOutlined, LinkedinOutlined, TwitterOutlined, CheckCircleFilled, GlobalOutlined, CameraOutlined, LoadingOutlined } from '@ant-design/icons'
 import type { UploadFile, RcFile } from 'antd/es/upload/interface'
 import { useNavigate } from 'react-router-dom'
@@ -26,6 +26,7 @@ export const BrandProfile = () => {
     const [isEdit, setIsEdit] = useState(false)
     const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined)
     const [uploadingLogo, setUploadingLogo] = useState(false)
+    const [logoSaved, setLogoSaved] = useState(false)
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -48,7 +49,7 @@ export const BrandProfile = () => {
                     })
                 }
             })
-            .catch(() => message.error('Failed to load profile'))
+            .catch(() => notification.error({ message: 'Failed to load profile', placement: 'topRight' }))
             .finally(() => setFetching(false))
     }, [form])
 
@@ -56,13 +57,14 @@ export const BrandProfile = () => {
         setLoading(true)
         try {
             await updateMyBrandProfile(values)
-            message.success('Profile saved successfully')
+            setLogoSaved(false)
+            notification.success({ message: 'Profile saved successfully', placement: 'topRight', duration: 4 })
             setTimeout(() => {
                 navigate('/brand/profile', { replace: true })
             }, 300)
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Failed to save profile'
-            message.error(msg)
+            notification.error({ message: msg, placement: 'topRight' })
             setLoading(false)
         }
     }
@@ -189,17 +191,29 @@ export const BrandProfile = () => {
                                     showUploadList={false}
                                     beforeUpload={async (file: RcFile) => {
                                         if (file.size > 10 * 1024 * 1024) {
-                                            message.error('Logo must be smaller than 10 MB')
+                                            notification.error({ message: 'Logo must be smaller than 10 MB', placement: 'topRight' })
                                             return Upload.LIST_IGNORE
                                         }
                                         setUploadingLogo(true)
+                                        setLogoSaved(false)
                                         try {
                                             const url = await uploadProfileImage(file, 'brand-logos')
                                             setLogoUrl(url)
                                             form.setFieldValue('logoUrl', url)
-                                            message.success('Logo uploaded!')
+                                            setLogoSaved(true)
+                                            notification.success({
+                                                message: 'Logo uploaded!',
+                                                description: 'Click "Save Changes" below to apply it to your profile.',
+                                                placement: 'topRight',
+                                                duration: 6,
+                                            })
                                         } catch (e) {
-                                            message.error(e instanceof Error ? e.message : 'Upload failed')
+                                            notification.error({
+                                                message: 'Upload failed',
+                                                description: e instanceof Error ? e.message : 'Could not upload logo. Please try again.',
+                                                placement: 'topRight',
+                                                duration: 8,
+                                            })
                                         } finally {
                                             setUploadingLogo(false)
                                         }
@@ -216,6 +230,19 @@ export const BrandProfile = () => {
                                     </Button>
                                 </Upload>
                             </div>
+                            {logoSaved && (
+                                <div style={{
+                                    marginTop: 10,
+                                    padding: '8px 12px',
+                                    background: '#162312',
+                                    border: '1px solid #274916',
+                                    borderRadius: 8,
+                                    color: '#95de64',
+                                    fontSize: 12,
+                                }}>
+                                    ✓ Logo ready — click <strong>Save Changes</strong> below to apply it.
+                                </div>
+                            )}
                         </Form.Item>
                         <Form.Item name="description" label="Description">
                             <TextArea rows={4} placeholder="Tell influencers about your brand and campaigns" />

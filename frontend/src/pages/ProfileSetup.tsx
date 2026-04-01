@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, message, theme, Modal, Upload, Avatar } from 'antd'
+import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, theme, Modal, Upload, Avatar, notification } from 'antd'
 import { UserOutlined, LinkOutlined, DollarOutlined, ArrowLeftOutlined, CheckCircleFilled, InstagramOutlined, YoutubeOutlined, RobotOutlined, CameraOutlined, LoadingOutlined } from '@ant-design/icons'
 import type { UploadFile, RcFile } from 'antd/es/upload/interface'
 import { useNavigate } from 'react-router-dom'
@@ -35,6 +35,7 @@ export const ProfileSetup = () => {
     const [enhancedBio, setEnhancedBio] = useState<string | null>(null)
     const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined)
     const [uploadingAvatar, setUploadingAvatar] = useState(false)
+    const [photoSaved, setPhotoSaved] = useState(false)
 
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
@@ -71,7 +72,7 @@ export const ProfileSetup = () => {
                     })
                 }
             })
-            .catch(() => message.error('Failed to load profile'))
+            .catch(() => notification.error({ message: 'Failed to load profile', placement: 'topRight' }))
             .finally(() => setFetching(false))
     }, [form, isInfluencer, user?.role, navigate])
 
@@ -86,9 +87,9 @@ export const ProfileSetup = () => {
         if (!isInfluencer) return
         if (!saveAsDraft && (!hasSocialHandle(values) || values.rate == null)) {
             if (!hasSocialHandle(values)) {
-                message.error('At least one social media handle is required to complete your profile')
+                notification.error({ message: 'At least one social media handle is required to complete your profile', placement: 'topRight' })
             } else {
-                message.error('Rate is required to complete your profile')
+                notification.error({ message: 'Rate is required to complete your profile', placement: 'topRight' })
             }
             return
         }
@@ -110,11 +111,16 @@ export const ProfileSetup = () => {
                 audienceInfo: values.audienceInfo || undefined,
             }
             await updateMyInfluencerProfile(payload, saveAsDraft)
-            message.success(saveAsDraft ? 'Profile saved as draft' : 'Profile saved!')
+            setPhotoSaved(false)
+            notification.success({
+                message: saveAsDraft ? 'Profile saved as draft' : 'Profile saved!',
+                placement: 'topRight',
+                duration: 4,
+            })
             navigate('/influencer/profile', { replace: true })
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Failed to save profile'
-            message.error(msg)
+            notification.error({ message: msg, placement: 'topRight' })
         } finally {
             setLoading(false)
         }
@@ -139,12 +145,12 @@ export const ProfileSetup = () => {
             const step1Invalid = step1Fields.some(f => !values[f as keyof typeof values])
             if (step1Invalid) {
                 setCurrent(0)
-                message.error('Please complete your personal info first')
+                notification.error({ message: 'Please complete your personal info first', placement: 'topRight' })
             } else if (!values.rate) {
                 setCurrent(2)
-                message.error('Rate is required to complete your profile')
+                notification.error({ message: 'Rate is required to complete your profile', placement: 'topRight' })
             } else {
-                message.error('Please fill in all required fields')
+                notification.error({ message: 'Please fill in all required fields', placement: 'topRight' })
             }
             return
         }
@@ -413,17 +419,29 @@ export const ProfileSetup = () => {
                                             showUploadList={false}
                                             beforeUpload={async (file: RcFile) => {
                                                 if (file.size > 10 * 1024 * 1024) {
-                                                    message.error('Image must be smaller than 10 MB')
+                                                    notification.error({ message: 'Image must be smaller than 10 MB', placement: 'topRight' })
                                                     return Upload.LIST_IGNORE
                                                 }
                                                 setUploadingAvatar(true)
+                                                setPhotoSaved(false)
                                                 try {
                                                     const url = await uploadProfileImage(file, 'profile-pictures')
                                                     setAvatarUrl(url)
                                                     form.setFieldValue('profilePictureUrl', url)
-                                                    message.success('Photo uploaded!')
+                                                    setPhotoSaved(true)
+                                                    notification.success({
+                                                        message: 'Photo uploaded!',
+                                                        description: 'Click "Save Changes" below to apply it to your profile.',
+                                                        placement: 'topRight',
+                                                        duration: 6,
+                                                    })
                                                 } catch (e) {
-                                                    message.error(e instanceof Error ? e.message : 'Upload failed')
+                                                    notification.error({
+                                                        message: 'Upload failed',
+                                                        description: e instanceof Error ? e.message : 'Could not upload photo. Please try again.',
+                                                        placement: 'topRight',
+                                                        duration: 8,
+                                                    })
                                                 } finally {
                                                     setUploadingAvatar(false)
                                                 }
@@ -440,6 +458,19 @@ export const ProfileSetup = () => {
                                             </Button>
                                         </Upload>
                                     </div>
+                                    {photoSaved && (
+                                        <div style={{
+                                            marginTop: 10,
+                                            padding: '8px 12px',
+                                            background: '#162312',
+                                            border: '1px solid #274916',
+                                            borderRadius: 8,
+                                            color: '#95de64',
+                                            fontSize: 12,
+                                        }}>
+                                            ✓ Photo ready — click <strong>Save Changes</strong> below to apply it.
+                                        </div>
+                                    )}
                                 </Form.Item>
                             </div>
                         </div>
