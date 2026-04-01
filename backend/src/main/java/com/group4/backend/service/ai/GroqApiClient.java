@@ -35,7 +35,7 @@ public class GroqApiClient {
     /**
      * Package-private for tests: inject a mock {@link RestTemplate} to avoid network calls.
      */
-    GroqApiClient(RestTemplate restTemplate, ObjectMapper objectMapper) {
+    public GroqApiClient(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
