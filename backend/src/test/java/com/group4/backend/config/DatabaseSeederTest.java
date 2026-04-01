@@ -82,6 +82,8 @@ class DatabaseSeederTest {
                 .run();
 
         verify(brandProfileRepository, never()).save(any());
+        ArgumentCaptor<BrandProfile> brandCap = ArgumentCaptor.forClass(BrandProfile.class);
+        assertThat(brandCap.getAllValues()).isEmpty();
     }
 
     @Test
