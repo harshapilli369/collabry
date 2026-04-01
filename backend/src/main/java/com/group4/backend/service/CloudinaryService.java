@@ -39,6 +39,11 @@ public class CloudinaryService {
                         "fetch_format", "auto"));
 
         Map<String, Object> result = cloudinary.uploader().upload(file.getBytes(), options);
-        return (String) result.get("secure_url");
+        String url = (String) result.get("secure_url");
+        if (url == null) {
+            Object error = result.get("error");
+            throw new IOException("Cloudinary upload failed: " + (error != null ? error : "no URL returned"));
+        }
+        return url;
     }
 }

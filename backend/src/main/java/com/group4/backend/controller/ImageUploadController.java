@@ -46,6 +46,8 @@ public class ImageUploadController {
             return ResponseEntity.ok(Map.of("url", url));
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of("error", "Upload failed: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "Upload failed: " + e.getMessage()));
         }
     }
 }
