@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 class ConsoleEmailServiceTest {
 
@@ -43,9 +44,11 @@ class ConsoleEmailServiceTest {
         consoleEmailService.sendConfirmationEmail(email, link);
 
         String output = capturedOut.toString(StandardCharsets.UTF_8);
-        assertThat(output).contains("CONFIRMATION EMAIL (simulated) FOR: " + email);
-        assertThat(output).contains("Confirm your account: " + link);
-        assertThat(output).contains("------------------------------------------------");
+        assertAll(
+                () -> assertThat(output).contains("CONFIRMATION EMAIL (simulated) FOR: " + email),
+                () -> assertThat(output).contains("Confirm your account: " + link),
+                () -> assertThat(output).contains("------------------------------------------------")
+        );
     }
 
     @Test
@@ -56,8 +59,10 @@ class ConsoleEmailServiceTest {
         consoleEmailService.sendPasswordResetEmail(email, resetLink);
 
         String output = capturedOut.toString(StandardCharsets.UTF_8);
-        assertThat(output).contains("PASSWORD RESET EMAIL (simulated) FOR: " + email);
-        assertThat(output).contains("Reset your password: " + resetLink);
-        assertThat(output).contains("------------------------------------------------");
+        assertAll(
+                () -> assertThat(output).contains("PASSWORD RESET EMAIL (simulated) FOR: " + email),
+                () -> assertThat(output).contains("Reset your password: " + resetLink),
+                () -> assertThat(output).contains("------------------------------------------------")
+        );
     }
 }
