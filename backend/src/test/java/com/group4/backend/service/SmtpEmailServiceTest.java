@@ -13,6 +13,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -46,11 +47,13 @@ class SmtpEmailServiceTest {
         ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(mailSender).send(captor.capture());
         SimpleMailMessage msg = captor.getValue();
-        assertThat(msg.getFrom()).isEqualTo("noreply@collabry.test");
-        assertThat(msg.getTo()).containsExactly("user@test.com");
-        assertThat(msg.getSubject()).isEqualTo("Confirm your Collabry account");
-        assertThat(msg.getText()).contains("Welcome to Collabry");
-        assertThat(msg.getText()).contains(link);
+        assertAll(
+                () -> assertThat(msg.getFrom()).isEqualTo("noreply@collabry.test"),
+                () -> assertThat(msg.getTo()).containsExactly("user@test.com"),
+                () -> assertThat(msg.getSubject()).isEqualTo("Confirm your Collabry account"),
+                () -> assertThat(msg.getText()).contains("Welcome to Collabry"),
+                () -> assertThat(msg.getText()).contains(link)
+        );
     }
 
     @Test
@@ -82,11 +85,13 @@ class SmtpEmailServiceTest {
         ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(mailSender).send(captor.capture());
         SimpleMailMessage msg = captor.getValue();
-        assertThat(msg.getFrom()).isEqualTo("noreply@collabry.test");
-        assertThat(msg.getTo()).containsExactly("user@test.com");
-        assertThat(msg.getSubject()).isEqualTo("Reset your Collabry password");
-        assertThat(msg.getText()).contains("password reset");
-        assertThat(msg.getText()).contains(resetLink);
+        assertAll(
+                () -> assertThat(msg.getFrom()).isEqualTo("noreply@collabry.test"),
+                () -> assertThat(msg.getTo()).containsExactly("user@test.com"),
+                () -> assertThat(msg.getSubject()).isEqualTo("Reset your Collabry password"),
+                () -> assertThat(msg.getText()).contains("password reset"),
+                () -> assertThat(msg.getText()).contains(resetLink)
+        );
     }
 
     @Test

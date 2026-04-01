@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -84,9 +85,11 @@ class JwtAuthenticationFilterTest {
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        assertThat(SecurityContextHolder.getContext().getAuthentication())
-                .isInstanceOf(UsernamePasswordAuthenticationToken.class);
-        assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("user@test.com");
+        assertAll(
+                () -> assertThat(SecurityContextHolder.getContext().getAuthentication())
+                        .isInstanceOf(UsernamePasswordAuthenticationToken.class),
+                () -> assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("user@test.com")
+        );
         verify(filterChain).doFilter(request, response);
     }
 

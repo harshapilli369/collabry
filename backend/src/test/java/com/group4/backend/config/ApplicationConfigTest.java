@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -38,9 +39,11 @@ class ApplicationConfigTest {
         UserDetailsService uds = config.userDetailsService();
         UserDetails details = uds.loadUserByUsername("a@b.com");
 
-        assertThat(details.getUsername()).isEqualTo("a@b.com");
-        assertThat(details.getPassword()).isEqualTo("hash");
-        assertThat(details.getAuthorities()).extracting(Object::toString).containsExactly("ROLE_INFLUENCER");
+        assertAll(
+                () -> assertThat(details.getUsername()).isEqualTo("a@b.com"),
+                () -> assertThat(details.getPassword()).isEqualTo("hash"),
+                () -> assertThat(details.getAuthorities()).extracting(Object::toString).containsExactly("ROLE_INFLUENCER")
+        );
     }
 
     @Test

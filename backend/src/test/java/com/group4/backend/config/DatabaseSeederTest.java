@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
@@ -67,8 +68,10 @@ class DatabaseSeederTest {
 
         ArgumentCaptor<BrandProfile> brandCap = ArgumentCaptor.forClass(BrandProfile.class);
         verify(brandProfileRepository).save(brandCap.capture());
-        assertThat(brandCap.getValue().getUserId()).isEqualTo(100L);
-        assertThat(brandCap.getValue().getName()).contains("Tech Haven");
+        assertAll(
+                () -> assertThat(brandCap.getValue().getUserId()).isEqualTo(100L),
+                () -> assertThat(brandCap.getValue().getName()).contains("Tech Haven")
+        );
     }
 
     @Test

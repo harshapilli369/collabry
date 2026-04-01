@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.lenient;
@@ -93,12 +94,14 @@ class InvitationServiceTest {
 
         InvitationResponse response = invitationService.createInvitation(10L, 1L, request);
 
-        assertThat(response).isNotNull();
-        assertThat(response.getCampaignId()).isEqualTo(1L);
-        assertThat(response.getInfluencerId()).isEqualTo(20L);
-        assertThat(response.getBrandId()).isEqualTo(10L);
-        assertThat(response.getStatus()).isEqualTo(InvitationStatus.PENDING);
-        assertThat(response.getBrandMessage()).isEqualTo("Join our campaign");
+        assertAll(
+                () -> assertThat(response).isNotNull(),
+                () -> assertThat(response.getCampaignId()).isEqualTo(1L),
+                () -> assertThat(response.getInfluencerId()).isEqualTo(20L),
+                () -> assertThat(response.getBrandId()).isEqualTo(10L),
+                () -> assertThat(response.getStatus()).isEqualTo(InvitationStatus.PENDING),
+                () -> assertThat(response.getBrandMessage()).isEqualTo("Join our campaign")
+        );
         verify(invitationRepository).save(any(CollaborationInvitation.class));
     }
 
@@ -120,9 +123,11 @@ class InvitationServiceTest {
 
         List<InvitationResponse> list = invitationService.getInvitationsForInfluencer(20L);
 
-        assertThat(list).hasSize(1);
-        assertThat(list.get(0).getId()).isEqualTo(100L);
-        assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.PENDING);
+        assertAll(
+                () -> assertThat(list).hasSize(1),
+                () -> assertThat(list.get(0).getId()).isEqualTo(100L),
+                () -> assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.PENDING)
+        );
     }
 
     @Test
@@ -136,10 +141,12 @@ class InvitationServiceTest {
 
         InvitationDetailResponse detail = invitationService.getInvitationWithCampaignDetails(100L, 20L);
 
-        assertThat(detail).isNotNull();
-        assertThat(detail.getId()).isEqualTo(100L);
-        assertThat(detail.getCampaign()).isNotNull();
-        assertThat(detail.getCampaign().getName()).isEqualTo("Test Campaign");
+        assertAll(
+                () -> assertThat(detail).isNotNull(),
+                () -> assertThat(detail.getId()).isEqualTo(100L),
+                () -> assertThat(detail.getCampaign()).isNotNull(),
+                () -> assertThat(detail.getCampaign().getName()).isEqualTo("Test Campaign")
+        );
     }
 
     @Test
@@ -167,8 +174,10 @@ class InvitationServiceTest {
 
         InvitationResponse response = invitationService.negotiate(100L, 20L, request);
 
-        assertThat(response.getStatus()).isEqualTo(InvitationStatus.NEGOTIATING);
-        assertThat(response.getProposedAmount()).isEqualByComparingTo("500.00");
+        assertAll(
+                () -> assertThat(response.getStatus()).isEqualTo(InvitationStatus.NEGOTIATING),
+                () -> assertThat(response.getProposedAmount()).isEqualByComparingTo("500.00")
+        );
     }
 
     @Test
@@ -190,9 +199,11 @@ class InvitationServiceTest {
 
         List<InvitationResponse> list = invitationService.getInvitationsForBrand(10L);
 
-        assertThat(list).hasSize(1);
-        assertThat(list.get(0).getId()).isEqualTo(100L);
-        assertThat(list.get(0).getBrandId()).isEqualTo(10L);
+        assertAll(
+                () -> assertThat(list).hasSize(1),
+                () -> assertThat(list.get(0).getId()).isEqualTo(100L),
+                () -> assertThat(list.get(0).getBrandId()).isEqualTo(10L)
+        );
     }
 
     @Test
@@ -219,11 +230,13 @@ class InvitationServiceTest {
 
         InvitationResponse response = invitationService.createInvitation(10L, 1L, request);
 
-        assertThat(response.getProposedAmount()).isEqualByComparingTo("1000.00");
-        assertThat(response.getProposedTimeline()).isEqualTo("2 weeks");
-        assertThat(response.getProposedDeliverables()).isEqualTo("2 Reels, 3 Stories");
-        assertThat(response.getPlatform()).isEqualTo("INSTAGRAM_REEL");
-        assertThat(response.getExpiresAt()).isNotNull();
+        assertAll(
+                () -> assertThat(response.getProposedAmount()).isEqualByComparingTo("1000.00"),
+                () -> assertThat(response.getProposedTimeline()).isEqualTo("2 weeks"),
+                () -> assertThat(response.getProposedDeliverables()).isEqualTo("2 Reels, 3 Stories"),
+                () -> assertThat(response.getPlatform()).isEqualTo("INSTAGRAM_REEL"),
+                () -> assertThat(response.getExpiresAt()).isNotNull()
+        );
     }
 
     @Test
@@ -271,8 +284,10 @@ class InvitationServiceTest {
 
         InvitationResponse response = invitationService.updateInvitation(100L, 10L, request);
 
-        assertThat(response.getBrandMessage()).isEqualTo("Updated message");
-        assertThat(response.getProposedAmount()).isEqualByComparingTo("750");
+        assertAll(
+                () -> assertThat(response.getBrandMessage()).isEqualTo("Updated message"),
+                () -> assertThat(response.getProposedAmount()).isEqualByComparingTo("750")
+        );
         verify(invitationRepository).save(invitation);
     }
 
@@ -295,8 +310,10 @@ class InvitationServiceTest {
 
         List<InvitationResponse> list = invitationService.getInvitationsForBrand(10L);
 
-        assertThat(list).hasSize(1);
-        assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.EXPIRED);
+        assertAll(
+                () -> assertThat(list).hasSize(1),
+                () -> assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.EXPIRED)
+        );
     }
 
     @Test

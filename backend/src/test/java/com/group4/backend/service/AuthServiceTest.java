@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,10 +51,12 @@ class AuthServiceTest {
         AuthResponse response = authService.login(request);
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        assertThat(response.getToken()).isEqualTo("jwt-token");
-        assertThat(response.getEmail()).isEqualTo("influencer@test.com");
-        assertThat(response.getRole()).isEqualTo(Role.INFLUENCER);
-        assertThat(response.getId()).isEqualTo(55L);
+        assertAll(
+                () -> assertThat(response.getToken()).isEqualTo("jwt-token"),
+                () -> assertThat(response.getEmail()).isEqualTo("influencer@test.com"),
+                () -> assertThat(response.getRole()).isEqualTo(Role.INFLUENCER),
+                () -> assertThat(response.getId()).isEqualTo(55L)
+        );
     }
 
     @Test

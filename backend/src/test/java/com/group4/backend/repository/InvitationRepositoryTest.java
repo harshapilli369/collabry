@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @DataJpaTest
 class InvitationRepositoryTest {
@@ -29,13 +30,15 @@ class InvitationRepositoryTest {
         CollaborationInvitation saved = invitationRepository.save(inv);
         invitationRepository.flush();
 
-        assertThat(saved.getId()).isNotNull();
-        assertThat(saved.getCampaignId()).isEqualTo(1L);
-        assertThat(saved.getInfluencerId()).isEqualTo(2L);
-        assertThat(saved.getBrandId()).isEqualTo(3L);
-        assertThat(saved.getStatus()).isEqualTo(InvitationStatus.PENDING);
-        assertThat(saved.getBrandMessage()).isEqualTo("Join our campaign");
-        assertThat(saved.getCreatedAt()).isNotNull();
+        assertAll(
+                () -> assertThat(saved.getId()).isNotNull(),
+                () -> assertThat(saved.getCampaignId()).isEqualTo(1L),
+                () -> assertThat(saved.getInfluencerId()).isEqualTo(2L),
+                () -> assertThat(saved.getBrandId()).isEqualTo(3L),
+                () -> assertThat(saved.getStatus()).isEqualTo(InvitationStatus.PENDING),
+                () -> assertThat(saved.getBrandMessage()).isEqualTo("Join our campaign"),
+                () -> assertThat(saved.getCreatedAt()).isNotNull()
+        );
 
         CollaborationInvitation found = invitationRepository.findById(saved.getId()).orElseThrow();
         assertThat(found.getInfluencerId()).isEqualTo(2L);
@@ -54,9 +57,11 @@ class InvitationRepositoryTest {
         invitationRepository.saveAndFlush(second);
 
         List<CollaborationInvitation> list = invitationRepository.findByInfluencerIdOrderByCreatedAtDesc(influencerId);
-        assertThat(list).hasSize(2);
-        assertThat(list.get(0).getId()).isEqualTo(second.getId());
-        assertThat(list.get(1).getId()).isEqualTo(first.getId());
+        assertAll(
+                () -> assertThat(list).hasSize(2),
+                () -> assertThat(list.get(0).getId()).isEqualTo(second.getId()),
+                () -> assertThat(list.get(1).getId()).isEqualTo(first.getId())
+        );
     }
 
     @Test
@@ -71,9 +76,11 @@ class InvitationRepositoryTest {
         invitationRepository.saveAndFlush(inv);
 
         Optional<CollaborationInvitation> found = invitationRepository.findByCampaignIdAndInfluencerId(campaignId, influencerId);
-        assertThat(found).isPresent();
-        assertThat(found.get().getInfluencerId()).isEqualTo(influencerId);
-        assertThat(found.get().getCampaignId()).isEqualTo(campaignId);
+        assertAll(
+                () -> assertThat(found).isPresent(),
+                () -> assertThat(found.get().getInfluencerId()).isEqualTo(influencerId),
+                () -> assertThat(found.get().getCampaignId()).isEqualTo(campaignId)
+        );
     }
 
     @Test
@@ -91,9 +98,11 @@ class InvitationRepositoryTest {
                 influencerId,
                 List.of(InvitationStatus.ACCEPTED, InvitationStatus.CONFIRMED)
         );
-        assertThat(acceptedOrConfirmed).hasSize(2);
-        assertThat(acceptedOrConfirmed).extracting(CollaborationInvitation::getStatus)
-                .containsExactlyInAnyOrder(InvitationStatus.ACCEPTED, InvitationStatus.CONFIRMED);
+        assertAll(
+                () -> assertThat(acceptedOrConfirmed).hasSize(2),
+                () -> assertThat(acceptedOrConfirmed).extracting(CollaborationInvitation::getStatus)
+                        .containsExactlyInAnyOrder(InvitationStatus.ACCEPTED, InvitationStatus.CONFIRMED)
+        );
     }
 
     private static CollaborationInvitation createInvitation(long campaignId, long influencerId, long brandId, InvitationStatus status) {

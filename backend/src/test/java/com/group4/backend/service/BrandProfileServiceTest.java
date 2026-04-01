@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -60,13 +61,15 @@ class BrandProfileServiceTest {
 
         Optional<BrandProfileResponse> result = brandProfileService.getByUserId(10L);
 
-        assertThat(result).isPresent();
-        assertThat(result.get().getId()).isEqualTo(1L);
-        assertThat(result.get().getUserId()).isEqualTo(10L);
-        assertThat(result.get().getName()).isEqualTo("Old Name");
-        assertThat(result.get().getIndustry()).isEqualTo("Tech");
-        assertThat(result.get().getWebsite()).isEqualTo("https://old.com");
-        assertThat(result.get().getEmail()).isEqualTo("old@brand.com");
+        assertAll(
+                () -> assertThat(result).isPresent(),
+                () -> assertThat(result.get().getId()).isEqualTo(1L),
+                () -> assertThat(result.get().getUserId()).isEqualTo(10L),
+                () -> assertThat(result.get().getName()).isEqualTo("Old Name"),
+                () -> assertThat(result.get().getIndustry()).isEqualTo("Tech"),
+                () -> assertThat(result.get().getWebsite()).isEqualTo("https://old.com"),
+                () -> assertThat(result.get().getEmail()).isEqualTo("old@brand.com")
+        );
     }
 
     @Test
@@ -115,13 +118,15 @@ class BrandProfileServiceTest {
 
         BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
 
-        assertThat(response).isNotNull();
-        assertThat(response.getUserId()).isEqualTo(10L);
-        assertThat(response.getName()).isEqualTo("Acme Inc");
-        assertThat(response.getIndustry()).isEqualTo("Fashion");
-        assertThat(response.getWebsite()).isEqualTo("https://acme.com");
-        assertThat(response.getEmail()).isEqualTo("contact@acme.com");
-        assertThat(response.getBudgetRange()).isEqualTo(BudgetRange.ONE_K_5K);
+        assertAll(
+                () -> assertThat(response).isNotNull(),
+                () -> assertThat(response.getUserId()).isEqualTo(10L),
+                () -> assertThat(response.getName()).isEqualTo("Acme Inc"),
+                () -> assertThat(response.getIndustry()).isEqualTo("Fashion"),
+                () -> assertThat(response.getWebsite()).isEqualTo("https://acme.com"),
+                () -> assertThat(response.getEmail()).isEqualTo("contact@acme.com"),
+                () -> assertThat(response.getBudgetRange()).isEqualTo(BudgetRange.ONE_K_5K)
+        );
         verify(brandProfileRepository).save(any(BrandProfile.class));
     }
 
@@ -135,9 +140,11 @@ class BrandProfileServiceTest {
 
         BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
 
-        assertThat(response).isNotNull();
-        assertThat(response.getName()).isEqualTo("Acme Updated");
-        assertThat(response.getIndustry()).isEqualTo("Fashion");
+        assertAll(
+                () -> assertThat(response).isNotNull(),
+                () -> assertThat(response.getName()).isEqualTo("Acme Updated"),
+                () -> assertThat(response.getIndustry()).isEqualTo("Fashion")
+        );
         verify(brandProfileRepository).save(any(BrandProfile.class));
     }
 
@@ -160,10 +167,12 @@ class BrandProfileServiceTest {
 
         Optional<BrandProfileResponse> result = brandProfileService.getPublicProfile(10L);
 
-        assertThat(result).isPresent();
-        assertThat(result.get().getId()).isEqualTo(1L);
-        assertThat(result.get().getUserId()).isEqualTo(10L);
-        assertThat(result.get().getName()).isEqualTo("Old Name");
+        assertAll(
+                () -> assertThat(result).isPresent(),
+                () -> assertThat(result.get().getId()).isEqualTo(1L),
+                () -> assertThat(result.get().getUserId()).isEqualTo(10L),
+                () -> assertThat(result.get().getName()).isEqualTo("Old Name")
+        );
     }
 
     @Test

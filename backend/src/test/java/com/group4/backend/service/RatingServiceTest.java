@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -67,9 +68,11 @@ class RatingServiceTest {
 
         RatingResponse response = ratingService.submitRating(brandId, request);
 
-        assertThat(response).isNotNull();
-        assertThat(response.getRating()).isEqualTo(5);
-        assertThat(response.getReview()).isEqualTo("Great collaboration!");
+        assertAll(
+                () -> assertThat(response).isNotNull(),
+                () -> assertThat(response.getRating()).isEqualTo(5),
+                () -> assertThat(response.getReview()).isEqualTo("Great collaboration!")
+        );
         verify(ratingRepository).save(any(InfluencerRating.class));
     }
 
@@ -187,9 +190,11 @@ class RatingServiceTest {
 
         RatingResponse response = ratingService.submitRating(brandId, request);
 
-        assertThat(response.getRating()).isEqualTo(5);
-        assertThat(response.getReview()).isEqualTo("Updated review");
-        assertThat(existing.getId()).isEqualTo(50L);
+        assertAll(
+                () -> assertThat(response.getRating()).isEqualTo(5),
+                () -> assertThat(response.getReview()).isEqualTo("Updated review"),
+                () -> assertThat(existing.getId()).isEqualTo(50L)
+        );
     }
 
     @Test
@@ -207,11 +212,13 @@ class RatingServiceTest {
 
         List<RatingResponse> list = ratingService.getRatingsForInfluencer(influencerId);
 
-        assertThat(list).hasSize(1);
-        assertThat(list.get(0).getId()).isEqualTo(1L);
-        assertThat(list.get(0).getInvitationId()).isEqualTo(100L);
-        assertThat(list.get(0).getRating()).isEqualTo(5);
-        assertThat(list.get(0).getReview()).isEqualTo("A");
+        assertAll(
+                () -> assertThat(list).hasSize(1),
+                () -> assertThat(list.get(0).getId()).isEqualTo(1L),
+                () -> assertThat(list.get(0).getInvitationId()).isEqualTo(100L),
+                () -> assertThat(list.get(0).getRating()).isEqualTo(5),
+                () -> assertThat(list.get(0).getReview()).isEqualTo("A")
+        );
     }
 
     @Test
@@ -224,9 +231,11 @@ class RatingServiceTest {
 
         List<RatingResponse> list = ratingService.getRecentReviews(influencerId, 2);
 
-        assertThat(list).hasSize(2);
-        assertThat(list.get(0).getRating()).isEqualTo(5);
-        assertThat(list.get(1).getRating()).isEqualTo(4);
+        assertAll(
+                () -> assertThat(list).hasSize(2),
+                () -> assertThat(list.get(0).getRating()).isEqualTo(5),
+                () -> assertThat(list.get(1).getRating()).isEqualTo(4)
+        );
     }
 
     private static InfluencerRating ratingWithRating(int value) {

@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -65,10 +66,12 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getInfluencerId()).isEqualTo(10L);
-        assertThat(result.get(0).getMatchScore()).isEqualTo(95);
-        assertThat(result.get(0).getReason()).isEqualTo("Perfect match.");
+        assertAll(
+                () -> assertThat(result).hasSize(1),
+                () -> assertThat(result.get(0).getInfluencerId()).isEqualTo(10L),
+                () -> assertThat(result.get(0).getMatchScore()).isEqualTo(95),
+                () -> assertThat(result.get(0).getReason()).isEqualTo("Perfect match.")
+        );
     }
 
     @Test
@@ -99,9 +102,11 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).isNotEmpty();
-        assertThat(result.get(0).getInfluencerId()).isEqualTo(10L);
-        assertThat(result.get(0).getName()).isEqualTo("Alex");
+        assertAll(
+                () -> assertThat(result).isNotEmpty(),
+                () -> assertThat(result.get(0).getInfluencerId()).isEqualTo(10L),
+                () -> assertThat(result.get(0).getName()).isEqualTo("Alex")
+        );
         verify(groqApiClient, never()).getChatCompletion(anyString());
     }
 
@@ -114,9 +119,11 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getMatchScore()).isBetween(90, 97);
-        assertThat(result.get(0).getReason()).contains("Gaming");
+        assertAll(
+                () -> assertThat(result).hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).isBetween(90, 97),
+                () -> assertThat(result.get(0).getReason()).contains("Gaming")
+        );
     }
 
     @Test
@@ -128,9 +135,11 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getMatchScore()).isBetween(85, 94);
-        assertThat(result.get(0).getReason()).contains("Technology");
+        assertAll(
+                () -> assertThat(result).hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).isBetween(85, 94),
+                () -> assertThat(result.get(0).getReason()).contains("Technology")
+        );
     }
 
     @Test
@@ -142,9 +151,11 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getMatchScore()).isBetween(88, 98);
-        assertThat(result.get(0).getReason()).contains("aesthetic");
+        assertAll(
+                () -> assertThat(result).hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).isBetween(88, 98),
+                () -> assertThat(result.get(0).getReason()).contains("aesthetic")
+        );
     }
 
     @Test
@@ -157,9 +168,11 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getMatchScore()).isBetween(75, 89);
-        assertThat(result.get(0).getReason()).contains("crossover");
+        assertAll(
+                () -> assertThat(result).hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).isBetween(75, 89),
+                () -> assertThat(result.get(0).getReason()).contains("crossover")
+        );
     }
 
     @Test
@@ -172,9 +185,11 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getMatchScore()).isBetween(30, 49);
-        assertThat(result.get(0).getReason()).contains("differs from your campaign");
+        assertAll(
+                () -> assertThat(result).hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).isBetween(30, 49),
+                () -> assertThat(result.get(0).getReason()).contains("differs from your campaign")
+        );
     }
 
     @Test
@@ -235,9 +250,11 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getMatchScore()).isEqualTo(99);
-        assertThat(result.get(1).getMatchScore()).isEqualTo(70);
+        assertAll(
+                () -> assertThat(result).hasSize(2),
+                () -> assertThat(result.get(0).getMatchScore()).isEqualTo(99),
+                () -> assertThat(result.get(1).getMatchScore()).isEqualTo(70)
+        );
     }
 
     @Test
@@ -252,9 +269,11 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result.get(0).getName()).isEqualTo("Enriched Name");
-        assertThat(result.get(0).getNiche()).isEqualTo("NicheX");
-        assertThat(result.get(0).getProfilePictureUrl()).isEqualTo("https://pic.test/id.png");
+        assertAll(
+                () -> assertThat(result.get(0).getName()).isEqualTo("Enriched Name"),
+                () -> assertThat(result.get(0).getNiche()).isEqualTo("NicheX"),
+                () -> assertThat(result.get(0).getProfilePictureUrl()).isEqualTo("https://pic.test/id.png")
+        );
     }
 
     @Test
@@ -268,8 +287,10 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result.get(0).getName()).isNull();
-        assertThat(result.get(0).getNiche()).isNull();
+        assertAll(
+                () -> assertThat(result.get(0).getName()).isNull(),
+                () -> assertThat(result.get(0).getNiche()).isNull()
+        );
     }
 
     private static InfluencerProfile profile(long userId, String name, String niche, String location) {
