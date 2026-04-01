@@ -1,12 +1,13 @@
 package com.group4.backend.service;
+import com.group4.backend.service.payment.PaymentService;
 
 import com.group4.backend.dto.PaymentRequest;
 import com.group4.backend.dto.PaymentResponse;
 import com.group4.backend.model.Campaign;
 import com.group4.backend.model.Payment;
 import com.group4.backend.model.PaymentStatus;
-import com.group4.backend.repository.CampaignRepository;
-import com.group4.backend.repository.PaymentRepository;
+import com.group4.backend.repository.campaign.CampaignRepository;
+import com.group4.backend.repository.payment.PaymentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -226,8 +227,10 @@ class PaymentServiceTest {
 
         PaymentResponse response = paymentService.updatePaymentStatus(1L, PaymentStatus.PROCESSING, 10L);
 
-        assertThat(response.getStatus()).isEqualTo(PaymentStatus.PROCESSING);
-        assertThat(response.getPaidDate()).isNull();
+        assertAll(
+                () -> assertThat(response.getStatus()).isEqualTo(PaymentStatus.PROCESSING),
+                () -> assertThat(response.getPaidDate()).isNull()
+        );
     }
 
     @Test

@@ -1,4 +1,5 @@
 package com.group4.backend.service;
+import com.group4.backend.service.campaign.CampaignService;
 
 import com.group4.backend.dto.CampaignRequest;
 import com.group4.backend.dto.CampaignResponse;
@@ -8,8 +9,8 @@ import com.group4.backend.model.CampaignGoal;
 import com.group4.backend.model.CampaignStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.CampaignRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.campaign.CampaignRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -91,8 +92,10 @@ class CampaignServiceTest {
 
         CampaignResponse response = campaignService.create(10L, baseRequest);
 
-        assertThat(response.getDescription()).isNull();
-        assertThat(response.getPreferredContentTypes()).isNull();
+        assertAll(
+                () -> assertThat(response.getDescription()).isNull(),
+                () -> assertThat(response.getPreferredContentTypes()).isNull()
+        );
     }
 
     @Test
@@ -105,8 +108,10 @@ class CampaignServiceTest {
 
         CampaignResponse response = campaignService.create(10L, baseRequest);
 
-        assertThat(response.getDescription()).isNull();
-        assertThat(response.getPreferredContentTypes()).isNull();
+        assertAll(
+                () -> assertThat(response.getDescription()).isNull(),
+                () -> assertThat(response.getPreferredContentTypes()).isNull()
+        );
     }
 
     @Test

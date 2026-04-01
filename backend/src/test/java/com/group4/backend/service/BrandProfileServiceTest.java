@@ -1,4 +1,5 @@
 package com.group4.backend.service;
+import com.group4.backend.service.profile.BrandProfileService;
 
 import com.group4.backend.dto.BrandProfileRequest;
 import com.group4.backend.dto.BrandProfileResponse;
@@ -6,8 +7,8 @@ import com.group4.backend.model.BrandProfile;
 import com.group4.backend.model.BudgetRange;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.BrandProfileRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.profile.BrandProfileRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

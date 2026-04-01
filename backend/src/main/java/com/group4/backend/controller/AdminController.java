@@ -4,7 +4,7 @@ import com.group4.backend.dto.admin.AdminDashboardResponse;
 import com.group4.backend.dto.admin.AdminUserPageResponse;
 import com.group4.backend.dto.admin.AdminUserSummaryDto;
 import com.group4.backend.dto.admin.AdminUserUpdateRequest;
-import com.group4.backend.service.AdminService;
+import com.group4.backend.service.admin.AdminService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;

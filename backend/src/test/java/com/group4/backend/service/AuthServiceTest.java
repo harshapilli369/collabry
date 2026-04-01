@@ -1,10 +1,11 @@
 package com.group4.backend.service;
+import com.group4.backend.service.auth.AuthService;
 
 import com.group4.backend.dto.AuthResponse;
 import com.group4.backend.dto.LoginRequest;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

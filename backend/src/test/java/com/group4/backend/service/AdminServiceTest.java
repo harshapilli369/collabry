@@ -5,10 +5,10 @@ import com.group4.backend.model.InvitationStatus;
 import com.group4.backend.model.PaymentStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.CampaignRepository;
-import com.group4.backend.repository.InvitationRepository;
-import com.group4.backend.repository.PaymentRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.campaign.CampaignRepository;
+import com.group4.backend.repository.campaign.InvitationRepository;
+import com.group4.backend.repository.payment.PaymentRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.group4.backend.service.admin.AdminService;
 
 @ExtendWith(MockitoExtension.class)
 class AdminServiceTest {

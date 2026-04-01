@@ -1,4 +1,6 @@
 package com.group4.backend.service;
+import com.group4.backend.service.auth.RegistrationService;
+import com.group4.backend.service.email.EmailService;
 
 import com.group4.backend.dto.AuthResponse;
 import com.group4.backend.dto.SignupRequest;
@@ -7,8 +9,8 @@ import com.group4.backend.exception.DuplicateEmailException;
 import com.group4.backend.model.PendingSignup;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.PendingSignupRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.user.PendingSignupRepository;
+import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

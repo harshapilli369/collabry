@@ -1,7 +1,7 @@
 package com.group4.backend.controller;
 
 import com.group4.backend.model.User;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 

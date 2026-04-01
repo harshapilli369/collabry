@@ -1,12 +1,13 @@
 package com.group4.backend.service;
+import com.group4.backend.service.user.UserService;
 
 import com.group4.backend.dto.InfluencerSearchResult;
 import com.group4.backend.dto.SocialLinkRequest;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.InfluencerProfileRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.profile.InfluencerProfileRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -75,8 +76,10 @@ class UserServiceTest {
 
         List<InfluencerSearchResult> results = userService.listInfluencers();
 
-        assertThat(results).hasSize(1);
-        assertThat(results.get(0).getDisplayName()).isEqualTo("inf2@test.com");
+        assertAll(
+                () -> assertThat(results).hasSize(1),
+                () -> assertThat(results.get(0).getDisplayName()).isEqualTo("inf2@test.com")
+        );
     }
 
     @Test

@@ -1,4 +1,5 @@
 package com.group4.backend.service;
+import com.group4.backend.service.ai.GroqApiClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

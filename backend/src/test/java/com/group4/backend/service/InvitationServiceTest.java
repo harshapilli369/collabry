@@ -1,11 +1,13 @@
 package com.group4.backend.service;
+import com.group4.backend.service.campaign.InvitationService;
+import com.group4.backend.service.campaign.CampaignService;
 
 import com.group4.backend.dto.*;
 import com.group4.backend.model.*;
-import com.group4.backend.repository.CampaignRepository;
-import com.group4.backend.repository.InfluencerRatingRepository;
-import com.group4.backend.repository.InvitationRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.campaign.CampaignRepository;
+import com.group4.backend.repository.profile.InfluencerRatingRepository;
+import com.group4.backend.repository.campaign.InvitationRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -187,8 +189,10 @@ class InvitationServiceTest {
 
         List<InvitationResponse> list = invitationService.getCollaborationHistory(20L);
 
-        assertThat(list).hasSize(1);
-        assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.ACCEPTED);
+        assertAll(
+                () -> assertThat(list).hasSize(1),
+                () -> assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.ACCEPTED)
+        );
     }
 
     // --- TDD: Brand sent invitations, withdraw, edit, campaign details, expired ---
@@ -420,8 +424,10 @@ class InvitationServiceTest {
         ArgumentCaptor<CollaborationInvitation> cap = ArgumentCaptor.forClass(CollaborationInvitation.class);
         verify(invitationRepository).save(cap.capture());
         Instant exp = cap.getValue().getExpiresAt();
-        assertThat(exp).isAfter(Instant.now());
-        assertThat(exp).isBefore(Instant.now().plusSeconds(15L * 86400L));
+        assertAll(
+                () -> assertThat(exp).isAfter(Instant.now()),
+                () -> assertThat(exp).isBefore(Instant.now().plusSeconds(15L * 86400L))
+        );
     }
 
     @Test
@@ -439,8 +445,10 @@ class InvitationServiceTest {
 
         ArgumentCaptor<CollaborationInvitation> cap = ArgumentCaptor.forClass(CollaborationInvitation.class);
         verify(invitationRepository).save(cap.capture());
-        assertThat(cap.getValue().getExpiresAt()).isAfter(Instant.now());
-        assertThat(cap.getValue().getExpiresAt()).isBefore(Instant.now().plusSeconds(15L * 86400L));
+        assertAll(
+                () -> assertThat(cap.getValue().getExpiresAt()).isAfter(Instant.now()),
+                () -> assertThat(cap.getValue().getExpiresAt()).isBefore(Instant.now().plusSeconds(15L * 86400L))
+        );
     }
 
     @Test

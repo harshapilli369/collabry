@@ -7,7 +7,7 @@ import com.group4.backend.dto.admin.AdminUserPageResponse;
 import com.group4.backend.dto.admin.AdminUserSummaryDto;
 import com.group4.backend.model.Role;
 import com.group4.backend.security.JwtUtils;
-import com.group4.backend.service.AdminService;
+import com.group4.backend.service.admin.AdminService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

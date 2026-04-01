@@ -7,11 +7,11 @@ import com.group4.backend.model.InvitationStatus;
 import com.group4.backend.model.Payment;
 import com.group4.backend.model.PaymentStatus;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.CampaignRepository;
-import com.group4.backend.repository.InfluencerProfileRepository;
-import com.group4.backend.repository.InvitationRepository;
-import com.group4.backend.repository.PaymentRepository;
-import com.group4.backend.repository.UserRepository;
+import com.group4.backend.repository.campaign.CampaignRepository;
+import com.group4.backend.repository.profile.InfluencerProfileRepository;
+import com.group4.backend.repository.campaign.InvitationRepository;
+import com.group4.backend.repository.payment.PaymentRepository;
+import com.group4.backend.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
+import com.group4.backend.service.campaign.CampaignReportService;
 
 @ExtendWith(MockitoExtension.class)
 class CampaignReportServiceTest {
