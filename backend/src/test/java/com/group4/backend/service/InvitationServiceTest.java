@@ -187,8 +187,10 @@ class InvitationServiceTest {
 
         List<InvitationResponse> list = invitationService.getCollaborationHistory(20L);
 
-        assertThat(list).hasSize(1);
-        assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.ACCEPTED);
+        assertAll(
+                () -> assertThat(list).hasSize(1),
+                () -> assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.ACCEPTED)
+        );
     }
 
     // --- TDD: Brand sent invitations, withdraw, edit, campaign details, expired ---
@@ -420,8 +422,10 @@ class InvitationServiceTest {
         ArgumentCaptor<CollaborationInvitation> cap = ArgumentCaptor.forClass(CollaborationInvitation.class);
         verify(invitationRepository).save(cap.capture());
         Instant exp = cap.getValue().getExpiresAt();
-        assertThat(exp).isAfter(Instant.now());
-        assertThat(exp).isBefore(Instant.now().plusSeconds(15L * 86400L));
+        assertAll(
+                () -> assertThat(exp).isAfter(Instant.now()),
+                () -> assertThat(exp).isBefore(Instant.now().plusSeconds(15L * 86400L))
+        );
     }
 
     @Test
@@ -439,8 +443,10 @@ class InvitationServiceTest {
 
         ArgumentCaptor<CollaborationInvitation> cap = ArgumentCaptor.forClass(CollaborationInvitation.class);
         verify(invitationRepository).save(cap.capture());
-        assertThat(cap.getValue().getExpiresAt()).isAfter(Instant.now());
-        assertThat(cap.getValue().getExpiresAt()).isBefore(Instant.now().plusSeconds(15L * 86400L));
+        assertAll(
+                () -> assertThat(cap.getValue().getExpiresAt()).isAfter(Instant.now()),
+                () -> assertThat(cap.getValue().getExpiresAt()).isBefore(Instant.now().plusSeconds(15L * 86400L))
+        );
     }
 
     @Test

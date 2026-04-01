@@ -174,9 +174,11 @@ class InfluencerProfileServiceTest {
 
         List<InfluencerProfileResponse> result = influencerProfileService.search("gaming", null, null, null, null, null);
 
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getNiche()).isEqualTo("Gaming");
-        assertThat(result.get(1).getNiche()).isEqualTo("Retro Gaming");
+        assertAll(
+                () -> assertThat(result).hasSize(2),
+                () -> assertThat(result.get(0).getNiche()).isEqualTo("Gaming"),
+                () -> assertThat(result.get(1).getNiche()).isEqualTo("Retro Gaming")
+        );
     }
 
     @Test
@@ -385,8 +387,10 @@ class InfluencerProfileServiceTest {
 
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
-        assertThat(response).isNotNull();
-        assertThat(response.isComplete()).isTrue();
+        assertAll(
+                () -> assertThat(response).isNotNull(),
+                () -> assertThat(response.isComplete()).isTrue()
+        );
     }
 
     @Test
@@ -400,8 +404,10 @@ class InfluencerProfileServiceTest {
 
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
-        assertThat(response).isNotNull();
-        assertThat(response.getName()).isEqualTo("Jane Updated");
+        assertAll(
+                () -> assertThat(response).isNotNull(),
+                () -> assertThat(response.getName()).isEqualTo("Jane Updated")
+        );
         verify(influencerProfileRepository).save(any(InfluencerProfile.class));
     }
 

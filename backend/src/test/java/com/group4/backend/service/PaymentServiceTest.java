@@ -226,8 +226,10 @@ class PaymentServiceTest {
 
         PaymentResponse response = paymentService.updatePaymentStatus(1L, PaymentStatus.PROCESSING, 10L);
 
-        assertThat(response.getStatus()).isEqualTo(PaymentStatus.PROCESSING);
-        assertThat(response.getPaidDate()).isNull();
+        assertAll(
+                () -> assertThat(response.getStatus()).isEqualTo(PaymentStatus.PROCESSING),
+                () -> assertThat(response.getPaidDate()).isNull()
+        );
     }
 
     @Test

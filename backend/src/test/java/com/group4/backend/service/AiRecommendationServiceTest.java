@@ -205,8 +205,10 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getMatchScore()).isBetween(30, 49);
+        assertAll(
+                () -> assertThat(result).hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).isBetween(30, 49)
+        );
     }
 
     @Test
@@ -232,8 +234,10 @@ class AiRecommendationServiceTest {
 
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
-        assertThat(result).isNotEmpty();
-        assertThat(result.get(0).getInfluencerId()).isEqualTo(10L);
+        assertAll(
+                () -> assertThat(result).isNotEmpty(),
+                () -> assertThat(result.get(0).getInfluencerId()).isEqualTo(10L)
+        );
     }
 
     @Test
