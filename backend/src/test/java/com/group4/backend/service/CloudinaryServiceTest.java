@@ -15,6 +15,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -63,9 +64,10 @@ class CloudinaryServiceTest {
         when(uploader.upload(any(byte[].class), any(Map.class)))
                 .thenReturn(Map.of("secure_url", "https://res.cloudinary.com/demo/image/upload/brand-logos/logo.png"));
 
-        cloudinaryService.uploadImage(file, "brand-logos");
+        String result = cloudinaryService.uploadImage(file, "brand-logos");
 
         verify(uploader).upload(eq(file.getBytes()), any(Map.class));
+        assertThat(result).isNotNull();
     }
 
     // --- Red: uploadImage with PNG file returns URL ---
@@ -79,8 +81,10 @@ class CloudinaryServiceTest {
 
         String result = cloudinaryService.uploadImage(file, "brand-logos");
 
-        assertThat(result).isEqualTo(expectedUrl);
-        assertThat(result).startsWith("https://");
+        assertAll(
+                () -> assertThat(result).isEqualTo(expectedUrl),
+                () -> assertThat(result).startsWith("https://")
+        );
     }
 
     // --- Red: uploadImage propagates IOException from Cloudinary ---
@@ -104,9 +108,11 @@ class CloudinaryServiceTest {
         when(uploader.upload(any(byte[].class), any(Map.class)))
                 .thenReturn(Map.of("secure_url", "https://res.cloudinary.com/x"));
 
-        cloudinaryService.uploadImage(file, "profile-pictures");
-        cloudinaryService.uploadImage(file, "profile-pictures");
+        String first = cloudinaryService.uploadImage(file, "profile-pictures");
+        String second = cloudinaryService.uploadImage(file, "profile-pictures");
 
         verify(uploader, org.mockito.Mockito.times(2)).upload(any(byte[].class), any(Map.class));
+        assertThat(first).isNotNull();
+        assertThat(second).isNotNull();
     }
 }
