@@ -91,8 +91,10 @@ class CampaignServiceTest {
 
         CampaignResponse response = campaignService.create(10L, baseRequest);
 
-        assertThat(response.getDescription()).isNull();
-        assertThat(response.getPreferredContentTypes()).isNull();
+        assertAll(
+                () -> assertThat(response.getDescription()).isNull(),
+                () -> assertThat(response.getPreferredContentTypes()).isNull()
+        );
     }
 
     @Test
@@ -105,8 +107,10 @@ class CampaignServiceTest {
 
         CampaignResponse response = campaignService.create(10L, baseRequest);
 
-        assertThat(response.getDescription()).isNull();
-        assertThat(response.getPreferredContentTypes()).isNull();
+        assertAll(
+                () -> assertThat(response.getDescription()).isNull(),
+                () -> assertThat(response.getPreferredContentTypes()).isNull()
+        );
     }
 
     @Test
