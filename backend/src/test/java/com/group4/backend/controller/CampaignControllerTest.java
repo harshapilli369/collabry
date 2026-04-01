@@ -13,6 +13,7 @@ import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.CampaignService;
+import com.group4.backend.service.CampaignReportService;
 import com.group4.backend.service.InvitationService;
 import com.group4.backend.service.AiRecommendationService;
 import com.group4.backend.dto.InfluencerRecommendationDTO;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -49,6 +51,8 @@ class CampaignControllerTest {
     private ObjectMapper objectMapper;
     @MockBean
     private CampaignService campaignService;
+    @MockBean
+    private CampaignReportService campaignReportService;
     @MockBean
     private AiRecommendationService aiRecommendationService;
     @MockBean
@@ -232,6 +236,22 @@ class CampaignControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "brand@test.com")
+    void downloadCampaignReport_asBrand_returnsPdf() throws Exception {
+        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        byte[] pdf = "%PDF-1.4\n".getBytes();
+        when(campaignReportService.generateCampaignReportPdf(10L, 1L)).thenReturn(pdf);
+
+        mockMvc.perform(get("/api/campaigns/1/report"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", "attachment; filename=\"campaign-1-report.pdf\""))
+                .andExpect(content().contentType("application/pdf"))
+                .andExpect(content().bytes(pdf));
+
+        verify(campaignReportService).generateCampaignReportPdf(10L, 1L);
+    }
+
+    @Test
     @WithMockUser(username = "influencer@test.com")
     void generateDescription_asInfluencer_returns403() throws Exception {
         when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
@@ -243,6 +263,15 @@ class CampaignControllerTest {
         mockMvc.perform(post("/api/campaigns/generate-description").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "influencer@test.com")
+    void downloadCampaignReport_asInfluencer_returns403() throws Exception {
+        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+
+        mockMvc.perform(get("/api/campaigns/1/report"))
                 .andExpect(status().isForbidden());
     }
 

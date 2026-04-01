@@ -10,10 +10,12 @@ import com.group4.backend.model.User;
 import com.group4.backend.repository.UserRepository;
 import com.group4.backend.service.AiRecommendationService;
 import com.group4.backend.service.CampaignService;
+import com.group4.backend.service.CampaignReportService;
 import com.group4.backend.service.GroqApiClient;
 import com.group4.backend.service.InvitationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,15 +33,17 @@ public class CampaignController extends BaseController {
     private final InvitationService invitationService;
     private final AiRecommendationService aiRecommendationService;
     private final GroqApiClient groqApiClient;
+    private final CampaignReportService campaignReportService;
 
     public CampaignController(CampaignService campaignService, InvitationService invitationService,
                                UserRepository userRepository, AiRecommendationService aiRecommendationService,
-                               GroqApiClient groqApiClient) {
+                               GroqApiClient groqApiClient, CampaignReportService campaignReportService) {
         super(userRepository);
         this.campaignService = campaignService;
         this.invitationService = invitationService;
         this.aiRecommendationService = aiRecommendationService;
         this.groqApiClient = groqApiClient;
+        this.campaignReportService = campaignReportService;
     }
 
     @PostMapping
@@ -108,6 +112,24 @@ public class CampaignController extends BaseController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to generate description: " + e.getMessage()));
         }
+    }
+
+    @GetMapping(value = "/{campaignId}/report", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> downloadCampaignReport(@PathVariable Long campaignId) {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        byte[] pdf = campaignReportService.generateCampaignReportPdf(user.getId(), campaignId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"campaign-" + campaignId + "-report.pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
     }
 
     private String callDescriptionAi(String name, String goal, String budget) {

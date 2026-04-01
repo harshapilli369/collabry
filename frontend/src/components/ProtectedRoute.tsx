@@ -1,12 +1,13 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
 interface ProtectedRouteProps {
-    allowedRole?: 'INFLUENCER' | 'BRAND';
+    allowedRole?: 'INFLUENCER' | 'BRAND' | 'ADMIN';
 }
 
 const ROLE_DASHBOARDS: Record<string, string> = {
     INFLUENCER: '/influencer/dashboard',
     BRAND: '/brand/dashboard',
+    ADMIN: '/admin/dashboard',
 };
 
 export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {

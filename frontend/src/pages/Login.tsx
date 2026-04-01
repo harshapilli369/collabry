@@ -27,6 +27,8 @@ export const Login = () => {
             navigate(dest, { replace: true })
         } else if (role === 'BRAND') {
             navigate('/brand/dashboard', { replace: true })
+        } else if (role === 'ADMIN') {
+            navigate('/admin/dashboard', { replace: true })
         } else {
             navigate('/', { replace: true })
         }

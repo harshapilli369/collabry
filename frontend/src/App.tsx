@@ -22,6 +22,7 @@ import { BrandMyCampaigns } from './pages/BrandMyCampaigns'
 import { InfluencerSearch } from './pages/InfluencerSearch'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { LandingPage } from './pages/LandingPage'
+import { AdminDashboard } from './pages/AdminDashboard'
 import './App.css'
 // This is the main App component that renders the routes for the application.
 function App() {
@@ -41,6 +42,10 @@ function App() {
           <Route path="/influencer/collaborations" element={<Collaborations />} />
           <Route path="/influencer/disclosure-guidelines" element={<InfluencerDisclosureGuidelines />} />
           <Route path="/influencer/payments" element={<PaymentsDashboard />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRole="ADMIN" />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRole="BRAND" />}>
