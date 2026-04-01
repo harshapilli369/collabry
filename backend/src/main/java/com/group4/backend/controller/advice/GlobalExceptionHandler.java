@@ -1,4 +1,4 @@
-package com.group4.backend.controller;
+package com.group4.backend.controller.advice;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

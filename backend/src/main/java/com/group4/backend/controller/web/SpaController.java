@@ -1,4 +1,4 @@
-package com.group4.backend.controller;
+package com.group4.backend.controller.web;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

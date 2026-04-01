@@ -1,4 +1,4 @@
-package com.group4.backend.controller;
+package com.group4.backend.controller.web;
 
 import com.group4.backend.testsupport.SliceTestApplication;
 import org.junit.jupiter.params.ParameterizedTest;
