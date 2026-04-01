@@ -13,6 +13,7 @@ import com.group4.backend.repository.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -160,6 +161,10 @@ public class AuthService {
                     com.group4.backend.model.Role.USER);
             return userRepository.save(newUser);
         });
+
+        if (!user.isActive()) {
+            throw new DisabledException("Account deactivated");
+        }
 
         var jwtToken = jwtUtils.generateToken(user.getEmail(), user.getRole().name(), false);
         return new AuthResponse(jwtToken, user.getEmail(), user.getRole(), user.getId(), isEffectivelyVerified(user));

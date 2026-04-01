@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
 interface ProtectedRouteProps {
-    allowedRole?: 'INFLUENCER' | 'BRAND';
+    allowedRole?: 'INFLUENCER' | 'BRAND' | 'ADMIN';
 }
 
 export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
@@ -14,13 +14,13 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
     }
 
     if (allowedRole && user.role !== allowedRole) {
-        // Redirect to the dashboard corresponding to their actual role
         if (user.role === 'INFLUENCER') {
             return <Navigate to="/influencer/dashboard" replace />;
         } else if (user.role === 'BRAND') {
             return <Navigate to="/brand/dashboard" replace />;
+        } else if (user.role === 'ADMIN') {
+            return <Navigate to="/admin/dashboard" replace />;
         }
-        // Fallback
         return <Navigate to="/" replace />;
     }
 

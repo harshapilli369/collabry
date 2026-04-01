@@ -40,6 +40,8 @@ export const Login = () => {
                 }
             } else if (data.role === 'BRAND') {
                 navigate('/brand/dashboard', { replace: true });
+            } else if (data.role === 'ADMIN') {
+                navigate('/admin/dashboard', { replace: true });
             } else {
                 navigate('/', { replace: true });
             }
@@ -76,6 +78,8 @@ export const Login = () => {
                     }
                 } else if (data.role === 'BRAND') {
                     navigate('/brand/dashboard', { replace: true });
+                } else if (data.role === 'ADMIN') {
+                    navigate('/admin/dashboard', { replace: true });
                 } else {
                     navigate('/', { replace: true });
                 }
