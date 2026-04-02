@@ -3,6 +3,7 @@ package com.group4.backend.controller;
 import com.group4.backend.dto.CollaborationAvailabilityRequest;
 import com.group4.backend.dto.InfluencerProfileRequest;
 import com.group4.backend.dto.InfluencerProfileResponse;
+import com.group4.backend.dto.InfluencerSearchFilter;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;
@@ -83,8 +84,9 @@ public class InfluencerProfileController extends BaseController {
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        List<InfluencerProfileResponse> list = influencerProfileService.search(
+        InfluencerSearchFilter filter = new InfluencerSearchFilter(
                 niche, location, minFollowers, maxFollowers, minEngagementRate, availableOnly);
+        List<InfluencerProfileResponse> list = influencerProfileService.search(filter);
         return ResponseEntity.ok(list);
     }
 

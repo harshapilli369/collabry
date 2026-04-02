@@ -1,8 +1,7 @@
 package com.group4.backend.service.profile;
 
+import com.group4.backend.dto.InfluencerSearchFilter;
 import com.group4.backend.model.InfluencerProfile;
-
-import java.math.BigDecimal;
 
 /**
  * Relevance scoring for brand influencer search. Higher score = more relevant to the query and filters.
@@ -25,18 +24,14 @@ public final class InfluencerSearchRanker {
     }
 
     /**
-     * @param nicheQuery    optional niche filter text (same semantics as search LIKE)
-     * @param locationQuery optional location filter text
-     * @param minFollowers  optional lower follower bound (must pair with max for centering bonus)
-     * @param maxFollowers  optional upper follower bound
+     * @param filter search criteria containing niche, location, and follower bounds used for scoring
      */
-    public static double relevanceScore(InfluencerProfile p, String nicheQuery, String locationQuery,
-                                        Long minFollowers, Long maxFollowers) {
-        return nicheScore(p, nicheQuery)
-                + locationScore(p, locationQuery)
+    public static double relevanceScore(InfluencerProfile p, InfluencerSearchFilter filter) {
+        return nicheScore(p, filter.niche())
+                + locationScore(p, filter.location())
                 + engagementScore(p)
                 + followerScore(p)
-                + followerCenterScore(p, minFollowers, maxFollowers);
+                + followerCenterScore(p, filter.minFollowers(), filter.maxFollowers());
     }
 
     private static double nicheScore(InfluencerProfile p, String nicheQuery) {

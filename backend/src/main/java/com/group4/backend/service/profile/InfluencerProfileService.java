@@ -2,6 +2,7 @@ package com.group4.backend.service.profile;
 
 import com.group4.backend.dto.InfluencerProfileRequest;
 import com.group4.backend.dto.InfluencerProfileResponse;
+import com.group4.backend.dto.InfluencerSearchFilter;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
@@ -49,50 +50,45 @@ public class InfluencerProfileService {
      *
      * @param availableOnly when {@link Boolean#TRUE}, only influencers with {@code openToCollaborations == true} are returned
      */
-    public List<InfluencerProfileResponse> search(String niche, String location, Long minFollowers, Long maxFollowers,
-                                                   java.math.BigDecimal minEngagementRate, Boolean availableOnly) {
-        if (isInvalidFollowerRange(minFollowers, maxFollowers)) {
+    public List<InfluencerProfileResponse> search(InfluencerSearchFilter filter) {
+        if (isInvalidFollowerRange(filter.minFollowers(), filter.maxFollowers())) {
             throw new IllegalArgumentException("minFollowers cannot be greater than maxFollowers");
         }
-        Specification<InfluencerProfile> spec = buildSearchSpec(
-                niche, location, minFollowers, maxFollowers, minEngagementRate, availableOnly);
+        Specification<InfluencerProfile> spec = buildSearchSpec(filter);
         List<InfluencerProfile> profiles = new ArrayList<>(influencerProfileRepository.findAll(spec));
         profiles.sort(Comparator
                 .comparingDouble((InfluencerProfile p) ->
-                        -InfluencerSearchRanker.relevanceScore(p, niche, location, minFollowers, maxFollowers))
+                        -InfluencerSearchRanker.relevanceScore(p, filter))
                 .thenComparing(InfluencerProfile::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
         return profiles.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
-    private Specification<InfluencerProfile> buildSearchSpec(String niche, String location,
-                                                               Long minFollowers, Long maxFollowers,
-                                                               java.math.BigDecimal minEngagementRate,
-                                                               Boolean availableOnly) {
+    private Specification<InfluencerProfile> buildSearchSpec(InfluencerSearchFilter filter) {
         return (root, query, cb) -> {
             var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
             predicates.add(cb.isTrue(root.get("isComplete")));
-            if (Boolean.TRUE.equals(availableOnly)) {
+            if (Boolean.TRUE.equals(filter.availableOnly())) {
                 predicates.add(cb.or(
                         cb.isTrue(root.get("openToCollaborations")),
                         cb.isNull(root.get("openToCollaborations"))
                 ));
             }
-            if (niche != null && !niche.isBlank()) {
-                predicates.add(cb.like(cb.lower(root.get("niche")), "%" + niche.trim().toLowerCase() + "%"));
+            if (filter.niche() != null && !filter.niche().isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("niche")), "%" + filter.niche().trim().toLowerCase() + "%"));
             }
-            if (location != null && !location.isBlank()) {
-                predicates.add(cb.like(cb.lower(root.get("location")), "%" + location.trim().toLowerCase() + "%"));
+            if (filter.location() != null && !filter.location().isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("location")), "%" + filter.location().trim().toLowerCase() + "%"));
             }
-            if (minFollowers != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("followerCount"), minFollowers));
+            if (filter.minFollowers() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("followerCount"), filter.minFollowers()));
             }
-            if (maxFollowers != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("followerCount"), maxFollowers));
+            if (filter.maxFollowers() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("followerCount"), filter.maxFollowers()));
             }
-            if (minEngagementRate != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("engagementRate"), minEngagementRate));
+            if (filter.minEngagementRate() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("engagementRate"), filter.minEngagementRate()));
             }
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
