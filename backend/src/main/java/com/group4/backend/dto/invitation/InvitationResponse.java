@@ -37,6 +37,11 @@ public class InvitationResponse {
     // Campaign name for list views
     private String campaignName;
 
+    // Deliverable tracking fields
+    private String deliverableStatus;
+    private String contentLink;
+    private String deliverableNotes;
+
     public InvitationResponse() {
     }
 
@@ -89,4 +94,11 @@ public class InvitationResponse {
 
     public String getCampaignName() { return campaignName; }
     public void setCampaignName(String campaignName) { this.campaignName = campaignName; }
+
+    public String getDeliverableStatus() { return deliverableStatus; }
+    public void setDeliverableStatus(String deliverableStatus) { this.deliverableStatus = deliverableStatus; }
+    public String getContentLink() { return contentLink; }
+    public void setContentLink(String contentLink) { this.contentLink = contentLink; }
+    public String getDeliverableNotes() { return deliverableNotes; }
+    public void setDeliverableNotes(String deliverableNotes) { this.deliverableNotes = deliverableNotes; }
 }

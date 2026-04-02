@@ -53,6 +53,16 @@ public class CollaborationInvitation {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "deliverable_status", length = 20)
+    private DeliverableStatus deliverableStatus = DeliverableStatus.NOT_STARTED;
+
+    @Column(name = "content_link", length = 1000)
+    private String contentLink;
+
+    @Column(name = "deliverable_notes", columnDefinition = "TEXT")
+    private String deliverableNotes;
+
     @PrePersist
     public void prePersist() {
         Instant now = Instant.now();
@@ -96,4 +106,10 @@ public class CollaborationInvitation {
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public DeliverableStatus getDeliverableStatus() { return deliverableStatus; }
+    public void setDeliverableStatus(DeliverableStatus deliverableStatus) { this.deliverableStatus = deliverableStatus; }
+    public String getContentLink() { return contentLink; }
+    public void setContentLink(String contentLink) { this.contentLink = contentLink; }
+    public String getDeliverableNotes() { return deliverableNotes; }
+    public void setDeliverableNotes(String deliverableNotes) { this.deliverableNotes = deliverableNotes; }
 }

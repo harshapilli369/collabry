@@ -247,6 +247,9 @@ public class InvitationService {
         r.setCreatedAt(inv.getCreatedAt());
         r.setUpdatedAt(inv.getUpdatedAt());
         r.setRespondedAt(inv.getRespondedAt());
+        r.setDeliverableStatus(inv.getDeliverableStatus() != null ? inv.getDeliverableStatus().name() : DeliverableStatus.NOT_STARTED.name());
+        r.setContentLink(inv.getContentLink());
+        r.setDeliverableNotes(inv.getDeliverableNotes());
         return r;
     }
 
@@ -261,6 +264,47 @@ public class InvitationService {
         return inv.getStatus() == InvitationStatus.PENDING
                 && inv.getExpiresAt() != null
                 && java.time.Instant.now().isAfter(inv.getExpiresAt());
+    }
+
+    @Transactional
+    public InvitationResponse updateDeliverableStatus(Long invitationId, Long influencerId, DeliverableUpdateRequest request) {
+        CollaborationInvitation inv = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+        if (!inv.getInfluencerId().equals(influencerId)) {
+            throw new IllegalArgumentException("You are not the assigned influencer");
+        }
+        if (inv.getStatus() != InvitationStatus.ACCEPTED && inv.getStatus() != InvitationStatus.CONFIRMED) {
+            throw new IllegalArgumentException("Deliverables can only be updated on accepted or confirmed collaborations");
+        }
+
+        if (request.getDeliverableStatus() != null) {
+            DeliverableStatus newStatus = DeliverableStatus.valueOf(request.getDeliverableStatus());
+            inv.setDeliverableStatus(newStatus);
+        }
+        if (request.getContentLink() != null) {
+            inv.setContentLink(request.getContentLink().trim().isEmpty() ? null : request.getContentLink().trim());
+        }
+        if (request.getDeliverableNotes() != null) {
+            inv.setDeliverableNotes(request.getDeliverableNotes().trim().isEmpty() ? null : request.getDeliverableNotes().trim());
+        }
+
+        inv = invitationRepository.save(inv);
+        return toResponse(inv);
+    }
+
+    @Transactional
+    public InvitationResponse approveDeliverable(Long invitationId, Long brandId) {
+        CollaborationInvitation inv = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+        if (!inv.getBrandId().equals(brandId)) {
+            throw new IllegalArgumentException("Only the brand can approve deliverables");
+        }
+        if (inv.getDeliverableStatus() != DeliverableStatus.SUBMITTED) {
+            throw new IllegalArgumentException("Only submitted deliverables can be approved");
+        }
+        inv.setDeliverableStatus(DeliverableStatus.APPROVED);
+        inv = invitationRepository.save(inv);
+        return toResponse(inv);
     }
 
     private InvitationDetailResponse toDetailResponse(CollaborationInvitation inv) {

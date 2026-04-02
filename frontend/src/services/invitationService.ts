@@ -62,6 +62,11 @@ export interface InvitationResponse {
 
     // Campaign name
     campaignName?: string;
+
+    // Deliverable tracking fields
+    deliverableStatus?: string;
+    contentLink?: string;
+    deliverableNotes?: string;
 }
 
 export interface CampaignResponse {
@@ -243,6 +248,46 @@ export async function createInvitation(campaignId: number, request: InvitationRe
     if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.message || 'Failed to send invitation');
+    }
+    return response.json();
+}
+
+export type DeliverableStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'SUBMITTED' | 'APPROVED';
+
+export const DELIVERABLE_STATUS_LABELS: Record<DeliverableStatus, string> = {
+    NOT_STARTED: 'Not Started',
+    IN_PROGRESS: 'In Progress',
+    SUBMITTED: 'Submitted',
+    APPROVED: 'Approved',
+};
+
+export interface DeliverableUpdateRequest {
+    deliverableStatus?: string;
+    contentLink?: string;
+    deliverableNotes?: string;
+}
+
+export async function updateDeliverable(invitationId: number, request: DeliverableUpdateRequest): Promise<InvitationResponse> {
+    const response = await fetch(`${COLLABORATIONS_URL}/${invitationId}/deliverable`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(request),
+    });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to update deliverable');
+    }
+    return response.json();
+}
+
+export async function approveDeliverable(invitationId: number): Promise<InvitationResponse> {
+    const response = await fetch(`${COLLABORATIONS_URL}/${invitationId}/approve`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to approve deliverable');
     }
     return response.json();
 }
