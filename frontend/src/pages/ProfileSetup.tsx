@@ -88,8 +88,10 @@ export const ProfileSetup = () => {
         if (!isInfluencer) return
         if (!saveAsDraft && (!hasSocialHandle(values) || values.rate == null)) {
             if (!hasSocialHandle(values)) {
+                setCurrent(1)
                 notification.error({ message: 'At least one social media handle is required to complete your profile', placement: 'topRight' })
             } else {
+                setCurrent(2)
                 notification.error({ message: 'Rate is required to complete your profile', placement: 'topRight' })
             }
             return
