@@ -1,9 +1,9 @@
 package com.group4.backend.service.auth;
 
 import com.group4.backend.service.email.EmailService;
-import com.group4.backend.dto.AuthResponse;
-import com.group4.backend.dto.SignupRequest;
-import com.group4.backend.dto.SignupResponse;
+import com.group4.backend.dto.auth.AuthResponse;
+import com.group4.backend.dto.auth.SignupRequest;
+import com.group4.backend.dto.auth.SignupResponse;
 import com.group4.backend.exception.DuplicateEmailException;
 import com.group4.backend.model.PendingSignup;
 import com.group4.backend.model.User;
