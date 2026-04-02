@@ -6,7 +6,6 @@ import com.group4.backend.dto.profile.InfluencerProfileResponse;
 import com.group4.backend.dto.profile.InfluencerSearchFilter;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.service.ai.GroqApiClient;
 import com.group4.backend.service.profile.InfluencerProfileService;
 import jakarta.validation.Valid;
@@ -20,21 +19,22 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/influencers")
-public class InfluencerProfileController extends BaseController {
+public class InfluencerProfileController {
 
     private final InfluencerProfileService influencerProfileService;
     private final GroqApiClient groqApiClient;
+    private final CurrentUserProvider currentUserProvider;
 
     public InfluencerProfileController(InfluencerProfileService influencerProfileService,
-                                        UserRepository userRepository, GroqApiClient groqApiClient) {
-        super(userRepository);
+                                        GroqApiClient groqApiClient, CurrentUserProvider currentUserProvider) {
         this.influencerProfileService = influencerProfileService;
         this.groqApiClient = groqApiClient;
+        this.currentUserProvider = currentUserProvider;
     }
 
     @GetMapping("/me")
     public ResponseEntity<InfluencerProfileResponse> getMyProfile() {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.INFLUENCER) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -45,7 +45,7 @@ public class InfluencerProfileController extends BaseController {
 
     @PutMapping("/me")
     public ResponseEntity<InfluencerProfileResponse> updateMyProfile(@Valid @RequestBody InfluencerProfileRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.INFLUENCER) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -59,7 +59,7 @@ public class InfluencerProfileController extends BaseController {
     @PutMapping("/me/collaboration-availability")
     public ResponseEntity<InfluencerProfileResponse> updateCollaborationAvailability(
             @Valid @RequestBody CollaborationAvailabilityRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.INFLUENCER) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -80,7 +80,7 @@ public class InfluencerProfileController extends BaseController {
             @RequestParam(required = false) Long maxFollowers,
             @RequestParam(required = false) BigDecimal minEngagementRate,
             @RequestParam(required = false) Boolean availableOnly) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -92,7 +92,7 @@ public class InfluencerProfileController extends BaseController {
 
     @PostMapping("/enhance-bio")
     public ResponseEntity<Map<String, String>> enhanceBio(@RequestBody Map<String, String> request) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.INFLUENCER) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

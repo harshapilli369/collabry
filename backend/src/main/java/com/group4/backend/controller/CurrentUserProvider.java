@@ -4,16 +4,18 @@ import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
-public abstract class BaseController {
+@Component
+public class CurrentUserProvider {
 
-    protected final UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    protected BaseController(UserRepository userRepository) {
+    public CurrentUserProvider(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    protected User getCurrentUser() {
+    public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getPrincipal() == null) {
             throw new IllegalArgumentException("Not authenticated");
