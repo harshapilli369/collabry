@@ -34,6 +34,7 @@ const makeConfirmPasswordRule = (getFieldValue: (name: string) => string) => ({
 
 export const Signup = () => {
     const [loading, setLoading] = useState(false)
+    const [form] = Form.useForm()
     const navigate = useNavigate()
 
     const onFinish = async (values: { email: string; password: string; role: 'BRAND' | 'INFLUENCER' }) => {
@@ -43,7 +44,13 @@ export const Signup = () => {
             message.success(data.message || 'Account created! Check your email to confirm.')
             navigate('/login')
         } catch (err) {
-            message.error(getSignupErrorMessage(err))
+            const errorMessage = getSignupErrorMessage(err)
+            const isDuplicateEmail = /already exists/i.test(errorMessage)
+            if (isDuplicateEmail) {
+                form.setFields([{ name: 'email', errors: [errorMessage] }])
+            } else {
+                message.error(errorMessage)
+            }
         } finally {
             setLoading(false)
         }
@@ -115,7 +122,7 @@ export const Signup = () => {
                         <Text style={{ color: '#666' }}>Join Collabry as a Brand or Influencer</Text>
                     </div>
 
-                    <Form name="signup" onFinish={onFinish} layout="vertical" size="large" initialValues={{ role: 'BRAND' }}>
+                    <Form form={form} name="signup" onFinish={onFinish} layout="vertical" size="large" initialValues={{ role: 'BRAND' }}>
                         <Form.Item name="role" label="I am a" rules={[{ required: true, message: 'Please choose your role' }]}>
                             <Radio.Group style={{ width: '100%', display: 'flex', gap: 12 }}>
                                 <Radio.Button value="BRAND" style={{ flex: 1, textAlign: 'center', height: 44, lineHeight: '44px', borderRadius: 10 }}>
