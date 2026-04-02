@@ -3,6 +3,7 @@ package com.group4.backend.config.init;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
+import com.group4.backend.repository.profile.BrandProfileRepository;
 import com.group4.backend.repository.profile.InfluencerProfileRepository;
 import com.group4.backend.repository.user.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,9 @@ class DataInitializerTest {
     @Mock
     private InfluencerProfileRepository influencerProfileRepository;
 
+    @Mock
+    private BrandProfileRepository brandProfileRepository;
+
     @Test
     void createsAdminBrandAndInfluencerWhenMissing() throws Exception {
         when(passwordEncoder.encode(any())).thenReturn("ENC");
@@ -53,7 +57,7 @@ class DataInitializerTest {
 
         when(influencerProfileRepository.findByUserId(9L)).thenReturn(Optional.empty());
 
-        new DataInitializer(userRepository, passwordEncoder, influencerProfileRepository)
+        new DataInitializer(userRepository, passwordEncoder, influencerProfileRepository, brandProfileRepository)
                 .initializeData()
                 .run();
 
@@ -74,7 +78,7 @@ class DataInitializerTest {
         when(userRepository.findByEmail("influencer@collabry.com")).thenReturn(Optional.of(existing));
         when(influencerProfileRepository.findByUserId(42L)).thenReturn(Optional.empty());
 
-        new DataInitializer(userRepository, passwordEncoder, influencerProfileRepository)
+        new DataInitializer(userRepository, passwordEncoder, influencerProfileRepository, brandProfileRepository)
                 .initializeData()
                 .run();
 
@@ -91,7 +95,7 @@ class DataInitializerTest {
         when(userRepository.existsByEmail("influencer@collabry.com")).thenReturn(true);
         when(userRepository.findByEmail("influencer@collabry.com")).thenReturn(Optional.empty());
 
-        new DataInitializer(userRepository, passwordEncoder, influencerProfileRepository)
+        new DataInitializer(userRepository, passwordEncoder, influencerProfileRepository, brandProfileRepository)
                 .initializeData()
                 .run();
 
@@ -123,7 +127,7 @@ class DataInitializerTest {
         partial.setEngagementRate(java.math.BigDecimal.ONE);
         when(influencerProfileRepository.findByUserId(7L)).thenReturn(Optional.of(partial));
 
-        new DataInitializer(userRepository, passwordEncoder, influencerProfileRepository)
+        new DataInitializer(userRepository, passwordEncoder, influencerProfileRepository, brandProfileRepository)
                 .initializeData()
                 .run();
 
