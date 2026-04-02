@@ -19,6 +19,83 @@ const { TextArea } = Input
 
 const PRIMARY = BRAND_PORTAL_PRIMARY
 
+const INDUSTRY_OPTIONS = [
+    {
+        label: 'Fashion & Beauty',
+        options: [
+            { label: 'Apparel & Clothing',       value: 'Apparel & Clothing' },
+            { label: 'Beauty & Cosmetics',        value: 'Beauty & Cosmetics' },
+            { label: 'Luxury & Accessories',      value: 'Luxury & Accessories' },
+            { label: 'Jewellery & Watches',       value: 'Jewellery & Watches' },
+            { label: 'Footwear',                  value: 'Footwear' },
+        ],
+    },
+    {
+        label: 'Technology',
+        options: [
+            { label: 'Consumer Electronics',      value: 'Consumer Electronics' },
+            { label: 'Software & SaaS',           value: 'Software & SaaS' },
+            { label: 'Gaming & Esports',          value: 'Gaming & Esports' },
+            { label: 'Smart Home & IoT',          value: 'Smart Home & IoT' },
+            { label: 'Mobile & Apps',             value: 'Mobile & Apps' },
+        ],
+    },
+    {
+        label: 'Food & Beverage',
+        options: [
+            { label: 'Food & Snacks',             value: 'Food & Snacks' },
+            { label: 'Beverages & Drinks',        value: 'Beverages & Drinks' },
+            { label: 'Health Food & Supplements', value: 'Health Food & Supplements' },
+            { label: 'Restaurants & Dining',      value: 'Restaurants & Dining' },
+        ],
+    },
+    {
+        label: 'Health & Wellness',
+        options: [
+            { label: 'Fitness & Sports',          value: 'Fitness & Sports' },
+            { label: 'Mental Health & Wellness',  value: 'Mental Health & Wellness' },
+            { label: 'Nutrition & Diet',          value: 'Nutrition & Diet' },
+            { label: 'Personal Care',             value: 'Personal Care' },
+        ],
+    },
+    {
+        label: 'Lifestyle',
+        options: [
+            { label: 'Travel & Hospitality',      value: 'Travel & Hospitality' },
+            { label: 'Home & Interior',           value: 'Home & Interior' },
+            { label: 'Pet Care',                  value: 'Pet Care' },
+            { label: 'Outdoor & Adventure',       value: 'Outdoor & Adventure' },
+            { label: 'Automotive',                value: 'Automotive' },
+        ],
+    },
+    {
+        label: 'Media & Entertainment',
+        options: [
+            { label: 'Music & Audio',             value: 'Music & Audio' },
+            { label: 'Film & TV',                 value: 'Film & TV' },
+            { label: 'Books & Publishing',        value: 'Books & Publishing' },
+            { label: 'Events & Live Entertainment', value: 'Events & Live Entertainment' },
+        ],
+    },
+    {
+        label: 'Finance & Business',
+        options: [
+            { label: 'Fintech & Payments',        value: 'Fintech & Payments' },
+            { label: 'Insurance',                 value: 'Insurance' },
+            { label: 'E-commerce & Retail',       value: 'E-commerce & Retail' },
+            { label: 'Real Estate',               value: 'Real Estate' },
+        ],
+    },
+    {
+        label: 'Education',
+        options: [
+            { label: 'Online Learning',           value: 'Online Learning' },
+            { label: 'Kids & Parenting',          value: 'Kids & Parenting' },
+            { label: 'Professional Development',  value: 'Professional Development' },
+        ],
+    },
+]
+
 export const BrandProfile = () => {
     const [form] = Form.useForm<BrandProfileRequest>()
     const [loading, setLoading] = useState(false)
@@ -152,7 +229,13 @@ export const BrandProfile = () => {
                             <Input placeholder="Your company or brand name" />
                         </Form.Item>
                         <Form.Item name="industry" label="Industry" rules={[{ required: true, message: 'Industry is required' }]}>
-                            <Input placeholder="e.g. Fashion, Technology, Food & Beverage" />
+                            <Select
+                                showSearch
+                                placeholder="Search or select your industry"
+                                optionFilterProp="label"
+                                options={INDUSTRY_OPTIONS}
+                                allowClear
+                            />
                         </Form.Item>
                         <Form.Item name="website" label="Website" rules={[{ required: true, message: 'Website is required' }, { type: 'url', message: 'Enter a valid URL' }]}>
                             <Input placeholder="https://www.example.com" />
