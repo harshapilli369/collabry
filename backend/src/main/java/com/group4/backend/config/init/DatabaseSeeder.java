@@ -58,6 +58,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         System.out.println("Starting Database Seeder (Upsert Mode)...");
         seedBrandUser();
         seedInfluencers();
+        verifyUnverifiedBrands();
         System.out.println("Database Seeder check completed.");
     }
 

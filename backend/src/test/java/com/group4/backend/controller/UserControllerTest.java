@@ -5,6 +5,7 @@ import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.user.UserService;
+import com.group4.backend.service.user.VerificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+    @MockBean
+    private VerificationService verificationService;
 
     @MockBean
     private CurrentUserProvider currentUserProvider;

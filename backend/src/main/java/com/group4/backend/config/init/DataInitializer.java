@@ -76,12 +76,7 @@ public class DataInitializer {
             brand.setVerified(false);
             return userRepository.save(brand);
         }
-        User brand = userRepository.findByEmail("brand@collabry.com").orElseThrow();
-        if (brand.isVerified()) {
-            brand.setVerified(false);
-            userRepository.save(brand);
-        }
-        return brand;
+        return userRepository.findByEmail("brand@collabry.com").orElseThrow();
     }
 
     private void upsertBrandProfile(User brandUser) {
@@ -105,12 +100,7 @@ public class DataInitializer {
             influencer.setVerified(false);
             return userRepository.save(influencer);
         }
-        User influencer = userRepository.findByEmail("influencer@collabry.com").orElseThrow();
-        if (influencer.isVerified()) {
-            influencer.setVerified(false);
-            userRepository.save(influencer);
-        }
-        return influencer;
+        return userRepository.findByEmail("influencer@collabry.com").orElseThrow();
     }
 
     private void upsertInfluencerProfile(User influencerUser) {
