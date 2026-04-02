@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, theme, Modal, Upload, Avatar, notification } from 'antd'
+import { Form, Input, InputNumber, Button, Typography, ConfigProvider, Steps, theme, Modal, Upload, Avatar, notification, Select } from 'antd'
 import { UserOutlined, LinkOutlined, DollarOutlined, ArrowLeftOutlined, CheckCircleFilled, InstagramOutlined, YoutubeOutlined, RobotOutlined, CameraOutlined, LoadingOutlined } from '@ant-design/icons'
 import type { UploadFile, RcFile } from 'antd/es/upload/interface'
 import { useNavigate } from 'react-router-dom'
@@ -12,6 +12,7 @@ import {
 } from '../services/influencerProfileService'
 import { uploadProfileImage } from '../services/imageUploadService'
 import { userService } from '../services/userService'
+import { INDUSTRY_NICHE_OPTIONS, LOCATION_OPTIONS } from '../constants/profileOptions'
 
 const { Title, Text } = Typography
 const { TextArea } = Input
@@ -317,14 +318,26 @@ export const ProfileSetup = () => {
                                     label="Location"
                                     rules={[{ required: true, message: 'Location is required' }]}
                                 >
-                                    <Input placeholder="City, Country" />
+                                    <Select
+                                        showSearch
+                                        placeholder="Search city, country"
+                                        optionFilterProp="label"
+                                        options={LOCATION_OPTIONS}
+                                        allowClear
+                                    />
                                 </Form.Item>
                                 <Form.Item
                                     name="niche"
                                     label="Niche"
                                     rules={[{ required: true, message: 'Niche is required' }]}
                                 >
-                                    <Input placeholder="e.g. Fashion, Tech, Fitness" />
+                                    <Select
+                                        showSearch
+                                        placeholder="Search or select your niche"
+                                        optionFilterProp="label"
+                                        options={INDUSTRY_NICHE_OPTIONS}
+                                        allowClear
+                                    />
                                 </Form.Item>
                             </div>
                             <div style={{ padding: '20px 24px', background: '#111', borderRadius: 12, border: '1px solid #1a1a1a', marginTop: 16 }}>
