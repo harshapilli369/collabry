@@ -22,6 +22,18 @@ public class DataInitializer {
     private static final java.math.BigDecimal SEED_INFLUENCER_RATE = java.math.BigDecimal.valueOf(1200);
     private static final java.math.BigDecimal SEED_INFLUENCER_ENGAGEMENT = java.math.BigDecimal.valueOf(4.8);
 
+    private static final String SEED_INFLUENCER_NAME      = "Alex Rivera";
+    private static final String SEED_INFLUENCER_LOCATION  = "Toronto, ON";
+    private static final String SEED_INFLUENCER_NICHE     = "Fashion";
+    private static final String SEED_INFLUENCER_BIO       =
+            "Lifestyle and fashion content creator helping brands tell authentic stories. "
+            + "Partnered with 30+ brands across North America.";
+    private static final String SEED_INFLUENCER_INSTAGRAM = "@alexrivera.creates";
+    private static final String SEED_INFLUENCER_TIKTOK    = "@alexrivera";
+    private static final String SEED_BRAND_DESCRIPTION    =
+            "A leading consumer lifestyle brand partnering with top influencers across fashion, "
+            + "tech, and fitness to reach engaged audiences worldwide.";
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final InfluencerProfileRepository influencerProfileRepository;
@@ -79,7 +91,7 @@ public class DataInitializer {
         profile.setUserId(brandUser.getId());
         profile.setEmail("brand@collabry.com");
         profile.setName("Collabry Demo Brand");
-        profile.setDescription("A leading consumer lifestyle brand partnering with top influencers across fashion, tech, and fitness to reach engaged audiences worldwide.");
+        profile.setDescription(SEED_BRAND_DESCRIPTION);
         profile.setIndustry("Consumer Lifestyle");
         profile.setWebsite("https://collabry.com");
         profile.setVerified(true);
@@ -106,18 +118,22 @@ public class DataInitializer {
                 .findByUserId(influencerUser.getId())
                 .orElseGet(InfluencerProfile::new);
         profile.setUserId(influencerUser.getId());
-        if (profile.getName() == null) profile.setName("Alex Rivera");
-        if (profile.getAge() == null) profile.setAge(SEED_INFLUENCER_AGE);
-        if (profile.getLocation() == null) profile.setLocation("Toronto, ON");
-        if (profile.getNiche() == null) profile.setNiche("Fashion");
-        if (profile.getBio() == null) profile.setBio("Lifestyle and fashion content creator helping brands tell authentic stories. Partnered with 30+ brands across North America.");
-        if (profile.getInstagramHandle() == null) profile.setInstagramHandle("@alexrivera.creates");
-        if (profile.getTiktokHandle() == null) profile.setTiktokHandle("@alexrivera");
-        if (profile.getRate() == null) profile.setRate(SEED_INFLUENCER_RATE);
-        if (profile.getFollowerCount() == null) profile.setFollowerCount(SEED_INFLUENCER_FOLLOWERS);
-        if (profile.getEngagementRate() == null) profile.setEngagementRate(SEED_INFLUENCER_ENGAGEMENT);
+        applyInfluencerDefaults(profile);
         profile.setComplete(true);
         profile.setOpenToCollaborations(true);
         influencerProfileRepository.save(profile);
+    }
+
+    private void applyInfluencerDefaults(InfluencerProfile profile) {
+        if (profile.getName() == null) profile.setName(SEED_INFLUENCER_NAME);
+        if (profile.getAge() == null) profile.setAge(SEED_INFLUENCER_AGE);
+        if (profile.getLocation() == null) profile.setLocation(SEED_INFLUENCER_LOCATION);
+        if (profile.getNiche() == null) profile.setNiche(SEED_INFLUENCER_NICHE);
+        if (profile.getBio() == null) profile.setBio(SEED_INFLUENCER_BIO);
+        if (profile.getInstagramHandle() == null) profile.setInstagramHandle(SEED_INFLUENCER_INSTAGRAM);
+        if (profile.getTiktokHandle() == null) profile.setTiktokHandle(SEED_INFLUENCER_TIKTOK);
+        if (profile.getRate() == null) profile.setRate(SEED_INFLUENCER_RATE);
+        if (profile.getFollowerCount() == null) profile.setFollowerCount(SEED_INFLUENCER_FOLLOWERS);
+        if (profile.getEngagementRate() == null) profile.setEngagementRate(SEED_INFLUENCER_ENGAGEMENT);
     }
 }

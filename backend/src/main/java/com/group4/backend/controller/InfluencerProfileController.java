@@ -3,6 +3,7 @@ package com.group4.backend.controller;
 import com.group4.backend.dto.CollaborationAvailabilityRequest;
 import com.group4.backend.dto.InfluencerProfileRequest;
 import com.group4.backend.dto.InfluencerProfileResponse;
+import com.group4.backend.dto.InfluencerSearchFilter;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;
@@ -83,8 +84,9 @@ public class InfluencerProfileController extends BaseController {
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        List<InfluencerProfileResponse> list = influencerProfileService.search(
+        InfluencerSearchFilter filter = new InfluencerSearchFilter(
                 niche, location, minFollowers, maxFollowers, minEngagementRate, availableOnly);
+        List<InfluencerProfileResponse> list = influencerProfileService.search(filter);
         return ResponseEntity.ok(list);
     }
 
@@ -105,13 +107,16 @@ public class InfluencerProfileController extends BaseController {
         }
     }
 
+    private static final String ENHANCE_BIO_PROMPT_TEMPLATE =
+            "You are a professional copywriter for influencer profiles. "
+            + "Rewrite the following bio to sound more professional, engaging, and appealing to brands looking for collaborations. "
+            + "Keep the same meaning and personality but make it polished. "
+            + "Keep it concise (2-4 sentences max). "
+            + "Return ONLY the enhanced bio text, nothing else.\n\n"
+            + "Original bio:\n";
+
     private String callEnhanceBioAi(String bio) {
-        String prompt = "You are a professional copywriter for influencer profiles. " +
-                "Rewrite the following bio to sound more professional, engaging, and appealing to brands looking for collaborations. " +
-                "Keep the same meaning and personality but make it polished. " +
-                "Keep it concise (2-4 sentences max). " +
-                "Return ONLY the enhanced bio text, nothing else.\n\n" +
-                "Original bio:\n" + bio;
+        String prompt = ENHANCE_BIO_PROMPT_TEMPLATE + bio;
         String enhanced = groqApiClient.getTextCompletion(prompt).trim();
         if (enhanced.startsWith("\"") && enhanced.endsWith("\"")) {
             enhanced = enhanced.substring(1, enhanced.length() - 1);

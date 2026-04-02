@@ -12,6 +12,8 @@ import java.util.Map;
 @Service
 public class CloudinaryService {
 
+    private static final int IMAGE_MAX_DIMENSION = 800;
+
     private final Cloudinary cloudinary;
 
     public CloudinaryService(Cloudinary cloudinary) {
@@ -29,7 +31,7 @@ public class CloudinaryService {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public String uploadImage(MultipartFile file, String folder) throws IOException {
         Transformation transformation = new Transformation()
-                .width(800).height(800).crop("limit").quality("auto").fetchFormat("auto");
+                .width(IMAGE_MAX_DIMENSION).height(IMAGE_MAX_DIMENSION).crop("limit").quality("auto").fetchFormat("auto");
         Map<String, Object> options = ObjectUtils.asMap(
                 "folder", folder,
                 "resource_type", "image",

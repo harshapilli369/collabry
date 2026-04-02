@@ -1,8 +1,7 @@
 package com.group4.backend.service.profile;
 
+import com.group4.backend.dto.InfluencerSearchFilter;
 import com.group4.backend.model.InfluencerProfile;
-
-import java.math.BigDecimal;
 
 /**
  * Relevance scoring for brand influencer search. Higher score = more relevant to the query and filters.
@@ -19,23 +18,20 @@ public final class InfluencerSearchRanker {
     private static final double MAX_CENTER_BAND_BONUS = 40;
     private static final double ENGAGEMENT_RATE_MULTIPLIER = 2.0;
     private static final double FOLLOWER_SCALE_DIVISOR = 5000.0;
+    private static final double MIDPOINT_DIVISOR = 2.0;
 
     private InfluencerSearchRanker() {
     }
 
     /**
-     * @param nicheQuery    optional niche filter text (same semantics as search LIKE)
-     * @param locationQuery optional location filter text
-     * @param minFollowers  optional lower follower bound (must pair with max for centering bonus)
-     * @param maxFollowers  optional upper follower bound
+     * @param filter search criteria containing niche, location, and follower bounds used for scoring
      */
-    public static double relevanceScore(InfluencerProfile p, String nicheQuery, String locationQuery,
-                                        Long minFollowers, Long maxFollowers) {
-        return nicheScore(p, nicheQuery)
-                + locationScore(p, locationQuery)
+    public static double relevanceScore(InfluencerProfile p, InfluencerSearchFilter filter) {
+        return nicheScore(p, filter.niche())
+                + locationScore(p, filter.location())
                 + engagementScore(p)
                 + followerScore(p)
-                + followerCenterScore(p, minFollowers, maxFollowers);
+                + followerCenterScore(p, filter.minFollowers(), filter.maxFollowers());
     }
 
     private static double nicheScore(InfluencerProfile p, String nicheQuery) {
@@ -71,7 +67,7 @@ public final class InfluencerSearchRanker {
 
     private static double followerCenterScore(InfluencerProfile p, Long minFollowers, Long maxFollowers) {
         if (!hasFollowerBounds(p, minFollowers, maxFollowers)) return 0;
-        double mid = (minFollowers + maxFollowers) / 2.0;
+        double mid = (minFollowers + maxFollowers) / MIDPOINT_DIVISOR;
         double dist = Math.abs(p.getFollowerCount() - mid);
         double span = Math.max(maxFollowers - minFollowers, 1L);
         double closeness = 1.0 - Math.min(dist / span, 1.0);

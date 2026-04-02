@@ -1,6 +1,7 @@
 package com.group4.backend.service;
 import com.group4.backend.service.profile.InfluencerSearchRanker;
 
+import com.group4.backend.dto.InfluencerSearchFilter;
 import com.group4.backend.model.InfluencerProfile;
 import org.junit.jupiter.api.Test;
 
@@ -18,8 +19,8 @@ class InfluencerSearchRankerTest {
         InfluencerProfile exact = profile("Gaming", "Austin", 10_000L, BigDecimal.valueOf(3.0));
         InfluencerProfile partial = profile("Retro Gaming", "Austin", 10_000L, BigDecimal.valueOf(3.0));
 
-        double sExact = InfluencerSearchRanker.relevanceScore(exact, "gaming", null, null, null);
-        double sPartial = InfluencerSearchRanker.relevanceScore(partial, "gaming", null, null, null);
+        double sExact = InfluencerSearchRanker.relevanceScore(exact, new InfluencerSearchFilter("gaming", null, null, null, null, null));
+        double sPartial = InfluencerSearchRanker.relevanceScore(partial, new InfluencerSearchFilter("gaming", null, null, null, null, null));
 
         assertThat(sExact).isGreaterThan(sPartial);
     }
@@ -29,8 +30,8 @@ class InfluencerSearchRankerTest {
         InfluencerProfile prefix = profile("Fashion", "Paris", 5_000L, BigDecimal.valueOf(4.0));
         InfluencerProfile containsOnly = profile("Sustainable Fashion", "Paris", 5_000L, BigDecimal.valueOf(4.0));
 
-        double sPrefix = InfluencerSearchRanker.relevanceScore(prefix, "fash", null, null, null);
-        double sContains = InfluencerSearchRanker.relevanceScore(containsOnly, "fash", null, null, null);
+        double sPrefix = InfluencerSearchRanker.relevanceScore(prefix, new InfluencerSearchFilter("fash", null, null, null, null, null));
+        double sContains = InfluencerSearchRanker.relevanceScore(containsOnly, new InfluencerSearchFilter("fash", null, null, null, null, null));
 
         assertThat(sPrefix).isGreaterThan(sContains);
     }
@@ -40,8 +41,8 @@ class InfluencerSearchRankerTest {
         InfluencerProfile inNy = profile("Tech", "New York, NY", 20_000L, BigDecimal.valueOf(5.0));
         InfluencerProfile inLa = profile("Tech", "Los Angeles, CA", 20_000L, BigDecimal.valueOf(5.0));
 
-        double ny = InfluencerSearchRanker.relevanceScore(inNy, null, "new york", null, null);
-        double la = InfluencerSearchRanker.relevanceScore(inLa, null, "new york", null, null);
+        double ny = InfluencerSearchRanker.relevanceScore(inNy, new InfluencerSearchFilter(null, "new york", null, null, null, null));
+        double la = InfluencerSearchRanker.relevanceScore(inLa, new InfluencerSearchFilter(null, "new york", null, null, null, null));
 
         assertThat(ny).isGreaterThan(la);
     }
@@ -51,8 +52,8 @@ class InfluencerSearchRankerTest {
         InfluencerProfile highEng = profile("Fitness", "Denver", 50_000L, BigDecimal.valueOf(8.0));
         InfluencerProfile lowEng = profile("Fitness", "Denver", 50_000L, BigDecimal.valueOf(2.0));
 
-        double hi = InfluencerSearchRanker.relevanceScore(highEng, "fitness", null, null, null);
-        double lo = InfluencerSearchRanker.relevanceScore(lowEng, "fitness", null, null, null);
+        double hi = InfluencerSearchRanker.relevanceScore(highEng, new InfluencerSearchFilter("fitness", null, null, null, null, null));
+        double lo = InfluencerSearchRanker.relevanceScore(lowEng, new InfluencerSearchFilter("fitness", null, null, null, null, null));
 
         assertThat(hi).isGreaterThan(lo);
     }
@@ -64,8 +65,8 @@ class InfluencerSearchRankerTest {
         InfluencerProfile centered = profile("Beauty", "Miami", 30_000L, BigDecimal.valueOf(3.0));
         InfluencerProfile edge = profile("Beauty", "Miami", 10_000L, BigDecimal.valueOf(3.0));
 
-        double edgeScore = InfluencerSearchRanker.relevanceScore(edge, "beauty", "miami", min, max);
-        double centeredScore = InfluencerSearchRanker.relevanceScore(centered, "beauty", "miami", min, max);
+        double edgeScore = InfluencerSearchRanker.relevanceScore(edge, new InfluencerSearchFilter("beauty", "miami", min, max, null, null));
+        double centeredScore = InfluencerSearchRanker.relevanceScore(centered, new InfluencerSearchFilter("beauty", "miami", min, max, null, null));
 
         assertThat(centeredScore).isGreaterThan(edgeScore);
     }
