@@ -11,7 +11,6 @@ import {
     type InfluencerProfileResponse,
 } from '../services/influencerProfileService'
 import { uploadProfileImage } from '../services/imageUploadService'
-import { userService } from '../services/userService'
 import { INDUSTRY_NICHE_OPTIONS, LOCATION_OPTIONS } from '../constants/profileOptions'
 
 const { Title, Text } = Typography
@@ -161,39 +160,6 @@ export const ProfileSetup = () => {
         await onFinish(values, false)
     }
 
-    const platformLabels: Record<string, string> = { INSTAGRAM: 'Instagram', YOUTUBE: 'YouTube', TIKTOK: 'TikTok' }
-
-    const handleConnect = async (platform: string) => {
-        const fieldMap: Record<string, string> = { INSTAGRAM: 'instagramHandle', YOUTUBE: 'youtubeHandle', TIKTOK: 'tiktokHandle' }
-        const handle = (form.getFieldValue(fieldMap[platform] as any) as string | undefined)?.trim()
-        const label = platformLabels[platform] || platform
-
-        if (!handle) {
-            Modal.warning({
-                title: 'Handle Required',
-                content: `Please enter your ${label} handle before connecting.`,
-                okText: 'Got it',
-                centered: true,
-            })
-            return
-        }
-        try {
-            await userService.linkSocialAccount(platform, handle)
-            Modal.success({
-                title: `${label} Connected!`,
-                content: `@${handle} has been linked successfully. Remember to click "Save Changes" to keep your handles.`,
-                okText: 'Awesome',
-                centered: true,
-            })
-        } catch {
-            Modal.error({
-                title: 'Connection Failed',
-                content: `We couldn't connect your ${label} account. Please try again.`,
-                okText: 'OK',
-                centered: true,
-            })
-        }
-    }
 
     const TiktokSvg = () => (
         <svg viewBox="0 0 448 512" width="14px" height="14px" fill="currentColor" style={{ verticalAlign: '-0.125em' }}>
@@ -503,11 +469,7 @@ export const ProfileSetup = () => {
                                         <Text style={{ color: '#fff', fontWeight: 500 }}>Instagram</Text>
                                     </div>
                                     <Form.Item name="instagramHandle" style={{ marginBottom: 0 }}>
-                                        <Input.Search
-                                            addonBefore="@"
-                                            enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
-                                            onSearch={() => handleConnect('INSTAGRAM')}
-                                        />
+                                        <Input addonBefore="@" placeholder="your_handle" />
                                     </Form.Item>
                                 </div>
 
@@ -517,11 +479,7 @@ export const ProfileSetup = () => {
                                         <Text style={{ color: '#fff', fontWeight: 500 }}>YouTube</Text>
                                     </div>
                                     <Form.Item name="youtubeHandle" style={{ marginBottom: 0 }}>
-                                        <Input.Search
-                                            addonBefore="@"
-                                            enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
-                                            onSearch={() => handleConnect('YOUTUBE')}
-                                        />
+                                        <Input addonBefore="@" placeholder="your_channel" />
                                     </Form.Item>
                                 </div>
 
@@ -531,18 +489,14 @@ export const ProfileSetup = () => {
                                         <Text style={{ color: '#fff', fontWeight: 500 }}>TikTok</Text>
                                     </div>
                                     <Form.Item name="tiktokHandle" style={{ marginBottom: 0 }}>
-                                        <Input.Search
-                                            addonBefore="@"
-                                            enterButton={<Button type="primary" style={{ color: '#000', fontWeight: 600 }}>Connect</Button>}
-                                            onSearch={() => handleConnect('TIKTOK')}
-                                        />
+                                        <Input addonBefore="@" placeholder="your_handle" />
                                     </Form.Item>
                                 </div>
                             </div>
 
                             <div style={{ marginTop: 16, padding: '12px 16px', background: `${PRIMARY}10`, borderRadius: 8, border: `1px solid ${PRIMARY}20` }}>
                                 <CheckCircleFilled style={{ color: PRIMARY, marginRight: 8 }} />
-                                <Text style={{ color: '#aaa', fontSize: 12 }}>Connecting a social account makes you visible and builds trust with brands.</Text>
+                                <Text style={{ color: '#aaa', fontSize: 12 }}>Adding a social account makes you visible and builds trust with brands.</Text>
                             </div>
                         </div>
 
