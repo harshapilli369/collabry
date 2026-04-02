@@ -1,8 +1,8 @@
 package com.group4.backend.service.profile;
 
-import com.group4.backend.dto.InfluencerProfileRequest;
-import com.group4.backend.dto.InfluencerProfileResponse;
-import com.group4.backend.dto.InfluencerSearchFilter;
+import com.group4.backend.dto.profile.InfluencerProfileRequest;
+import com.group4.backend.dto.profile.InfluencerProfileResponse;
+import com.group4.backend.dto.profile.InfluencerSearchFilter;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;

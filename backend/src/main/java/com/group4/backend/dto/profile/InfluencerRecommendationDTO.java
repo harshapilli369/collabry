@@ -1,4 +1,4 @@
-package com.group4.backend.dto;
+package com.group4.backend.dto.profile;
 
 public class InfluencerRecommendationDTO {
     private Long influencerId;
@@ -8,7 +8,6 @@ public class InfluencerRecommendationDTO {
     private String niche;
     private String profilePictureUrl;
 
-    // Getters and Setters
     public Long getInfluencerId() { return influencerId; }
     public void setInfluencerId(Long influencerId) { this.influencerId = influencerId; }
     public int getMatchScore() { return matchScore; }

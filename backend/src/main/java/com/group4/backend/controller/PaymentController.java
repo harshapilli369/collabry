@@ -1,7 +1,7 @@
 package com.group4.backend.controller;
 
-import com.group4.backend.dto.PaymentRequest;
-import com.group4.backend.dto.PaymentResponse;
+import com.group4.backend.dto.payment.PaymentRequest;
+import com.group4.backend.dto.payment.PaymentResponse;
 import com.group4.backend.model.PaymentStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;

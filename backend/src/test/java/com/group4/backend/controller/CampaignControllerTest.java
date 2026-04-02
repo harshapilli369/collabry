@@ -17,7 +17,7 @@ import com.group4.backend.service.campaign.CampaignReportService;
 import com.group4.backend.service.campaign.InvitationService;
 import com.group4.backend.service.ai.AiRecommendationService;
 import com.group4.backend.service.ai.GroqApiClient;
-import com.group4.backend.dto.InfluencerRecommendationDTO;
+import com.group4.backend.dto.profile.InfluencerRecommendationDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

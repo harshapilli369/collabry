@@ -1,34 +1,43 @@
-package com.group4.backend.dto;
+package com.group4.backend.dto.profile;
 
 import com.group4.backend.model.BudgetRange;
-import jakarta.validation.constraints.*;
 
-public class BrandProfileRequest {
+import java.time.Instant;
 
-    @NotBlank(message = "Company name is required")
+public class BrandProfileResponse {
+
+    private Long id;
+    private Long userId;
     private String name;
-
-    @NotBlank(message = "Industry is required")
     private String industry;
-
-    @NotBlank(message = "Website is required")
     private String website;
-
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
     private String email;
-
     private String logoUrl;
-
     private String description;
-
     private String instagramUrl;
     private String linkedInUrl;
     private String twitterUrl;
-
     private BudgetRange budgetRange;
+    private Instant createdAt;
+    private Instant updatedAt;
 
-    public BrandProfileRequest() {
+    public BrandProfileResponse() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getName() {
@@ -109,5 +118,21 @@ public class BrandProfileRequest {
 
     public void setBudgetRange(BudgetRange budgetRange) {
         this.budgetRange = budgetRange;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

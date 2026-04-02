@@ -1,10 +1,10 @@
 package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group4.backend.dto.CollaborationAvailabilityRequest;
-import com.group4.backend.dto.InfluencerProfileRequest;
-import com.group4.backend.dto.InfluencerProfileResponse;
-import com.group4.backend.dto.InfluencerSearchFilter;
+import com.group4.backend.dto.profile.CollaborationAvailabilityRequest;
+import com.group4.backend.dto.profile.InfluencerProfileRequest;
+import com.group4.backend.dto.profile.InfluencerProfileResponse;
+import com.group4.backend.dto.profile.InfluencerSearchFilter;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;

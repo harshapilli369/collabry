@@ -1,7 +1,7 @@
 package com.group4.backend.service;
 import com.group4.backend.service.profile.InfluencerSearchRanker;
 
-import com.group4.backend.dto.InfluencerSearchFilter;
+import com.group4.backend.dto.profile.InfluencerSearchFilter;
 import com.group4.backend.model.InfluencerProfile;
 import org.junit.jupiter.api.Test;
 

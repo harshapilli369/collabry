@@ -1,4 +1,4 @@
-package com.group4.backend.dto;
+package com.group4.backend.dto.profile;
 
 /** Minimal influencer info for brand invite (id, email, display name). */
 public class InfluencerSearchResult {

@@ -1,6 +1,6 @@
 package com.group4.backend.service.profile;
 
-import com.group4.backend.dto.InfluencerSearchFilter;
+import com.group4.backend.dto.profile.InfluencerSearchFilter;
 import com.group4.backend.model.InfluencerProfile;
 
 /**
