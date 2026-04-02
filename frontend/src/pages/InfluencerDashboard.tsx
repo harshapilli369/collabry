@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, Card, Row, Col, Avatar, Progress } from 'antd'
-import { MailOutlined, UserOutlined } from '@ant-design/icons'
+import { Typography, Button, Card, Row, Col, Avatar, Progress, message } from 'antd'
+import { MailOutlined, UserOutlined, ArrowRightOutlined, SyncOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { getMyInvitations } from '../services/invitationService'
+import {
+    getMyInvitations,
+    getMyCollaborations,
+    DELIVERABLE_STATUS_LABELS,
+    type InvitationResponse,
+} from '../services/invitationService'
 import { getMyInfluencerProfile } from '../services/influencerProfileService'
 import { getMyPayments, type PaymentResponse } from '../services/paymentService'
 import { InfluencerPortalLayout, INFLUENCER_PORTAL_PRIMARY } from '../components/InfluencerPortalLayout'
@@ -11,27 +16,48 @@ import { InfluencerCampaignCharts } from '../components/InfluencerCampaignCharts
 
 const { Title, Text } = Typography
 
+function getProgressPercent(status?: string): number {
+    switch (status) {
+        case 'IN_PROGRESS': return 40
+        case 'SUBMITTED': return 75
+        case 'APPROVED': return 100
+        default: return 5
+    }
+}
+
 export const InfluencerDashboard = () => {
     const navigate = useNavigate()
-    const [invitations, setInvitations] = useState<Awaited<ReturnType<typeof getMyInvitations>>>([])
+    const [invitations, setInvitations] = useState<InvitationResponse[]>([])
+    const [collaborations, setCollaborations] = useState<InvitationResponse[]>([])
     const [profile, setProfile] = useState<any>(null)
     const [payments, setPayments] = useState<PaymentResponse[]>([])
+    const [loading, setLoading] = useState(true)
+
+    const loadData = () => {
+        setLoading(true)
+        Promise.all([
+            getMyInvitations().catch(() => []),
+            getMyCollaborations().catch(() => []),
+            getMyInfluencerProfile().catch(() => null),
+            getMyPayments().catch(() => []),
+        ]).then(([invs, collabs, prof, pays]) => {
+            setInvitations(invs)
+            setCollaborations(collabs)
+            setProfile(prof)
+            setPayments(pays)
+        }).finally(() => setLoading(false))
+    }
 
     useEffect(() => {
-        getMyInvitations()
-            .then(setInvitations)
-            .catch(() => setInvitations([]))
-
-        getMyInfluencerProfile()
-            .then(setProfile)
-            .catch(() => {})
-
-        getMyPayments()
-            .then(setPayments)
-            .catch(() => setPayments([]))
+        loadData()
     }, [])
 
     const pendingInvitations = invitations.filter((i) => i.status === 'PENDING' || i.status === 'NEGOTIATING')
+    
+    // Show top 3 most recent active/ongoing collaborations first
+    const activeCollabs = collaborations
+        .filter(c => c.deliverableStatus !== 'APPROVED')
+        .slice(0, 3)
 
     return (
         <InfluencerPortalLayout activeMenuKey="dashboard" influencerProfileForHeader={profile}>
@@ -91,40 +117,80 @@ export const InfluencerDashboard = () => {
                     <Card
                         title={<Text style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>Active Campaigns</Text>}
                         style={{ borderRadius: 16, height: '100%', background: '#0d0d0d', border: '1px solid #1a1a1a' }}
+                        extra={activeCollabs.length > 0 && <Button type="link" size="small" onClick={() => navigate('/influencer/collaborations')}>Track all</Button>}
                     >
-                        {[
-                            { name: 'Summer Fashion 2026', brand: 'Nike', status: 'Due in 2 days', progress: 75, action: 'Submit Content' },
-                            { name: 'Eco-Friendly Water Bottle', brand: 'HydroFlask', status: 'In Review', progress: 90, action: 'View Feedback' },
-                        ].map((campaign, idx) => (
-                            <div
-                                key={idx}
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    padding: 20,
-                                    background: '#141414',
-                                    borderRadius: 12,
-                                    border: '1px solid #1a1a1a',
-                                    marginBottom: idx === 0 ? 16 : 0,
-                                    transition: 'all 0.3s ease',
-                                }}
-                                className="influencer-campaign-item"
-                            >
-                                <div style={{ flex: 1 }}>
-                                    <Title level={5} style={{ margin: 0, color: '#fff' }}>{campaign.name}</Title>
-                                    <Text type="secondary">{campaign.brand} &bull; {campaign.status}</Text>
-                                    <Progress
-                                        percent={campaign.progress}
-                                        size="small"
-                                        strokeColor={INFLUENCER_PORTAL_PRIMARY}
-                                        trailColor="#1a1a1a"
-                                        style={{ marginTop: 8, maxWidth: 200 }}
-                                    />
-                                </div>
-                                <Button type="primary" size="small" style={{ color: '#000', fontWeight: 600 }}>{campaign.action}</Button>
+                        {loading ? (
+                            <Text type="secondary">Loading...</Text>
+                        ) : activeCollabs.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                                <SyncOutlined style={{ fontSize: 32, color: INFLUENCER_PORTAL_PRIMARY, opacity: 0.2, marginBottom: 12, display: 'block' }} />
+                                <Text type="secondary">No active campaigns at the moment.</Text>
+                                <br />
+                                <Button type="link" onClick={() => navigate('/influencer/invitations')} style={{ marginTop: 8 }}>Check invitations</Button>
                             </div>
-                        ))}
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                {activeCollabs.map((collab) => {
+                                    const progress = getProgressPercent(collab.deliverableStatus)
+                                    const isSubmitted = collab.deliverableStatus === 'SUBMITTED'
+
+                                    return (
+                                        <div
+                                            key={collab.id}
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                padding: '16px 20px',
+                                                background: '#141414',
+                                                borderRadius: 12,
+                                                border: '1px solid #1a1a1a',
+                                                transition: 'all 0.3s ease',
+                                                cursor: 'pointer'
+                                            }}
+                                            className="influencer-campaign-item"
+                                            onClick={() => navigate('/influencer/collaborations')}
+                                        >
+                                            <div style={{ flex: 1 }}>
+                                                <Title level={5} style={{ margin: 0, color: '#fff', fontSize: 15 }}>
+                                                    {collab.campaignName || `Campaign #${collab.campaignId}`}
+                                                </Title>
+                                                <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                    <Text type="secondary" style={{ fontSize: 13 }}>
+                                                        {collab.brandName || 'Brand'} &bull; 
+                                                    </Text>
+                                                    <Text style={{ 
+                                                        fontSize: 12, 
+                                                        color: isSubmitted ? '#faad14' : INFLUENCER_PORTAL_PRIMARY,
+                                                        fontWeight: 500
+                                                    }}>
+                                                        {DELIVERABLE_STATUS_LABELS[collab.deliverableStatus as any] || 'Not Started'}
+                                                    </Text>
+                                                </div>
+                                                <Progress
+                                                    percent={progress}
+                                                    size="small"
+                                                    showInfo={false}
+                                                    strokeColor={isSubmitted ? '#faad14' : INFLUENCER_PORTAL_PRIMARY}
+                                                    trailColor="#1a1a1a"
+                                                    style={{ marginTop: 10, maxWidth: 240 }}
+                                                />
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <Button 
+                                                    type="ghost" 
+                                                    size="small" 
+                                                    icon={<ArrowRightOutlined />}
+                                                    style={{ color: INFLUENCER_PORTAL_PRIMARY, border: `1px solid ${INFLUENCER_PORTAL_PRIMARY}40` }}
+                                                >
+                                                    Manage
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
                     </Card>
                 </Col>
 
@@ -140,7 +206,9 @@ export const InfluencerDashboard = () => {
                         style={{ borderRadius: 16, height: '100%', background: '#0d0d0d', border: '1px solid #1a1a1a' }}
                         extra={pendingInvitations.length > 0 ? <Button type="link" size="small" onClick={() => navigate('/influencer/invitations')}>View all</Button> : null}
                     >
-                        {invitations.length === 0 ? (
+                        {loading ? (
+                             <Text type="secondary">Loading...</Text>
+                        ) : pendingInvitations.length === 0 ? (
                             <div style={{ textAlign: 'center', padding: '30px 0', color: '#555' }}>
                                 <MailOutlined style={{ fontSize: 32, opacity: 0.3, marginBottom: 12, display: 'block' }} />
                                 <Text type="secondary">No pending invitations.</Text>
@@ -160,9 +228,9 @@ export const InfluencerDashboard = () => {
                                             transition: 'all 0.3s ease',
                                         }}
                                     >
-                                        <Text strong style={{ color: '#fff', fontSize: 14 }}>Campaign #{inv.campaignId}</Text>
+                                        <Text strong style={{ color: '#fff', fontSize: 14 }}>{inv.campaignName || `Campaign #${inv.campaignId}`}</Text>
                                         <Text type="secondary" style={{ display: 'block', margin: '6px 0 10px', fontSize: 12 }}>
-                                            {inv.brandMessage ? inv.brandMessage.slice(0, 50) + (inv.brandMessage.length > 50 ? '...' : '') : 'No message'}
+                                            from {inv.brandName || 'Brand'}
                                         </Text>
                                         <Button type="primary" size="small" block onClick={() => navigate(`/influencer/invitations/${inv.id}`)} style={{ color: '#000', fontWeight: 600, borderRadius: 8 }}>
                                             View & respond
