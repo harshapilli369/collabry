@@ -107,13 +107,17 @@ public class InvitationService {
         if (inv.getStatus() != InvitationStatus.PENDING && inv.getStatus() != InvitationStatus.NEGOTIATING) {
             throw new IllegalArgumentException("You can only edit PENDING or NEGOTIATING invitations");
         }
+        applyUpdateFields(inv, request);
+        inv = invitationRepository.save(inv);
+        return toResponse(inv);
+    }
+
+    private void applyUpdateFields(CollaborationInvitation inv, UpdateInvitationRequest request) {
         if (request.getMessage() != null) inv.setBrandMessage(emptyToNull(request.getMessage()));
         if (request.getProposedAmount() != null) inv.setProposedAmount(request.getProposedAmount());
         if (request.getProposedTimeline() != null) inv.setProposedTimeline(emptyToNull(request.getProposedTimeline()));
         if (request.getProposedDeliverables() != null) inv.setProposedDeliverables(emptyToNull(request.getProposedDeliverables()));
         if (request.getPlatform() != null) inv.setPlatform(emptyToNull(request.getPlatform()));
-        inv = invitationRepository.save(inv);
-        return toResponse(inv);
     }
 
     public InvitationDetailResponse getInvitationWithCampaignDetails(Long invitationId, Long influencerId) {
