@@ -1,4 +1,4 @@
-package com.group4.backend.dto;
+package com.group4.backend.dto.auth;
 
 public class TokenRequest {
     private String token;

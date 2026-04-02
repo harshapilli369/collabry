@@ -1,20 +1,18 @@
-package com.group4.backend.dto;
+package com.group4.backend.dto.auth;
 
 /**
  * Returned after signup when email confirmation is required.
  * User is not created until they click the confirmation link.
  */
-public class RegisterResponse {
+public class SignupResponse {
 
     private String message;
-    private String email;
 
-    public RegisterResponse() {
+    public SignupResponse() {
     }
 
-    public RegisterResponse(String message, String email) {
+    public SignupResponse(String message) {
         this.message = message;
-        this.email = email;
     }
 
     public String getMessage() {
@@ -23,13 +21,5 @@ public class RegisterResponse {
 
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 }

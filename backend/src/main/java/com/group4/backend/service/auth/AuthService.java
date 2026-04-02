@@ -1,7 +1,7 @@
 package com.group4.backend.service.auth;
 
-import com.group4.backend.dto.AuthResponse;
-import com.group4.backend.dto.LoginRequest;
+import com.group4.backend.dto.auth.AuthResponse;
+import com.group4.backend.dto.auth.LoginRequest;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;
