@@ -1,13 +1,16 @@
 package com.group4.backend.config.init;
 
+import com.group4.backend.model.BrandProfile;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
+import com.group4.backend.repository.profile.BrandProfileRepository;
 import com.group4.backend.repository.profile.InfluencerProfileRepository;
 import com.group4.backend.repository.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 
@@ -15,54 +18,87 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class DataInitializer {
 
     private static final int SEED_INFLUENCER_AGE = 25;
-    private static final long SEED_INFLUENCER_FOLLOWERS = 5000L;
-    private static final java.math.BigDecimal SEED_INFLUENCER_RATE = java.math.BigDecimal.valueOf(500);
-    private static final java.math.BigDecimal SEED_INFLUENCER_ENGAGEMENT = java.math.BigDecimal.valueOf(4.5);
+    private static final long SEED_INFLUENCER_FOLLOWERS = 125_000L;
+    private static final java.math.BigDecimal SEED_INFLUENCER_RATE = java.math.BigDecimal.valueOf(1200);
+    private static final java.math.BigDecimal SEED_INFLUENCER_ENGAGEMENT = java.math.BigDecimal.valueOf(4.8);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final InfluencerProfileRepository influencerProfileRepository;
+    private final BrandProfileRepository brandProfileRepository;
 
     public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                          InfluencerProfileRepository influencerProfileRepository) {
+                           InfluencerProfileRepository influencerProfileRepository,
+                           BrandProfileRepository brandProfileRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.influencerProfileRepository = influencerProfileRepository;
+        this.brandProfileRepository = brandProfileRepository;
     }
 
     @Bean
+    @Order(1)
     public CommandLineRunner initializeData() {
         return args -> {
             createAdminUser();
-            createBrandUser();
+            User brandUser = getOrCreateBrandUser();
+            upsertBrandProfile(brandUser);
             User influencerUser = getOrCreateInfluencerUser();
-            if (influencerUser != null) {
-                upsertInfluencerProfile(influencerUser);
-            }
+            upsertInfluencerProfile(influencerUser);
         };
     }
 
     private void createAdminUser() {
         if (!userRepository.existsByEmail("admin@collabry.com")) {
-            userRepository.save(new User("admin@collabry.com",
-                    passwordEncoder.encode("password123"), Role.ADMIN));
+            User admin = new User("admin@collabry.com",
+                    passwordEncoder.encode("password123"), Role.ADMIN);
+            admin.setVerified(true);
+            userRepository.save(admin);
         }
     }
 
-    private void createBrandUser() {
+    private User getOrCreateBrandUser() {
         if (!userRepository.existsByEmail("brand@collabry.com")) {
-            userRepository.save(new User("brand@collabry.com",
-                    passwordEncoder.encode("password123"), Role.BRAND));
+            User brand = new User("brand@collabry.com",
+                    passwordEncoder.encode("password123"), Role.BRAND);
+            brand.setVerified(true);
+            return userRepository.save(brand);
         }
+        User brand = userRepository.findByEmail("brand@collabry.com").orElseThrow();
+        if (!brand.isVerified()) {
+            brand.setVerified(true);
+            userRepository.save(brand);
+        }
+        return brand;
+    }
+
+    private void upsertBrandProfile(User brandUser) {
+        if (brandProfileRepository.findByUserId(brandUser.getId()).isPresent()) return;
+
+        BrandProfile profile = new BrandProfile();
+        profile.setUserId(brandUser.getId());
+        profile.setEmail("brand@collabry.com");
+        profile.setName("Collabry Demo Brand");
+        profile.setDescription("A leading consumer lifestyle brand partnering with top influencers across fashion, tech, and fitness to reach engaged audiences worldwide.");
+        profile.setIndustry("Consumer Lifestyle");
+        profile.setWebsite("https://collabry.com");
+        profile.setVerified(true);
+        brandProfileRepository.save(profile);
     }
 
     private User getOrCreateInfluencerUser() {
         if (!userRepository.existsByEmail("influencer@collabry.com")) {
             User influencer = new User("influencer@collabry.com",
                     passwordEncoder.encode("password123"), Role.INFLUENCER);
+            influencer.setVerified(true);
             return userRepository.save(influencer);
         }
-        return userRepository.findByEmail("influencer@collabry.com").orElse(null);
+        User influencer = userRepository.findByEmail("influencer@collabry.com").orElseThrow();
+        if (!influencer.isVerified()) {
+            influencer.setVerified(true);
+            userRepository.save(influencer);
+        }
+        return influencer;
     }
 
     private void upsertInfluencerProfile(User influencerUser) {
@@ -70,16 +106,18 @@ public class DataInitializer {
                 .findByUserId(influencerUser.getId())
                 .orElseGet(InfluencerProfile::new);
         profile.setUserId(influencerUser.getId());
-        if (profile.getName() == null) profile.setName("Test Influencer");
+        if (profile.getName() == null) profile.setName("Alex Rivera");
         if (profile.getAge() == null) profile.setAge(SEED_INFLUENCER_AGE);
-        if (profile.getLocation() == null) profile.setLocation("Halifax");
+        if (profile.getLocation() == null) profile.setLocation("Toronto, ON");
         if (profile.getNiche() == null) profile.setNiche("Fashion");
-        if (profile.getBio() == null) profile.setBio("Fashion and lifestyle content creator");
-        if (profile.getInstagramHandle() == null) profile.setInstagramHandle("@testinfluencer");
+        if (profile.getBio() == null) profile.setBio("Lifestyle and fashion content creator helping brands tell authentic stories. Partnered with 30+ brands across North America.");
+        if (profile.getInstagramHandle() == null) profile.setInstagramHandle("@alexrivera.creates");
+        if (profile.getTiktokHandle() == null) profile.setTiktokHandle("@alexrivera");
         if (profile.getRate() == null) profile.setRate(SEED_INFLUENCER_RATE);
         if (profile.getFollowerCount() == null) profile.setFollowerCount(SEED_INFLUENCER_FOLLOWERS);
         if (profile.getEngagementRate() == null) profile.setEngagementRate(SEED_INFLUENCER_ENGAGEMENT);
         profile.setComplete(true);
+        profile.setOpenToCollaborations(true);
         influencerProfileRepository.save(profile);
     }
 }
