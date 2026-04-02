@@ -1,5 +1,6 @@
 package com.group4.backend.dto;
 
+import com.group4.backend.dto.campaign.CampaignResponse;
 import com.group4.backend.model.InvitationStatus;
 
 import java.math.BigDecimal;

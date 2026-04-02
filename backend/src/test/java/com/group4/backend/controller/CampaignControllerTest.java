@@ -1,8 +1,8 @@
 package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group4.backend.dto.CampaignRequest;
-import com.group4.backend.dto.CampaignResponse;
+import com.group4.backend.dto.campaign.CampaignRequest;
+import com.group4.backend.dto.campaign.CampaignResponse;
 import com.group4.backend.dto.InvitationRequest;
 import com.group4.backend.dto.InvitationResponse;
 import com.group4.backend.model.BudgetRange;
