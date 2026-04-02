@@ -11,6 +11,7 @@ import {
     type BrandProfileRequest,
     type BrandProfileResponse,
 } from '../services/brandService'
+import { INDUSTRY_NICHE_OPTIONS } from '../constants/profileOptions'
 import { uploadProfileImage } from '../services/imageUploadService'
 import { userService } from '../services/userService'
 
@@ -18,6 +19,7 @@ const { Title, Text } = Typography
 const { TextArea } = Input
 
 const PRIMARY = BRAND_PORTAL_PRIMARY
+
 
 export const BrandProfile = () => {
     const [form] = Form.useForm<BrandProfileRequest>()
@@ -152,7 +154,13 @@ export const BrandProfile = () => {
                             <Input placeholder="Your company or brand name" />
                         </Form.Item>
                         <Form.Item name="industry" label="Industry" rules={[{ required: true, message: 'Industry is required' }]}>
-                            <Input placeholder="e.g. Fashion, Technology, Food & Beverage" />
+                            <Select
+                                showSearch
+                                placeholder="Search or select your industry"
+                                optionFilterProp="label"
+                                options={INDUSTRY_NICHE_OPTIONS}
+                                allowClear
+                            />
                         </Form.Item>
                         <Form.Item name="website" label="Website" rules={[{ required: true, message: 'Website is required' }, { type: 'url', message: 'Enter a valid URL' }]}>
                             <Input placeholder="https://www.example.com" />
