@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Typography, Card, Button, message, Modal, Form, Input, Rate } from 'antd'
-import { StarOutlined, CheckOutlined, TeamOutlined } from '@ant-design/icons'
+import { Typography, Card, Button, message, Modal, Form, Input, InputNumber, Rate } from 'antd'
+import { StarOutlined, CheckOutlined, TeamOutlined, SwapOutlined } from '@ant-design/icons'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import {
     getMyInvitationsAsBrand,
     confirmTerms,
+    updateInvitation,
     INVITATION_STATUS_LABELS,
     type InvitationResponse,
     type InvitationStatus,
@@ -32,7 +33,10 @@ export const BrandCollaborations = () => {
     const [ratingInvitation, setRatingInvitation] = useState<InvitationResponse | null>(null)
     const [submitting, setSubmitting] = useState(false)
     const [confirmingId, setConfirmingId] = useState<number | null>(null)
+    const [counterOfferInv, setCounterOfferInv] = useState<InvitationResponse | null>(null)
+    const [counterSubmitting, setCounterSubmitting] = useState(false)
     const [form] = Form.useForm()
+    const [counterForm] = Form.useForm()
 
     const load = () => {
         getMyInvitationsAsBrand()
@@ -95,6 +99,35 @@ export const BrandCollaborations = () => {
             message.error(e instanceof Error ? e.message : 'Failed to confirm terms')
         } finally {
             setConfirmingId(null)
+        }
+    }
+
+    const openCounterOffer = (inv: InvitationResponse) => {
+        setCounterOfferInv(inv)
+        counterForm.resetFields()
+        counterForm.setFieldsValue({
+            proposedAmount: inv.proposedAmount,
+            proposedTimeline: inv.proposedTimeline,
+            proposedDeliverables: inv.proposedDeliverables,
+        })
+    }
+
+    const onCounterOfferSubmit = async (values: { proposedAmount?: number; proposedTimeline?: string; proposedDeliverables?: string }) => {
+        if (!counterOfferInv) return
+        setCounterSubmitting(true)
+        try {
+            await updateInvitation(counterOfferInv.id, {
+                proposedAmount: values.proposedAmount,
+                proposedTimeline: values.proposedTimeline?.trim() || undefined,
+                proposedDeliverables: values.proposedDeliverables?.trim() || undefined,
+            })
+            message.success('Counter offer sent.')
+            setCounterOfferInv(null)
+            load()
+        } catch (e) {
+            message.error(e instanceof Error ? e.message : 'Failed to send counter offer')
+        } finally {
+            setCounterSubmitting(false)
         }
     }
 
@@ -222,16 +255,25 @@ export const BrandCollaborations = () => {
                                             {INVITATION_STATUS_LABELS[inv.status as InvitationStatus]}
                                         </Text>
                                         {inv.status === 'NEGOTIATING' && (
-                                            <Button
-                                                type="primary"
-                                                size="small"
-                                                icon={<CheckOutlined />}
-                                                loading={confirmingId === inv.id}
-                                                onClick={() => onConfirmTerms(inv)}
-                                                style={{ color: '#000000' }}
-                                            >
-                                                Confirm terms
-                                            </Button>
+                                            <>
+                                                <Button
+                                                    size="small"
+                                                    icon={<SwapOutlined />}
+                                                    onClick={() => openCounterOffer(inv)}
+                                                >
+                                                    Counter Offer
+                                                </Button>
+                                                <Button
+                                                    type="primary"
+                                                    size="small"
+                                                    icon={<CheckOutlined />}
+                                                    loading={confirmingId === inv.id}
+                                                    onClick={() => onConfirmTerms(inv)}
+                                                    style={{ color: '#000000' }}
+                                                >
+                                                    Confirm terms
+                                                </Button>
+                                            </>
                                         )}
                                         {(inv.status === 'CONFIRMED' || inv.status === 'ACCEPTED') && !inv.rated && (
                                             <Button type="default" size="small" icon={<StarOutlined />} onClick={() => openRateModal(inv)}>
@@ -250,6 +292,36 @@ export const BrandCollaborations = () => {
                     </div>
                 </>
             )}
+
+            <Modal title="Counter Offer" open={!!counterOfferInv} onCancel={() => setCounterOfferInv(null)} footer={null} destroyOnClose>
+                {counterOfferInv && (
+                    <div style={{ marginBottom: 16 }}>
+                        <Text type="secondary">
+                            Invitation #{counterOfferInv.id} · Campaign #{counterOfferInv.campaignId} · Influencer ID{' '}
+                            {counterOfferInv.influencerId}
+                        </Text>
+                    </div>
+                )}
+                <Form form={counterForm} layout="vertical" onFinish={onCounterOfferSubmit}>
+                    <Form.Item name="proposedAmount" label="Proposed Amount ($)" rules={[{ required: true, message: 'Please enter an amount' }]}>
+                        <InputNumber min={0} step={0.01} style={{ width: '100%' }} placeholder="Enter your counter offer amount" />
+                    </Form.Item>
+                    <Form.Item name="proposedTimeline" label="Timeline (optional)">
+                        <Input placeholder="e.g. 2 weeks" />
+                    </Form.Item>
+                    <Form.Item name="proposedDeliverables" label="Deliverables (optional)">
+                        <TextArea rows={3} placeholder="e.g. 2 Instagram posts, 1 story" maxLength={500} showCount />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" loading={counterSubmitting} style={{ color: '#000000' }}>
+                            Send Counter Offer
+                        </Button>
+                        <Button style={{ marginLeft: 8 }} onClick={() => setCounterOfferInv(null)}>
+                            Cancel
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
 
             <Modal title="Rate this influencer" open={rateModalOpen} onCancel={closeRateModal} footer={null} destroyOnClose>
                 {ratingInvitation && (
