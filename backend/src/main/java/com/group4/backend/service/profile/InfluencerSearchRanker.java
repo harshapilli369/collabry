@@ -19,6 +19,7 @@ public final class InfluencerSearchRanker {
     private static final double MAX_CENTER_BAND_BONUS = 40;
     private static final double ENGAGEMENT_RATE_MULTIPLIER = 2.0;
     private static final double FOLLOWER_SCALE_DIVISOR = 5000.0;
+    private static final double MIDPOINT_DIVISOR = 2.0;
 
     private InfluencerSearchRanker() {
     }
@@ -71,7 +72,7 @@ public final class InfluencerSearchRanker {
 
     private static double followerCenterScore(InfluencerProfile p, Long minFollowers, Long maxFollowers) {
         if (!hasFollowerBounds(p, minFollowers, maxFollowers)) return 0;
-        double mid = (minFollowers + maxFollowers) / 2.0;
+        double mid = (minFollowers + maxFollowers) / MIDPOINT_DIVISOR;
         double dist = Math.abs(p.getFollowerCount() - mid);
         double span = Math.max(maxFollowers - minFollowers, 1L);
         double closeness = 1.0 - Math.min(dist / span, 1.0);
