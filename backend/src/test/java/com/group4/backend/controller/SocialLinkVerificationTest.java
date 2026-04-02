@@ -1,11 +1,9 @@
 package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group4.backend.controller.UserController;
 import com.group4.backend.dto.profile.SocialLinkRequest;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +15,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -39,7 +35,7 @@ public class SocialLinkVerificationTest {
     private UserService userService;
 
     @MockBean
-    private UserRepository userRepository;
+    private CurrentUserProvider currentUserProvider;
 
     @MockBean
     private JwtUtils jwtUtils;
@@ -55,7 +51,7 @@ public class SocialLinkVerificationTest {
         testUser.setRole(Role.INFLUENCER);
         testUser.setVerified(false);
 
-        Mockito.when(userRepository.findByEmail("influencer@example.com")).thenReturn(Optional.of(testUser));
+        Mockito.when(currentUserProvider.getCurrentUser()).thenReturn(testUser);
     }
 
     @Test

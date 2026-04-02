@@ -4,7 +4,6 @@ import com.group4.backend.dto.invitation.InvitationResponse;
 import com.group4.backend.model.InvitationStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.campaign.InvitationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +15,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -30,7 +28,7 @@ class CollaborationsControllerTest {
     @MockBean
     private InvitationService invitationService;
     @MockBean
-    private UserRepository userRepository;
+    private CurrentUserProvider currentUserProvider;
     @MockBean
     private JwtUtils jwtUtils;
 
@@ -48,7 +46,7 @@ class CollaborationsControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getCollaborationHistory_asInfluencer_returns200WithList() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         InvitationResponse resp = new InvitationResponse();
         resp.setId(1L);
         resp.setStatus(InvitationStatus.ACCEPTED);
@@ -63,14 +61,14 @@ class CollaborationsControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getCollaborationHistory_asBrand_returns403() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         mockMvc.perform(get("/api/collaborations/me")).andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(username = "unknown@test.com")
     void getCollaborationHistory_userNotFound_returns400() throws Exception {
-        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        when(currentUserProvider.getCurrentUser()).thenThrow(new IllegalArgumentException("User not found"));
         mockMvc.perform(get("/api/collaborations/me"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("User not found"));

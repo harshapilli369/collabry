@@ -7,7 +7,6 @@ import com.group4.backend.dto.profile.InfluencerProfileResponse;
 import com.group4.backend.dto.profile.InfluencerSearchFilter;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.ai.GroqApiClient;
 import com.group4.backend.service.profile.InfluencerProfileService;
@@ -53,7 +52,7 @@ class InfluencerProfileControllerTest {
     @MockBean
     private InfluencerProfileService influencerProfileService;
     @MockBean
-    private UserRepository userRepository;
+    private CurrentUserProvider currentUserProvider;
     @MockBean
     private JwtUtils jwtUtils;
     @MockBean
@@ -73,7 +72,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void search_asBrand_returns200AndList() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         InfluencerProfileResponse resp = new InfluencerProfileResponse();
         resp.setId(1L);
         resp.setUserId(20L);
@@ -96,7 +95,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void search_asBrand_withQueryParams_passesParamsToService() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         when(influencerProfileService.search(new InfluencerSearchFilter("Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5), null)))
                 .thenReturn(List.of());
 
@@ -114,7 +113,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void search_asBrand_withAvailableOnly_passesToService() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         when(influencerProfileService.search(new InfluencerSearchFilter(null, null, null, null, null, true))).thenReturn(List.of());
 
         mockMvc.perform(get("/api/influencers/search").param("availableOnly", "true"))
@@ -126,7 +125,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void search_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
 
         mockMvc.perform(get("/api/influencers/search"))
                 .andExpect(status().isForbidden());
@@ -137,7 +136,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void search_withMinFollowersGreaterThanMaxFollowers_returns400() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         when(influencerProfileService.search(new InfluencerSearchFilter(null, null, 10000L, 1000L, null, null)))
                 .thenThrow(new IllegalArgumentException("minFollowers cannot be greater than maxFollowers"));
 
@@ -153,7 +152,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getMyProfile_asInfluencerWithProfile_returns200() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         InfluencerProfileResponse response = new InfluencerProfileResponse();
         response.setId(2L);
         response.setUserId(20L);
@@ -173,7 +172,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void updateCollaborationAvailability_asInfluencer_returns200() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         InfluencerProfileResponse response = new InfluencerProfileResponse();
         response.setUserId(20L);
         response.setName("Jane");
@@ -196,7 +195,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void updateCollaborationAvailability_asBrand_returns403() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         CollaborationAvailabilityRequest body = new CollaborationAvailabilityRequest();
         body.setOpenToCollaborations(true);
 
@@ -211,7 +210,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getMyProfile_asInfluencerNoProfile_returns404() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         when(influencerProfileService.getByUserId(20L)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/influencers/me"))
@@ -221,7 +220,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getMyProfile_asBrand_returns403() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
 
         mockMvc.perform(get("/api/influencers/me"))
                 .andExpect(status().isForbidden());
@@ -230,7 +229,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void updateMyProfile_asInfluencer_returns200() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         InfluencerProfileRequest request = new InfluencerProfileRequest();
         request.setName("Jane Doe");
         request.setAge(25);
@@ -256,7 +255,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void updateMyProfile_asBrand_returns403() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         InfluencerProfileRequest request = new InfluencerProfileRequest();
         request.setName("Jane");
         request.setAge(25);
@@ -278,7 +277,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void updateMyProfile_serviceThrowsIllegalArg_returns400() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         InfluencerProfileRequest request = new InfluencerProfileRequest();
         request.setName("Jane");
         request.setAge(25);
@@ -299,7 +298,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void enhanceBio_asInfluencer_returns200() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         when(groqApiClient.isConfigured()).thenReturn(true);
         when(groqApiClient.getTextCompletion(anyString())).thenReturn("Enhanced bio text.");
 
@@ -313,7 +312,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void enhanceBio_quotedResponse_stripsQuotes() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         when(groqApiClient.isConfigured()).thenReturn(true);
         when(groqApiClient.getTextCompletion(anyString())).thenReturn("\"Quoted bio text.\"");
 
@@ -327,7 +326,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void enhanceBio_missingBio_returns400() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
 
         mockMvc.perform(post("/api/influencers/enhance-bio").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -339,7 +338,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void enhanceBio_aiNotConfigured_returns400() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         when(groqApiClient.isConfigured()).thenReturn(false);
 
         mockMvc.perform(post("/api/influencers/enhance-bio").with(csrf())
@@ -352,7 +351,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void enhanceBio_aiThrowsException_returns500() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         when(groqApiClient.isConfigured()).thenReturn(true);
         when(groqApiClient.getTextCompletion(anyString())).thenThrow(new RuntimeException("AI error"));
 
@@ -366,7 +365,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void enhanceBio_asBrand_returns403() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
 
         mockMvc.perform(post("/api/influencers/enhance-bio").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -377,7 +376,7 @@ class InfluencerProfileControllerTest {
     @Test
     @WithMockUser(username = "unknown@test.com")
     void getMyProfile_userNotFound_returns400() throws Exception {
-        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        when(currentUserProvider.getCurrentUser()).thenThrow(new IllegalArgumentException("User not found"));
         mockMvc.perform(get("/api/influencers/me"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("User not found"));

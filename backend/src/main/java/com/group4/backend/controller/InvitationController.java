@@ -7,7 +7,6 @@ import com.group4.backend.dto.invitation.RespondRequest;
 import com.group4.backend.dto.invitation.UpdateInvitationRequest;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.service.campaign.InvitationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,18 +17,19 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/invitations")
-public class InvitationController extends BaseController {
+public class InvitationController {
 
     private final InvitationService invitationService;
+    private final CurrentUserProvider currentUserProvider;
 
-    public InvitationController(InvitationService invitationService, UserRepository userRepository) {
-        super(userRepository);
+    public InvitationController(InvitationService invitationService, CurrentUserProvider currentUserProvider) {
         this.invitationService = invitationService;
+        this.currentUserProvider = currentUserProvider;
     }
 
     @GetMapping("/me")
     public ResponseEntity<List<InvitationResponse>> getMyInvitations() {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.INFLUENCER) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -38,7 +38,7 @@ public class InvitationController extends BaseController {
 
     @GetMapping("/sent")
     public ResponseEntity<List<InvitationResponse>> getSentInvitations() {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -47,7 +47,7 @@ public class InvitationController extends BaseController {
 
     @GetMapping("/{id}")
     public ResponseEntity<InvitationDetailResponse> getInvitationById(@PathVariable Long id) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.INFLUENCER) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -58,7 +58,7 @@ public class InvitationController extends BaseController {
     @PostMapping("/{id}/respond")
     public ResponseEntity<InvitationResponse> respond(@PathVariable Long id,
                                                        @Valid @RequestBody RespondRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.INFLUENCER) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -69,7 +69,7 @@ public class InvitationController extends BaseController {
     @PutMapping("/{id}/negotiate")
     public ResponseEntity<InvitationResponse> negotiate(@PathVariable Long id,
                                                          @RequestBody NegotiationRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.INFLUENCER) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -79,7 +79,7 @@ public class InvitationController extends BaseController {
 
     @GetMapping("/brand/me")
     public ResponseEntity<List<InvitationResponse>> getMyInvitationsAsBrand() {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -88,7 +88,7 @@ public class InvitationController extends BaseController {
 
     @PostMapping("/{id}/confirm-terms")
     public ResponseEntity<InvitationResponse> confirmTerms(@PathVariable Long id) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -98,7 +98,7 @@ public class InvitationController extends BaseController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> withdrawInvitation(@PathVariable Long id) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -109,7 +109,7 @@ public class InvitationController extends BaseController {
     @PutMapping("/{id}")
     public ResponseEntity<InvitationResponse> updateInvitation(@PathVariable Long id,
                                                                 @RequestBody UpdateInvitationRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

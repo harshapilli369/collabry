@@ -7,7 +7,6 @@ import com.group4.backend.dto.invitation.InvitationResponse;
 import com.group4.backend.dto.profile.InfluencerRecommendationDTO;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.service.ai.AiRecommendationService;
 import com.group4.backend.service.campaign.CampaignService;
 import com.group4.backend.service.campaign.CampaignReportService;
@@ -24,7 +23,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/campaigns")
-public class CampaignController extends BaseController {
+public class CampaignController {
 
     /** Test user allowed to create campaigns without verification. */
     private static final String TEST_BRAND_EMAIL = "brand@collabry";
@@ -34,21 +33,23 @@ public class CampaignController extends BaseController {
     private final AiRecommendationService aiRecommendationService;
     private final GroqApiClient groqApiClient;
     private final CampaignReportService campaignReportService;
+    private final CurrentUserProvider currentUserProvider;
 
     public CampaignController(CampaignService campaignService, InvitationService invitationService,
-                               UserRepository userRepository, AiRecommendationService aiRecommendationService,
-                               GroqApiClient groqApiClient, CampaignReportService campaignReportService) {
-        super(userRepository);
+                               AiRecommendationService aiRecommendationService,
+                               GroqApiClient groqApiClient, CampaignReportService campaignReportService,
+                               CurrentUserProvider currentUserProvider) {
         this.campaignService = campaignService;
         this.invitationService = invitationService;
         this.aiRecommendationService = aiRecommendationService;
         this.groqApiClient = groqApiClient;
         this.campaignReportService = campaignReportService;
+        this.currentUserProvider = currentUserProvider;
     }
 
     @PostMapping
     public ResponseEntity<CampaignResponse> create(@Valid @RequestBody CampaignRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -61,7 +62,7 @@ public class CampaignController extends BaseController {
 
     @GetMapping("/me")
     public ResponseEntity<List<CampaignResponse>> getMyCampaigns() {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -71,7 +72,7 @@ public class CampaignController extends BaseController {
     @PostMapping("/{campaignId}/invitations")
     public ResponseEntity<InvitationResponse> createInvitation(@PathVariable Long campaignId,
                                                                 @Valid @RequestBody InvitationRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -84,7 +85,7 @@ public class CampaignController extends BaseController {
 
     @GetMapping("/{campaignId}/recommendations")
     public ResponseEntity<List<InfluencerRecommendationDTO>> getRecommendations(@PathVariable Long campaignId) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -97,7 +98,7 @@ public class CampaignController extends BaseController {
 
     @PostMapping("/generate-description")
     public ResponseEntity<Map<String, String>> generateDescription(@RequestBody Map<String, String> request) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -116,7 +117,7 @@ public class CampaignController extends BaseController {
 
     @GetMapping(value = "/{campaignId}/report", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> downloadCampaignReport(@PathVariable Long campaignId) {
-        User user = getCurrentUser();
+        User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

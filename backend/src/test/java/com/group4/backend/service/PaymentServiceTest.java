@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -237,13 +238,11 @@ class PaymentServiceTest {
     void getDelayedPayments_shouldUpdateOnlyPendingOverdueForRequestedBrand() {
         Payment overdueOwned = buildPayment(1L, 1L, 22L, 10L, PaymentStatus.PENDING);
         overdueOwned.setDueDate(LocalDate.now().minusDays(1));
-        Payment overdueOtherBrand = buildPayment(2L, 1L, 22L, 88L, PaymentStatus.PENDING);
-        overdueOtherBrand.setDueDate(LocalDate.now().minusDays(2));
         Payment delayed = buildPayment(3L, 1L, 22L, 10L, PaymentStatus.DELAYED);
 
-        when(paymentRepository.findByStatusAndDueDateBefore(eq(PaymentStatus.PENDING), any(LocalDate.class)))
-                .thenReturn(List.of(overdueOwned, overdueOtherBrand));
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(paymentRepository.findByBrandIdAndStatusAndDueDateBefore(eq(10L), eq(PaymentStatus.PENDING), any(LocalDate.class)))
+                .thenReturn(List.of(overdueOwned));
+        when(paymentRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
         when(paymentRepository.findByBrandIdAndStatus(10L, PaymentStatus.DELAYED)).thenReturn(List.of(delayed));
         when(campaignRepository.findById(1L)).thenReturn(Optional.of(campaign));
 
@@ -251,12 +250,10 @@ class PaymentServiceTest {
 
         assertAll(
                 () -> assertThat(overdueOwned.getStatus()).isEqualTo(PaymentStatus.DELAYED),
-                () -> assertThat(overdueOtherBrand.getStatus()).isEqualTo(PaymentStatus.PENDING),
                 () -> assertThat(responses).hasSize(1),
                 () -> assertThat(responses.get(0).getStatus()).isEqualTo(PaymentStatus.DELAYED)
         );
-        verify(paymentRepository).save(overdueOwned);
-        verify(paymentRepository, never()).save(overdueOtherBrand);
+        verify(paymentRepository).saveAll(anyList());
     }
 
     @Test

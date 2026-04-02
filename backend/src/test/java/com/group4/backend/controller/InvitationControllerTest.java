@@ -10,7 +10,6 @@ import com.group4.backend.dto.invitation.UpdateInvitationRequest;
 import com.group4.backend.model.InvitationStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.campaign.InvitationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +22,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -44,7 +42,7 @@ class InvitationControllerTest {
     @MockBean
     private InvitationService invitationService;
     @MockBean
-    private UserRepository userRepository;
+    private CurrentUserProvider currentUserProvider;
     @MockBean
     private JwtUtils jwtUtils;
 
@@ -62,7 +60,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getMyInvitations_asInfluencer_returns200WithList() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         InvitationResponse resp = new InvitationResponse();
         resp.setId(1L);
         resp.setStatus(InvitationStatus.PENDING);
@@ -77,21 +75,21 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getMyInvitations_asBrand_returns403() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         mockMvc.perform(get("/api/invitations/me")).andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(username = "brand@test.com")
     void getInvitationById_asBrand_returns403() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         mockMvc.perform(get("/api/invitations/100")).andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getInvitationById_asInfluencer_returns200WithCampaignDetails() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         InvitationDetailResponse detail = new InvitationDetailResponse();
         detail.setId(100L);
         detail.setStatus(InvitationStatus.PENDING);
@@ -110,7 +108,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void respond_accept_asInfluencer_returns200() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         RespondRequest request = new RespondRequest();
         request.setAction("ACCEPT");
         InvitationResponse resp = new InvitationResponse();
@@ -127,7 +125,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void respond_asBrand_returns403() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         RespondRequest request = new RespondRequest();
         request.setAction("ACCEPT");
         mockMvc.perform(post("/api/invitations/100/respond").with(csrf())
@@ -139,7 +137,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void negotiate_asBrand_returns403() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         NegotiationRequest request = new NegotiationRequest();
         request.setProposedAmount(java.math.BigDecimal.valueOf(500));
         mockMvc.perform(put("/api/invitations/100/negotiate").with(csrf())
@@ -151,7 +149,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void negotiate_asInfluencer_returns200() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         NegotiationRequest request = new NegotiationRequest();
         request.setProposedAmount(java.math.BigDecimal.valueOf(500));
         InvitationResponse resp = new InvitationResponse();
@@ -168,7 +166,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void confirmTerms_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         mockMvc.perform(post("/api/invitations/100/confirm-terms").with(csrf()))
                 .andExpect(status().isForbidden());
     }
@@ -176,7 +174,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void confirmTerms_asBrand_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         InvitationResponse resp = new InvitationResponse();
         resp.setStatus(InvitationStatus.CONFIRMED);
         when(invitationService.confirmTerms(100L, 10L)).thenReturn(resp);
@@ -191,7 +189,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getSentInvitations_asBrand_returns200WithList() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         InvitationResponse resp = new InvitationResponse();
         resp.setId(1L);
         resp.setStatus(InvitationStatus.PENDING);
@@ -208,14 +206,14 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getSentInvitations_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         mockMvc.perform(get("/api/invitations/sent")).andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(username = "brand@test.com")
     void getMyInvitationsAsBrand_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         InvitationResponse resp = new InvitationResponse();
         resp.setId(2L);
         when(invitationService.getInvitationsForBrand(10L)).thenReturn(List.of(resp));
@@ -228,14 +226,14 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getMyInvitationsAsBrand_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         mockMvc.perform(get("/api/invitations/brand/me")).andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(username = "brand@test.com")
     void withdrawInvitation_asBrand_returns204() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
 
         mockMvc.perform(delete("/api/invitations/100").with(csrf()))
                 .andExpect(status().isNoContent());
@@ -244,7 +242,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void withdrawInvitation_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         mockMvc.perform(delete("/api/invitations/100").with(csrf()))
                 .andExpect(status().isForbidden());
     }
@@ -252,7 +250,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void updateInvitation_asBrand_returns200WithUpdatedResponse() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         UpdateInvitationRequest request = new UpdateInvitationRequest();
         request.setMessage("Updated message");
         request.setProposedAmount(java.math.BigDecimal.valueOf(750));
@@ -272,7 +270,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void updateInvitation_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         mockMvc.perform(put("/api/invitations/100").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -282,7 +280,7 @@ class InvitationControllerTest {
     @Test
     @WithMockUser(username = "unknown@test.com")
     void getMyInvitations_userNotFound_returns400() throws Exception {
-        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        when(currentUserProvider.getCurrentUser()).thenThrow(new IllegalArgumentException("User not found"));
         mockMvc.perform(get("/api/invitations/me"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("User not found"));

@@ -5,7 +5,6 @@ import com.group4.backend.dto.rating.RatingRequest;
 import com.group4.backend.dto.rating.RatingResponse;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.profile.RatingService;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +15,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,7 +33,7 @@ class RatingControllerTest {
     @MockBean
     private RatingService ratingService;
     @MockBean
-    private UserRepository userRepository;
+    private CurrentUserProvider currentUserProvider;
     @MockBean
     private JwtUtils jwtUtils;
 
@@ -54,7 +51,7 @@ class RatingControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void submitRating_asBrand_returns201() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         RatingRequest request = new RatingRequest();
         request.setInvitationId(100L);
         request.setRating(5);
@@ -77,7 +74,7 @@ class RatingControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void submitRating_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         RatingRequest request = new RatingRequest();
         request.setInvitationId(100L);
         request.setRating(5);
@@ -91,7 +88,7 @@ class RatingControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void submitRating_invalidBody_returns400() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         mockMvc.perform(post("/api/ratings").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -101,7 +98,7 @@ class RatingControllerTest {
     @Test
     @WithMockUser(username = "unknown@test.com")
     void submitRating_userNotFound_returns400() throws Exception {
-        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        when(currentUserProvider.getCurrentUser()).thenThrow(new IllegalArgumentException("User not found"));
         RatingRequest request = new RatingRequest();
         request.setInvitationId(100L);
         request.setRating(5);

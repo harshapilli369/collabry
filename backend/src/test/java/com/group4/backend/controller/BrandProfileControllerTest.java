@@ -6,7 +6,6 @@ import com.group4.backend.dto.profile.BrandProfileResponse;
 import com.group4.backend.model.BudgetRange;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.profile.BrandProfileService;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +36,7 @@ class BrandProfileControllerTest {
     @MockBean
     private BrandProfileService brandProfileService;
     @MockBean
-    private UserRepository userRepository;
+    private CurrentUserProvider currentUserProvider;
     @MockBean
     private JwtUtils jwtUtils;
 
@@ -55,7 +54,7 @@ class BrandProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getMyProfile_asBrandWithProfile_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         BrandProfileResponse response = new BrandProfileResponse();
         response.setId(1L);
         response.setUserId(10L);
@@ -73,7 +72,7 @@ class BrandProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getMyProfile_asBrandNoProfile_returns404() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         when(brandProfileService.getByUserId(10L)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/brands/me"))
@@ -83,7 +82,7 @@ class BrandProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getMyProfile_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
 
         mockMvc.perform(get("/api/brands/me"))
                 .andExpect(status().isForbidden());
@@ -92,7 +91,7 @@ class BrandProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void updateMyProfile_asBrand_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         BrandProfileRequest request = new BrandProfileRequest();
         request.setName("Acme Inc");
         request.setIndustry("Fashion");
@@ -113,7 +112,7 @@ class BrandProfileControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void updateMyProfile_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         BrandProfileRequest request = new BrandProfileRequest();
         request.setName("Acme");
         request.setIndustry("Tech");
@@ -135,7 +134,7 @@ class BrandProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getBrandProfile_publicProfileFound_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         BrandProfileResponse response = new BrandProfileResponse();
         response.setId(1L);
         response.setUserId(10L);
@@ -152,7 +151,7 @@ class BrandProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getBrandProfile_publicProfileNotFound_returns404() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         when(brandProfileService.getPublicProfile(99L)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/brands/99/profile"))
@@ -162,7 +161,7 @@ class BrandProfileControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void updateMyProfile_validationFails_returns400() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         // Missing required fields
         mockMvc.perform(put("/api/brands/me").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -173,7 +172,7 @@ class BrandProfileControllerTest {
     @Test
     @WithMockUser(username = "unknown@test.com")
     void getMyProfile_userNotFound_returns400() throws Exception {
-        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        when(currentUserProvider.getCurrentUser()).thenThrow(new IllegalArgumentException("User not found"));
         mockMvc.perform(get("/api/brands/me"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("User not found"));
