@@ -6,7 +6,6 @@ import com.group4.backend.dto.payment.PaymentResponse;
 import com.group4.backend.model.PaymentStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.payment.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -39,7 +37,7 @@ class PaymentControllerTest {
     @MockBean
     private PaymentService paymentService;
     @MockBean
-    private UserRepository userRepository;
+    private CurrentUserProvider currentUserProvider;
     @MockBean
     private JwtUtils jwtUtils;
 
@@ -57,7 +55,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void createPayment_asBrand_returns201() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         PaymentRequest request = new PaymentRequest();
         request.setCampaignId(1L);
         request.setInfluencerId(20L);
@@ -80,7 +78,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void createPayment_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         PaymentRequest request = new PaymentRequest();
         request.setCampaignId(1L);
         request.setInfluencerId(20L);
@@ -96,7 +94,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void createPayment_invalidRequest_returns400() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         PaymentRequest request = new PaymentRequest();
         // Missing required fields
 
@@ -110,7 +108,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getMyPayments_asInfluencer_returns200() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         PaymentResponse resp = new PaymentResponse();
         resp.setId(5L);
         when(paymentService.getPaymentsForInfluencer(20L)).thenReturn(List.of(resp));
@@ -123,7 +121,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getMyPayments_asBrand_returns403() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
 
         mockMvc.perform(get("/api/payments/me"))
                 .andExpect(status().isForbidden());
@@ -132,7 +130,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void updateStatus_asBrand_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         PaymentResponse resp = new PaymentResponse();
         resp.setId(5L);
         resp.setStatus(PaymentStatus.PAID);
@@ -148,7 +146,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void updateStatus_invalidStatus_returns400() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
 
         mockMvc.perform(put("/api/payments/5/status").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -159,7 +157,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void updateStatus_missingStatusKey_returns400() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
 
         mockMvc.perform(put("/api/payments/5/status").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -170,7 +168,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void updateStatus_lowercaseStatus_parsesWithValueOf() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         PaymentResponse resp = new PaymentResponse();
         resp.setId(5L);
         resp.setStatus(PaymentStatus.PAID);
@@ -186,7 +184,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void updateStatus_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
 
         mockMvc.perform(put("/api/payments/5/status").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -197,7 +195,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getPaymentsForCampaign_asBrand_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         PaymentResponse resp = new PaymentResponse();
         resp.setId(1L);
         when(paymentService.getPaymentsForCampaign(3L, 10L)).thenReturn(List.of(resp));
@@ -210,7 +208,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getPaymentsForCampaign_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
 
         mockMvc.perform(get("/api/payments/campaign/3"))
                 .andExpect(status().isForbidden());
@@ -219,7 +217,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getDelayedPayments_asBrand_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         when(paymentService.getDelayedPayments(10L)).thenReturn(List.of());
 
         mockMvc.perform(get("/api/payments/delayed"))
@@ -230,7 +228,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getDelayedPayments_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
 
         mockMvc.perform(get("/api/payments/delayed"))
                 .andExpect(status().isForbidden());
@@ -239,7 +237,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getInvoice_isAllowed() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         PaymentResponse resp = new PaymentResponse();
         resp.setId(5L);
         resp.setInvoiceNumber("INV-ABCD");
@@ -253,7 +251,7 @@ class PaymentControllerTest {
     @Test
     @WithMockUser(username = "unknown@test.com")
     void createPayment_userNotFound_returns400() throws Exception {
-        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        when(currentUserProvider.getCurrentUser()).thenThrow(new IllegalArgumentException("User not found"));
         PaymentRequest request = new PaymentRequest();
         request.setCampaignId(1L);
         request.setInfluencerId(20L);

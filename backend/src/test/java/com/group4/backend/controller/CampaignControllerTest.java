@@ -10,7 +10,6 @@ import com.group4.backend.model.CampaignGoal;
 import com.group4.backend.model.InvitationStatus;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.campaign.CampaignService;
 import com.group4.backend.service.campaign.CampaignReportService;
@@ -28,7 +27,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
@@ -54,7 +52,7 @@ class CampaignControllerTest {
     @MockBean
     private InvitationService invitationService;
     @MockBean
-    private UserRepository userRepository;
+    private CurrentUserProvider currentUserProvider;
     @MockBean
     private JwtUtils jwtUtils;
     @MockBean
@@ -75,7 +73,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void createCampaign_asBrand_returns201() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         CampaignRequest request = new CampaignRequest();
         request.setName("Summer Promo");
         request.setBudgetRange(BudgetRange.ONE_K_5K);
@@ -96,7 +94,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void createCampaign_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         CampaignRequest request = new CampaignRequest();
         request.setName("Summer Promo");
         request.setBudgetRange(BudgetRange.ONE_K_5K);
@@ -110,7 +108,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getMyCampaigns_asBrand_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         CampaignResponse resp = new CampaignResponse();
         resp.setId(1L);
         resp.setName("My Campaign");
@@ -124,7 +122,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void getMyCampaigns_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
 
         mockMvc.perform(get("/api/campaigns/me"))
                 .andExpect(status().isForbidden());
@@ -133,7 +131,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void createInvitation_asBrand_returns201() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         InvitationRequest request = new InvitationRequest();
         request.setInfluencerId(20L);
         request.setMessage("Join our campaign");
@@ -153,7 +151,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void createInvitation_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
         InvitationRequest request = new InvitationRequest();
         request.setInfluencerId(20L);
 
@@ -166,7 +164,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void createCampaign_invalidRequest_returns400() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         CampaignRequest request = new CampaignRequest();
         // Missing name and budgetRange, which are required
 
@@ -180,7 +178,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void getRecommendations_asBrand_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         
         InfluencerRecommendationDTO rec = new InfluencerRecommendationDTO();
         rec.setInfluencerId(20L);
@@ -198,7 +196,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void generateDescription_asBrand_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         when(groqApiClient.isConfigured()).thenReturn(true);
         when(groqApiClient.getTextCompletion(anyString())).thenReturn("A compelling summer campaign targeting fashion enthusiasts.");
 
@@ -218,7 +216,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void generateDescription_missingName_returns400() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
 
         String body = objectMapper.writeValueAsString(java.util.Map.of(
                 "goal", "Brand Awareness"
@@ -234,7 +232,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void downloadCampaignReport_asBrand_returnsPdf() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         byte[] pdf = "%PDF-1.4\n".getBytes();
         when(campaignReportService.generateCampaignReportPdf(10L, 1L)).thenReturn(pdf);
 
@@ -250,7 +248,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void generateDescription_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
 
         String body = objectMapper.writeValueAsString(java.util.Map.of(
                 "name", "Summer Campaign"
@@ -265,7 +263,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "influencer@test.com")
     void downloadCampaignReport_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("influencer@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
 
         mockMvc.perform(get("/api/campaigns/1/report"))
                 .andExpect(status().isForbidden());
@@ -274,7 +272,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void generateDescription_aiNotConfigured_returns400() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         when(groqApiClient.isConfigured()).thenReturn(false);
 
         String body = objectMapper.writeValueAsString(java.util.Map.of("name", "My Campaign"));
@@ -289,7 +287,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void generateDescription_aiReturnsQuotedDescription_stripsQuotes() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         when(groqApiClient.isConfigured()).thenReturn(true);
         when(groqApiClient.getTextCompletion(anyString())).thenReturn("\"A quoted campaign description.\"");
 
@@ -305,7 +303,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void generateDescription_aiThrowsException_returns500() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         when(groqApiClient.isConfigured()).thenReturn(true);
         when(groqApiClient.getTextCompletion(anyString())).thenThrow(new RuntimeException("AI service error"));
 
@@ -321,7 +319,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void generateDescription_withOnlyName_coversEmptyGoalAndBudgetBranches() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         when(groqApiClient.isConfigured()).thenReturn(true);
         when(groqApiClient.getTextCompletion(anyString())).thenReturn("A campaign description.");
 
@@ -340,7 +338,7 @@ class CampaignControllerTest {
         User unverifiedBrand = new User("unverified@test.com", "pass", Role.BRAND);
         unverifiedBrand.setId(30L);
         // isVerified() defaults to false
-        when(userRepository.findByEmail("unverified@test.com")).thenReturn(Optional.of(unverifiedBrand));
+        when(currentUserProvider.getCurrentUser()).thenReturn(unverifiedBrand);
         CampaignRequest request = new CampaignRequest();
         request.setName("Summer Promo");
         request.setBudgetRange(BudgetRange.ONE_K_5K);
@@ -354,7 +352,7 @@ class CampaignControllerTest {
     @Test
     @WithMockUser(username = "unknown@test.com")
     void createCampaign_userNotFound_returns400() throws Exception {
-        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        when(currentUserProvider.getCurrentUser()).thenThrow(new IllegalArgumentException("User not found"));
         CampaignRequest request = new CampaignRequest();
         request.setName("Summer Promo");
         request.setBudgetRange(BudgetRange.ONE_K_5K);

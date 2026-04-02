@@ -5,7 +5,6 @@ import com.group4.backend.dto.campaign.CampaignRequest;
 import com.group4.backend.model.BudgetRange;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.ai.AiRecommendationService;
 import com.group4.backend.service.campaign.CampaignService;
@@ -20,8 +19,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -49,7 +46,7 @@ public class ProfileVerificationTest {
     private InvitationService invitationService;
 
     @MockBean
-    private UserRepository userRepository;
+    private CurrentUserProvider currentUserProvider;
 
     @MockBean
     private JwtUtils jwtUtils;
@@ -70,7 +67,7 @@ public class ProfileVerificationTest {
     @Test
     @WithMockUser(username = "unverified@test.com")
     void createCampaign_asUnverifiedBrand_returns403() throws Exception {
-        when(userRepository.findByEmail("unverified@test.com")).thenReturn(Optional.of(unverifiedBrand));
+        when(currentUserProvider.getCurrentUser()).thenReturn(unverifiedBrand);
 
         CampaignRequest request = new CampaignRequest();
         request.setName("New Campaign");

@@ -3,7 +3,6 @@ package com.group4.backend.controller;
 import com.group4.backend.dto.profile.InfluencerSearchResult;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
-import com.group4.backend.repository.user.UserRepository;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +14,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -32,7 +30,7 @@ class UserControllerTest {
     private UserService userService;
 
     @MockBean
-    private UserRepository userRepository;
+    private CurrentUserProvider currentUserProvider;
 
     @MockBean
     private JwtUtils jwtUtils;
@@ -51,7 +49,7 @@ class UserControllerTest {
     @Test
     @WithMockUser(username = "brand@test.com")
     void listInfluencers_asBrand_returns200() throws Exception {
-        when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(brandUser);
         InfluencerSearchResult row = new InfluencerSearchResult(1L, "i@test.com", "Influencer One");
         when(userService.listInfluencers()).thenReturn(List.of(row));
 
@@ -64,7 +62,7 @@ class UserControllerTest {
     @Test
     @WithMockUser(username = "inf@test.com")
     void listInfluencers_asInfluencer_returns403() throws Exception {
-        when(userRepository.findByEmail("inf@test.com")).thenReturn(Optional.of(influencerUser));
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
 
         mockMvc.perform(get("/api/users/influencers"))
                 .andExpect(status().isForbidden());
