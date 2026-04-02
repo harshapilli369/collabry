@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group4.backend.dto.CollaborationAvailabilityRequest;
 import com.group4.backend.dto.InfluencerProfileRequest;
 import com.group4.backend.dto.InfluencerProfileResponse;
+import com.group4.backend.dto.InfluencerSearchFilter;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;

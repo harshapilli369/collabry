@@ -1,6 +1,7 @@
 package com.group4.backend.service;
 import com.group4.backend.service.profile.InfluencerSearchRanker;
 
+import com.group4.backend.dto.InfluencerSearchFilter;
 import com.group4.backend.model.InfluencerProfile;
 import org.junit.jupiter.api.Test;
 
@@ -18,8 +19,8 @@ class InfluencerSearchRankerTest {
         InfluencerProfile exact = profile("Gaming", "Austin", 10_000L, BigDecimal.valueOf(3.0));
         InfluencerProfile partial = profile("Retro Gaming", "Austin", 10_000L, BigDecimal.valueOf(3.0));
 
-        double sExact = InfluencerSearchRanker.relevanceScore(exact, "gaming", null, null, null);
-        double sPartial = InfluencerSearchRanker.relevanceScore(partial, "gaming", null, null, null);
+        double sExact = InfluencerSearchRanker.relevanceScore(exact, new InfluencerSearchFilter("gaming", null, null, null, null, null));
+        double sPartial = InfluencerSearchRanker.relevanceScore(partial, new InfluencerSearchFilter("gaming", null, null, null, null, null));
 
         assertThat(sExact).isGreaterThan(sPartial);
     }

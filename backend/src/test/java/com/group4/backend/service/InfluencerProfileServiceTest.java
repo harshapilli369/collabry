@@ -4,6 +4,7 @@ import com.group4.backend.service.profile.RatingService;
 
 import com.group4.backend.dto.InfluencerProfileRequest;
 import com.group4.backend.dto.InfluencerProfileResponse;
+import com.group4.backend.dto.InfluencerSearchFilter;
 import com.group4.backend.dto.RatingResponse;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;
