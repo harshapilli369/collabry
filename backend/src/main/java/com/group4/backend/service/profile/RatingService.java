@@ -41,7 +41,7 @@ public class RatingService {
         rating.setBrandId(brandId);
         rating.setInfluencerId(inv.getInfluencerId());
         rating.setRating(request.getRating());
-        rating.setReview(request.getReview() != null && !request.getReview().trim().isEmpty() ? request.getReview().trim() : null);
+        rating.setReview(sanitizeReview(request.getReview()));
         rating = ratingRepository.save(rating);
         return toResponse(rating);
     }
@@ -76,6 +76,11 @@ public class RatingService {
     }
 
     public record RatingSummary(double averageRating, int totalRatings, List<RatingResponse> recentReviews) {}
+
+    private static String sanitizeReview(String review) {
+        if (review == null || review.trim().isEmpty()) return null;
+        return review.trim();
+    }
 
     private RatingResponse toResponse(InfluencerRating r) {
         RatingResponse resp = new RatingResponse();
