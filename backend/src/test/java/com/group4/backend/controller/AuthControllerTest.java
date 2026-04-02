@@ -1,7 +1,12 @@
 package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group4.backend.dto.*;
+import com.group4.backend.dto.auth.AuthResponse;
+import com.group4.backend.dto.auth.LoginRequest;
+import com.group4.backend.dto.auth.ResetPasswordRequest;
+import com.group4.backend.dto.auth.SignupRequest;
+import com.group4.backend.dto.auth.SignupResponse;
+import com.group4.backend.dto.auth.TokenRequest;
 import com.group4.backend.exception.DuplicateEmailException;
 import com.group4.backend.model.Role;
 import com.group4.backend.security.JwtUtils;

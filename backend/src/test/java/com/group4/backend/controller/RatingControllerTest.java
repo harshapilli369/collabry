@@ -1,8 +1,8 @@
 package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group4.backend.dto.RatingRequest;
-import com.group4.backend.dto.RatingResponse;
+import com.group4.backend.dto.rating.RatingRequest;
+import com.group4.backend.dto.rating.RatingResponse;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;
