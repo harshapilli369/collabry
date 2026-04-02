@@ -53,9 +53,6 @@ public class CampaignController {
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        if (!isAllowedToCreateCampaigns(user)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         CampaignResponse response = campaignService.create(user.getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -76,9 +73,6 @@ public class CampaignController {
         if (user.getRole() != Role.BRAND) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        if (!isAllowedToCreateCampaigns(user)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         InvitationResponse response = invitationService.createInvitation(user.getId(), campaignId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -87,9 +81,6 @@ public class CampaignController {
     public ResponseEntity<List<InfluencerRecommendationDTO>> getRecommendations(@PathVariable Long campaignId) {
         User user = currentUserProvider.getCurrentUser();
         if (user.getRole() != Role.BRAND) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        if (!isAllowedToCreateCampaigns(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         List<InfluencerRecommendationDTO> recommendations = aiRecommendationService.getRecommendations(campaignId);
@@ -152,7 +143,5 @@ public class CampaignController {
         return description;
     }
 
-    private boolean isAllowedToCreateCampaigns(User user) {
-        return user.isVerified() || TEST_BRAND_EMAIL.equalsIgnoreCase(user.getEmail());
-    }
+
 }

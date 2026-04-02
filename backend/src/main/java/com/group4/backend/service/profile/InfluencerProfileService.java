@@ -194,6 +194,7 @@ public class InfluencerProfileService {
         response.setOpenToCollaborations(profile.isOpenToCollaborations());
         response.setCreatedAt(profile.getCreatedAt());
         response.setUpdatedAt(profile.getUpdatedAt());
+        response.setVerified(profile.isVerified());
         long influencerUserId = profile.getUserId();
         RatingService.RatingSummary ratingSummary = ratingService.getRatingSummary(influencerUserId, RECENT_REVIEWS_LIMIT);
         response.setAverageRating(ratingSummary.averageRating());

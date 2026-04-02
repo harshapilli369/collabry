@@ -20,6 +20,15 @@ public class BrandProfileResponse {
     private BudgetRange budgetRange;
     private Instant createdAt;
     private Instant updatedAt;
+    private Boolean verified;
+
+    public Boolean getVerified() {
+        return verified;
+    }
+
+    public void setVerified(Boolean verified) {
+        this.verified = verified;
+    }
 
     public BrandProfileResponse() {
     }

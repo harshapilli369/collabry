@@ -332,8 +332,6 @@ export const BrandDashboard = () => {
                             <Button
                                 icon={<PlusCircleOutlined />}
                                 onClick={() => navigate('/brand/campaigns/create')}
-                                disabled={!user?.isVerified}
-                                title={!user?.isVerified ? 'Only verified brands can create campaigns' : ''}
                                 style={{ borderRadius: 10 }}
                             >
                                 Create campaign

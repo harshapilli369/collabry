@@ -33,6 +33,8 @@ export const CreateCampaign = () => {
     const [aiDescLoading, setAiDescLoading] = useState(false)
     const navigate = useNavigate()
 
+    const today = new Date().toISOString().split('T')[0]
+
     const generateDescription = async () => {
         const name = form.getFieldValue('name')
         if (!name?.trim()) {
@@ -222,10 +224,26 @@ export const CreateCampaign = () => {
                                 Timeline & Scale
                             </Text>
                             <Form.Item name="startDate" label="Start date">
-                                <Input type="date" />
+                                <Input type="date" min={today} />
                             </Form.Item>
-                            <Form.Item name="endDate" label="End date">
-                                <Input type="date" />
+                            <Form.Item
+                                name="endDate"
+                                label="End date"
+                                dependencies={['startDate']}
+                                rules={[
+                                    ({ getFieldValue }) => ({
+                                        validator(_, value) {
+                                            if (!value) return Promise.resolve()
+                                            const start = getFieldValue('startDate')
+                                            if (start && value < start) {
+                                                return Promise.reject(new Error('End date must be after the start date'))
+                                            }
+                                            return Promise.resolve()
+                                        },
+                                    }),
+                                ]}
+                            >
+                                <Input type="date" min={today} />
                             </Form.Item>
                             <Form.Item name="numberOfInfluencers" label="Number of influencers">
                                 <InputNumber min={1} placeholder="e.g. 5" style={{ width: '100%' }} />
