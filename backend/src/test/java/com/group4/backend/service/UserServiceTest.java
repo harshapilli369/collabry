@@ -1,13 +1,15 @@
 package com.group4.backend.service;
-import com.group4.backend.service.user.UserService;
 
 import com.group4.backend.dto.profile.InfluencerSearchResult;
 import com.group4.backend.dto.profile.SocialLinkRequest;
+import com.group4.backend.model.BrandProfile;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
+import com.group4.backend.repository.profile.BrandProfileRepository;
 import com.group4.backend.repository.profile.InfluencerProfileRepository;
 import com.group4.backend.repository.user.UserRepository;
+import com.group4.backend.service.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,9 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -33,6 +33,9 @@ class UserServiceTest {
 
     @Mock
     private InfluencerProfileRepository influencerProfileRepository;
+
+    @Mock
+    private BrandProfileRepository brandProfileRepository;
 
     @InjectMocks
     private UserService userService;
@@ -105,21 +108,51 @@ class UserServiceTest {
     }
 
     @Test
-    void linkSocialAccount_setsVerifiedTrueAndSavesUser() {
-        User user = new User("user@test.com", "pass", Role.INFLUENCER);
+    void linkSocialAccount_influencer_updatesProfileAndDoesNotAutoVerify() {
+        User user = new User("influencer@test.com", "pass", Role.INFLUENCER);
         user.setId(10L);
         user.setVerified(false);
+
+        InfluencerProfile profile = new InfluencerProfile();
+        profile.setUserId(10L);
 
         SocialLinkRequest request = new SocialLinkRequest();
         request.setPlatform("INSTAGRAM");
         request.setHandle("@creator");
 
         when(userRepository.findById(10L)).thenReturn(Optional.of(user));
+        when(influencerProfileRepository.findByUserId(10L)).thenReturn(Optional.of(profile));
 
         userService.linkSocialAccount(10L, request);
 
-        assertThat(user.isVerified()).isTrue();
-        verify(userRepository).save(user);
+        assertThat(user.isVerified()).isFalse(); // Should NOT be auto-verified
+        assertThat(profile.getInstagramHandle()).isEqualTo("@creator");
+        verify(influencerProfileRepository).save(profile);
+        verify(userRepository, never()).save(user);
+    }
+
+    @Test
+    void linkSocialAccount_brand_updatesProfileAndDoesNotAutoVerify() {
+        User user = new User("brand@test.com", "pass", Role.BRAND);
+        user.setId(20L);
+        user.setVerified(false);
+
+        BrandProfile profile = new BrandProfile();
+        profile.setUserId(20L);
+
+        SocialLinkRequest request = new SocialLinkRequest();
+        request.setPlatform("LINKEDIN");
+        request.setHandle("https://linkedin.com/company/test");
+
+        when(userRepository.findById(20L)).thenReturn(Optional.of(user));
+        when(brandProfileRepository.findByUserId(20L)).thenReturn(Optional.of(profile));
+
+        userService.linkSocialAccount(20L, request);
+
+        assertThat(user.isVerified()).isFalse(); // Should NOT be auto-verified
+        assertThat(profile.getLinkedInUrl()).isEqualTo("https://linkedin.com/company/test");
+        verify(brandProfileRepository).save(profile);
+        verify(userRepository, never()).save(user);
     }
 
     @Test

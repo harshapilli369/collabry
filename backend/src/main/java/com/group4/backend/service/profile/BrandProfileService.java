@@ -94,6 +94,7 @@ public class BrandProfileService {
         response.setBudgetRange(profile.getBudgetRange());
         response.setCreatedAt(profile.getCreatedAt());
         response.setUpdatedAt(profile.getUpdatedAt());
+        response.setVerified(profile.isVerified());
         return response;
     }
 }

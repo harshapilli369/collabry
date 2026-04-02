@@ -1,31 +1,69 @@
 import { useState, useEffect } from 'react'
-import { Card, Typography, Button, ConfigProvider, Descriptions, theme, Avatar, Spin, Tag, Space, Row, Col, Rate } from 'antd'
-import { UserOutlined, ArrowLeftOutlined, EditOutlined, InstagramOutlined, YoutubeOutlined, CheckCircleFilled } from '@ant-design/icons'
+import { Card, Typography, Button, ConfigProvider, Descriptions, theme, Avatar, Spin, Tag, Space, Row, Col, Rate, Alert, message } from 'antd'
+import { UserOutlined, ArrowLeftOutlined, EditOutlined, InstagramOutlined, YoutubeOutlined, CheckCircleFilled, SafetyCertificateOutlined, ReloadOutlined, ClockCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyInfluencerProfile, type InfluencerProfileResponse } from '../services/influencerProfileService'
+import { userService } from '../services/userService'
 import { InfluencerPortalLayout, INFLUENCER_PORTAL_PRIMARY } from '../components/InfluencerPortalLayout'
 
 const { Title, Text, Paragraph } = Typography
 
 export const ViewInfluencerProfile = () => {
     const [profile, setProfile] = useState<InfluencerProfileResponse | null>(null)
+    const [verification, setVerification] = useState<any>(null)
+    const [isVerified, setIsVerified] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [requesting, setRequesting] = useState(false)
     const navigate = useNavigate()
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
 
     useEffect(() => {
-        getMyInfluencerProfile()
-            .then((data) => {
-                if (!data) {
+        const loadAll = async () => {
+            try {
+                const profileData = await getMyInfluencerProfile()
+                if (!profileData) {
                     navigate('/influencer/profile/edit', { replace: true })
                     return
                 }
-                setProfile(data)
-            })
-            .catch(() => {})
-            .finally(() => setLoading(false))
-    }, [navigate])
+                setProfile(profileData)
+                // Use profile data as the source of truth for verification status
+                const verifiedStatus = !!profileData.verified
+                setIsVerified(verifiedStatus)
+
+                // If not already verified, check latest request status for the alert box
+                if (!verifiedStatus) {
+                    const vData = await userService.getVerificationStatus()
+                    setVerification(vData)
+                    if (vData?.status === 'APPROVED') {
+                        setIsVerified(true)
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load profile/verification data', e)
+            } finally {
+                setLoading(false)
+            }
+        }
+        void loadAll()
+    }, [navigate, user?.isVerified])
+
+    const handleRequestVerification = async () => {
+        setRequesting(true)
+        try {
+            await userService.requestVerification()
+            message.success('Verification request submitted successfully!')
+            const vData = await userService.getVerificationStatus()
+            setVerification(vData)
+            if (vData?.status === 'APPROVED') {
+                setIsVerified(true)
+            }
+        } catch (e: any) {
+            message.error(e.message || 'Failed to request verification')
+        } finally {
+            setRequesting(false)
+        }
+    }
 
     const cardBackgroundColor = '#141414'
 
@@ -59,7 +97,7 @@ export const ViewInfluencerProfile = () => {
             <Row gutter={[24, 24]}>
                 <Col xs={24} md={16}>
                     <Card
-                        style={{ backgroundColor: cardBackgroundColor, borderRadius: 12, height: '100%' }}
+                        style={{ backgroundColor: cardBackgroundColor, borderRadius: 12 }}
                         title={
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 4 }}>
                                 {profile?.profilePictureUrl ? (
@@ -70,7 +108,7 @@ export const ViewInfluencerProfile = () => {
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                         <Title level={4} style={{ margin: 0, color: '#fff' }}>{profile?.name}</Title>
-                                        {user?.isVerified && <CheckCircleFilled style={{ color: INFLUENCER_PORTAL_PRIMARY, fontSize: '1rem' }} />}
+                                        {isVerified && <CheckCircleFilled style={{ color: INFLUENCER_PORTAL_PRIMARY, fontSize: '1rem' }} />}
                                     </div>
                                     <Text type="secondary" style={{ fontSize: '0.9rem' }}>{profile?.niche} &bull; {profile?.location}</Text>
                                 </div>
@@ -88,6 +126,52 @@ export const ViewInfluencerProfile = () => {
                         }
                     >
                         <Space direction="vertical" size="large" style={{ width: '100%', marginTop: 16 }}>
+                            {!isVerified && (
+                                <Alert
+                                    message={
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                            <div>
+                                                <Text strong style={{ color: '#fff' }}>
+                                                    {verification?.status === 'PENDING' ? (
+                                                        <><ClockCircleOutlined /> Verification Pending</>
+                                                    ) : verification?.status === 'REJECTED' ? (
+                                                        <><CloseCircleOutlined /> Verification Rejected</>
+                                                    ) : (
+                                                        <><SafetyCertificateOutlined /> Get Verified!</>
+                                                    )}
+                                                </Text>
+                                                <Paragraph style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
+                                                    {verification?.status === 'PENDING' 
+                                                        ? 'An admin is currently reviewing your profile to unlock premium collaboration tools.'
+                                                        : verification?.status === 'REJECTED'
+                                                        ? `Reason: ${verification.adminReason || 'No reason provided.'}. Please fix any profile gaps and re-apply.`
+                                                        : 'Verified influencers get a gold badge and priority matching for high-budget brand campaigns.'}
+                                                </Paragraph>
+                                            </div>
+                                            {(!verification || verification.status === 'REJECTED') && (
+                                                <Button 
+                                                    type="primary" 
+                                                    size="small" 
+                                                    icon={verification?.status === 'REJECTED' ? <ReloadOutlined /> : <SafetyCertificateOutlined />}
+                                                    loading={requesting}
+                                                    onClick={handleRequestVerification}
+                                                    style={{ width: 'fit-content', color: '#000', fontWeight: 600 }}
+                                                >
+                                                    {verification?.status === 'REJECTED' ? 'Request Again' : 'Request Verification'}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    }
+                                    type={verification?.status === 'REJECTED' ? 'error' : 'info'}
+                                    showIcon={false}
+                                    style={{ 
+                                        backgroundColor: verification?.status === 'REJECTED' ? '#2a1215' : '#1a1a2e', 
+                                        border: `1px solid ${verification?.status === 'REJECTED' ? '#5c2223' : '#333'}`,
+                                        borderRadius: 12
+                                    }}
+                                />
+                            )}
+                            
                             {profile?.bio && (
                                 <div>
                                     <Title level={5} style={{ color: INFLUENCER_PORTAL_PRIMARY }}>Bio</Title>
@@ -146,7 +230,7 @@ export const ViewInfluencerProfile = () => {
                         <Descriptions column={1} bordered size="small" style={{ marginTop: 24 }}>
                             <Descriptions.Item label="Age">{profile?.age}</Descriptions.Item>
                             <Descriptions.Item label="Profile Status">
-                                {user?.isVerified ? <Text type="success">Verified</Text> : <Text type="warning">Unverified</Text>}
+                                {isVerified ? <Text type="success">Verified</Text> : <Text type="warning">Unverified</Text>}
                             </Descriptions.Item>
                         </Descriptions>
                     </Card>

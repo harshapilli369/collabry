@@ -30,9 +30,13 @@ public class InfluencerProfileResponse {
     private Double averageRating;
     private Integer totalRatings;
     private List<RatingResponse> recentReviews;
+    private Boolean verified;
 
     public InfluencerProfileResponse() {
     }
+
+    public Boolean getVerified() { return verified; }
+    public void setVerified(Boolean verified) { this.verified = verified; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

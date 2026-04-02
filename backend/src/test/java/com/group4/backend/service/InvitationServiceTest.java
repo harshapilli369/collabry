@@ -13,6 +13,8 @@ import com.group4.backend.model.*;
 import com.group4.backend.repository.campaign.CampaignRepository;
 import com.group4.backend.repository.profile.InfluencerRatingRepository;
 import com.group4.backend.repository.campaign.InvitationRepository;
+import com.group4.backend.repository.profile.BrandProfileRepository;
+import com.group4.backend.repository.profile.InfluencerProfileRepository;
 import com.group4.backend.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +52,10 @@ class InvitationServiceTest {
     private CampaignService campaignService;
     @Mock
     private InfluencerRatingRepository influencerRatingRepository;
+    @Mock
+    private BrandProfileRepository brandProfileRepository;
+    @Mock
+    private InfluencerProfileRepository influencerProfileRepository;
 
     @InjectMocks
     private InvitationService invitationService;
@@ -82,6 +88,8 @@ class InvitationServiceTest {
         invitation.setCreatedAt(Instant.now());
 
         lenient().when(influencerRatingRepository.findByInvitationId(anyLong())).thenReturn(Optional.empty());
+        lenient().when(brandProfileRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
+        lenient().when(influencerProfileRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
     }
 
     @Test

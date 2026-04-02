@@ -94,12 +94,12 @@ export const Login = () => {
                 <div style={{ width: '100%', maxWidth: 400, padding: 40, backgroundColor: CARD_BG, borderRadius: 16, boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
 
                     <div style={{ textAlign: 'center', marginBottom: 30 }}>
-                        <div style={{ marginBottom: 20 }}>
+                        <div style={{ marginBottom: 20, cursor: 'pointer' }} onClick={() => navigate('/')}>
                             <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg, #FFFD82, #BD72EB)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', fontWeight: 900, fontSize: 28, color: '#000' }}>
                                 C
                             </div>
                         </div>
-                        <Title level={2} style={{ margin: '0 0 8px', color: TEXT_COLOR }}>Collabry</Title>
+                        <Title level={2} style={{ margin: '0 0 8px', color: TEXT_COLOR, cursor: 'pointer' }} onClick={() => navigate('/')}>Collabry</Title>
                         <Text type="secondary">Log in to your account to continue</Text>
                     </div>
 

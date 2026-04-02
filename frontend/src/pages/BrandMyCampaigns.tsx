@@ -164,8 +164,6 @@ export const BrandMyCampaigns = () => {
                         icon={<PlusCircleOutlined />}
                         onClick={() => navigate('/brand/campaigns/create')}
                         style={{ borderRadius: 10 }}
-                        disabled={!user?.isVerified}
-                        title={!user?.isVerified ? 'Only verified brands can create campaigns' : ''}
                     >
                         Create campaign
                     </Button>

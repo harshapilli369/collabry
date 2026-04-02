@@ -15,6 +15,7 @@ import {
   Typography,
   message,
   theme,
+  Input,
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { LogoutOutlined } from '@ant-design/icons'
@@ -22,15 +23,19 @@ import { useNavigate } from 'react-router-dom'
 import {
   fetchAdminDashboard,
   fetchAdminUsers,
+  fetchAdminVerificationRequests,
+  processAdminVerificationRequest,
   updateAdminUser,
   type AdminActiveCollaboration,
   type AdminDashboardData,
   type AdminRecentSignup,
   type AdminUserSummary,
+  type AdminVerificationRequest,
 } from '../services/adminService'
 
 const { Header, Content } = Layout
 const { Title, Text } = Typography
+const { TextArea } = Input
 
 const PRIMARY = '#FFFD82'
 const PAGE_BG = '#000000'
@@ -41,21 +46,27 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [dashboard, setDashboard] = useState<AdminDashboardData | null>(null)
   const [users, setUsers] = useState<AdminUserSummary[]>([])
+  const [verifications, setVerifications] = useState<AdminVerificationRequest[]>([])
   const [usersTotal, setUsersTotal] = useState(0)
   const [usersPage, setUsersPage] = useState(0)
   const [usersPageSize, setUsersPageSize] = useState(10)
   const [updatingId, setUpdatingId] = useState<number | null>(null)
+  const [verifyingId, setVerifyingId] = useState<number | null>(null)
+  const [rejectModalId, setRejectModalId] = useState<number | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
 
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [dash, page] = await Promise.all([
+      const [dash, page, vers] = await Promise.all([
         fetchAdminDashboard(),
         fetchAdminUsers(usersPage, usersPageSize),
+        fetchAdminVerificationRequests(),
       ])
       setDashboard(dash)
       setUsers(page.content)
       setUsersTotal(page.totalElements)
+      setVerifications(vers)
     } catch (e) {
       message.error(e instanceof Error ? e.message : 'Failed to load admin data')
     } finally {
@@ -86,6 +97,21 @@ export function AdminDashboard() {
     }
   }
 
+  const handleVerification = async (id: number, approved: boolean, reason?: string) => {
+    setVerifyingId(id)
+    try {
+      await processAdminVerificationRequest(id, { approved, reason })
+      message.success(approved ? 'Verification approved' : 'Verification rejected')
+      setRejectModalId(null)
+      setRejectReason('')
+      await loadData()
+    } catch (e) {
+      message.error(e instanceof Error ? e.message : 'Action failed')
+    } finally {
+      setVerifyingId(null)
+    }
+  }
+
   const onActiveChange = (record: AdminUserSummary, checked: boolean) => {
     if (!checked) {
       Modal.confirm({
@@ -101,6 +127,7 @@ export function AdminDashboard() {
   }
 
   const signupColumns: ColumnsType<AdminRecentSignup> = [
+    { title: 'Id', dataIndex: 'id', key: 'id', width: 80 },
     { title: 'Email', dataIndex: 'email', key: 'email' },
     { title: 'Role', dataIndex: 'role', key: 'role', width: 120 },
     {
@@ -137,6 +164,7 @@ export function AdminDashboard() {
   ]
 
   const userColumns: ColumnsType<AdminUserSummary> = [
+    { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
     { title: 'Email', dataIndex: 'email', key: 'email' },
     { title: 'Role', dataIndex: 'role', key: 'role', width: 120 },
     {
@@ -161,6 +189,61 @@ export function AdminDashboard() {
           loading={updatingId === record.id}
           onChange={(checked) => void applyUserUpdate(record.id, record.active, checked)}
         />
+      ),
+    },
+  ]
+
+  const verificationColumns: ColumnsType<AdminVerificationRequest> = [
+    {
+      title: 'User',
+      key: 'user',
+      render: (_, r) => (
+        <Space direction="vertical" size={0}>
+          <Text strong>{r.userEmail}</Text>
+          <Text type="secondary" style={{ fontSize: 11 }}>ID: {r.userId}</Text>
+        </Space>
+      ),
+    },
+    {
+      title: 'Role',
+      dataIndex: 'userRole',
+      key: 'userRole',
+      width: 120,
+      render: (role: string) => (
+        <Tag color={role === 'BRAND' ? 'blue' : 'magenta'}>{role}</Tag>
+      ),
+    },
+    {
+      title: 'Requested',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 180,
+      render: (v: string) => new Date(v).toLocaleString(),
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 250,
+      render: (_, record) => (
+        <Space>
+          <Button
+            type="primary"
+            size="small"
+            loading={verifyingId === record.id}
+            onClick={() => handleVerification(record.id, true)}
+            style={{ background: '#52c41a', borderColor: '#52c41a', color: '#fff' }}
+          >
+            Approve
+          </Button>
+          <Button
+            danger
+            size="small"
+            loading={verifyingId === record.id}
+            onClick={() => setRejectModalId(record.id)}
+          >
+            Reject
+          </Button>
+        </Space>
       ),
     },
   ]
@@ -244,6 +327,17 @@ export function AdminDashboard() {
                 </Space>
               </Card>
 
+              <Card title="Pending Verification Requests" style={{ background: CARD_BG, borderColor: '#303030' }}>
+                <Table
+                  rowKey="id"
+                  columns={verificationColumns}
+                  dataSource={verifications}
+                  pagination={false}
+                  size="small"
+                  locale={{ emptyText: 'No pending requests' }}
+                />
+              </Card>
+
               <Card title="Recent signups" style={{ background: CARD_BG, borderColor: '#303030' }}>
                 <Table
                   rowKey="id"
@@ -287,6 +381,29 @@ export function AdminDashboard() {
             </Space>
           )}
         </Content>
+
+        <Modal
+          title="Reject Verification"
+          open={rejectModalId !== null}
+          onOk={() => rejectModalId && handleVerification(rejectModalId, false, rejectReason)}
+          onCancel={() => {
+            setRejectModalId(null)
+            setRejectReason('')
+          }}
+          okText="Reject"
+          okType="danger"
+          confirmLoading={verifyingId !== null}
+        >
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Text>Please provide a reason for rejection (optional):</Text>
+            <TextArea
+              rows={4}
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="e.g. Incomplete profile details, invalid social links..."
+            />
+          </Space>
+        </Modal>
       </Layout>
     </ConfigProvider>
   )

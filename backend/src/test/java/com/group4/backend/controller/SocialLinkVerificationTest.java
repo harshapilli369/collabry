@@ -5,6 +5,7 @@ import com.group4.backend.dto.profile.SocialLinkRequest;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.security.JwtUtils;
+import com.group4.backend.service.user.VerificationService;
 import com.group4.backend.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,9 @@ public class SocialLinkVerificationTest {
     @MockBean
     private JwtUtils jwtUtils;
 
+    @MockBean
+    private VerificationService verificationService;
+
     private User testUser;
 
     @BeforeEach
@@ -56,7 +60,7 @@ public class SocialLinkVerificationTest {
 
     @Test
     @WithMockUser(username = "influencer@example.com", roles = "INFLUENCER")
-    void shouldVerifyUserWhenSocialLinkProvided() throws Exception {
+    void shouldLinkSocialAccount() throws Exception {
         SocialLinkRequest request = new SocialLinkRequest();
         request.setPlatform("INSTAGRAM");
         request.setHandle("@test_influencer");

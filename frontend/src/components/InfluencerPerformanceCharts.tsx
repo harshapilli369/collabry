@@ -24,7 +24,7 @@ interface Props {
     payments: PaymentResponse[]
 }
 
-type ExpandedChart = 'invitation' | 'payment' | 'earnings' | null
+type ExpandedChart = 'payment' | 'earnings' | null
 
 const DARK_BG = '#0d0d0d'
 const CARD_BORDER = '#1a1a1a'
@@ -96,7 +96,7 @@ function ChartCard({
     title: string
     subtitle?: string
     children: React.ReactNode
-    onExpand: () => void
+    onExpand?: () => void
 }) {
     return (
         <Card
@@ -106,7 +106,7 @@ function ChartCard({
                     {subtitle && <div style={{ color: '#666', fontSize: 11, fontWeight: 400, marginTop: 2 }}>{subtitle}</div>}
                 </div>
             }
-            extra={
+            extra={onExpand ? (
                 <Button
                     type="text"
                     icon={<FullscreenOutlined />}
@@ -114,14 +114,14 @@ function ChartCard({
                     style={{ color: '#888' }}
                     title="View fullscreen"
                 />
-            }
+            ) : undefined}
             onClick={onExpand}
             style={{
                 borderRadius: 16,
                 background: DARK_BG,
                 border: `1px solid ${CARD_BORDER}`,
                 height: '100%',
-                cursor: 'pointer',
+                cursor: onExpand ? 'pointer' : 'default',
                 transition: 'border-color 0.2s, box-shadow 0.2s',
             }}
             className="chart-card-hover"
@@ -248,7 +248,6 @@ export function InfluencerPerformanceCharts({ invitations, payments }: Props) {
         )
 
     const CHART_META: Record<NonNullable<ExpandedChart>, { title: string; render: () => React.ReactNode }> = {
-        invitation: { title: 'Invitation Status Breakdown', render: () => renderInvitationChart(420, true) },
         payment: { title: 'Payment Overview', render: () => renderPaymentChart(380, true) },
         earnings: { title: 'Earnings by Status', render: () => renderEarningsChart(380, true) },
     }
@@ -257,7 +256,7 @@ export function InfluencerPerformanceCharts({ invitations, payments }: Props) {
         <>
             <Row gutter={[20, 20]}>
                 <Col xs={24} md={8}>
-                    <ChartCard title="Invitation Breakdown" subtitle={`${totalInvitations} total`} onExpand={() => setExpanded('invitation')}>
+                    <ChartCard title="Invitation Breakdown" subtitle={`${totalInvitations} total`}>
                         {renderInvitationChart(220)}
                     </ChartCard>
                 </Col>

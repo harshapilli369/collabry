@@ -55,14 +55,25 @@ export interface AdminUserPage {
   size: number
 }
 
+export interface AdminVerificationRequest {
+  id: number
+  userId: number
+  userEmail: string
+  userRole: AdminRole
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  adminReason?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export async function fetchAdminDashboard(): Promise<AdminDashboardData> {
   const res = await fetch(`${ADMIN_URL}/dashboard`, { headers: getAuthHeaders() })
   if (res.status === 403) {
     throw new Error('Admin access required')
   }
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}))
-    throw new Error((data as { message?: string }).message || 'Failed to load dashboard')
+    const data = (await res.json().catch(() => ({}))) as { message?: string }
+    throw new Error(data.message || 'Failed to load dashboard')
   }
   return res.json()
 }
@@ -74,8 +85,8 @@ export async function fetchAdminUsers(page = 0, size = 20): Promise<AdminUserPag
     throw new Error('Admin access required')
   }
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}))
-    throw new Error((data as { message?: string }).message || 'Failed to load users')
+    const data = (await res.json().catch(() => ({}))) as { message?: string }
+    throw new Error(data.message || 'Failed to load users')
   }
   return res.json()
 }
@@ -89,9 +100,39 @@ export async function updateAdminUser(
     headers: getAuthHeaders(),
     body: JSON.stringify(body),
   })
-  const data = await res.json().catch(() => ({}))
+  const data = (await res.json().catch(() => ({}))) as { message?: string }
   if (!res.ok) {
-    throw new Error((data as { message?: string }).message || 'Update failed')
+    throw new Error(data.message || 'Update failed')
   }
-  return data as AdminUserSummary
+  return data as unknown as AdminUserSummary
+}
+
+export async function fetchAdminVerificationRequests(): Promise<AdminVerificationRequest[]> {
+  const res = await fetch(`${ADMIN_URL}/verification-requests`, {
+    headers: getAuthHeaders(),
+  })
+  if (res.status === 403) {
+    throw new Error('Admin access required')
+  }
+  if (!res.ok) {
+    const data = (await res.json().catch(() => ({}))) as { message?: string }
+    throw new Error(data.message || 'Failed to load verification requests')
+  }
+  return res.json()
+}
+
+export async function processAdminVerificationRequest(
+  requestId: number,
+  body: { approved: boolean; reason?: string }
+): Promise<{ message: string }> {
+  const res = await fetch(`${ADMIN_URL}/verification-requests/${requestId}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(body),
+  })
+  const data = (await res.json().catch(() => ({}))) as { message?: string }
+  if (!res.ok) {
+    throw new Error(data.message || 'Failed to process verification request')
+  }
+  return data as { message: string }
 }

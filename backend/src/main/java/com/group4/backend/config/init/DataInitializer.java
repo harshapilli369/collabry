@@ -73,15 +73,10 @@ public class DataInitializer {
         if (!userRepository.existsByEmail("brand@collabry.com")) {
             User brand = new User("brand@collabry.com",
                     passwordEncoder.encode("password123"), Role.BRAND);
-            brand.setVerified(true);
+            brand.setVerified(false);
             return userRepository.save(brand);
         }
-        User brand = userRepository.findByEmail("brand@collabry.com").orElseThrow();
-        if (!brand.isVerified()) {
-            brand.setVerified(true);
-            userRepository.save(brand);
-        }
-        return brand;
+        return userRepository.findByEmail("brand@collabry.com").orElseThrow();
     }
 
     private void upsertBrandProfile(User brandUser) {
@@ -94,7 +89,7 @@ public class DataInitializer {
         profile.setDescription(SEED_BRAND_DESCRIPTION);
         profile.setIndustry("Consumer Lifestyle");
         profile.setWebsite("https://collabry.com");
-        profile.setVerified(true);
+        profile.setVerified(false);
         brandProfileRepository.save(profile);
     }
 
@@ -102,15 +97,10 @@ public class DataInitializer {
         if (!userRepository.existsByEmail("influencer@collabry.com")) {
             User influencer = new User("influencer@collabry.com",
                     passwordEncoder.encode("password123"), Role.INFLUENCER);
-            influencer.setVerified(true);
+            influencer.setVerified(false);
             return userRepository.save(influencer);
         }
-        User influencer = userRepository.findByEmail("influencer@collabry.com").orElseThrow();
-        if (!influencer.isVerified()) {
-            influencer.setVerified(true);
-            userRepository.save(influencer);
-        }
-        return influencer;
+        return userRepository.findByEmail("influencer@collabry.com").orElseThrow();
     }
 
     private void upsertInfluencerProfile(User influencerUser) {

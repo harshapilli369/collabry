@@ -1,31 +1,69 @@
 import { useState, useEffect } from 'react'
-import { Card, Typography, Button, Descriptions, Avatar, Spin, Space, Row, Col } from 'antd'
-import { ArrowLeftOutlined, EditOutlined, GlobalOutlined, InstagramOutlined, LinkedinOutlined, TwitterOutlined, CheckCircleFilled } from '@ant-design/icons'
+import { Card, Typography, Button, Descriptions, Avatar, Spin, Space, Row, Col, Alert, message } from 'antd'
+import { ArrowLeftOutlined, EditOutlined, GlobalOutlined, InstagramOutlined, LinkedinOutlined, TwitterOutlined, CheckCircleFilled, SafetyCertificateOutlined, ReloadOutlined, ClockCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { getMyBrandProfile, type BrandProfileResponse, BUDGET_RANGE_OPTIONS } from '../services/brandService'
+import { userService } from '../services/userService'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 
 const { Title, Text, Paragraph } = Typography
 
 export const ViewBrandProfile = () => {
     const [profile, setProfile] = useState<BrandProfileResponse | null>(null)
+    const [verification, setVerification] = useState<any>(null)
+    const [isVerified, setIsVerified] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [requesting, setRequesting] = useState(false)
     const navigate = useNavigate()
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
 
     useEffect(() => {
-        getMyBrandProfile()
-            .then((data) => {
-                if (!data) {
+        const loadAll = async () => {
+            try {
+                const profileData = await getMyBrandProfile()
+                if (!profileData) {
                     navigate('/brand/profile/edit', { replace: true })
                     return
                 }
-                setProfile(data)
-            })
-            .catch(() => {})
-            .finally(() => setLoading(false))
-    }, [navigate])
+                setProfile(profileData)
+                // Use profile data as the source of truth for verification status
+                const verifiedStatus = !!profileData.verified
+                setIsVerified(verifiedStatus)
+
+                // If not already verified, check latest request status for the alert box
+                if (!verifiedStatus) {
+                    const vData = await userService.getVerificationStatus()
+                    setVerification(vData)
+                    if (vData?.status === 'APPROVED') {
+                        setIsVerified(true)
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load profile/verification data', e)
+            } finally {
+                setLoading(false)
+            }
+        }
+        void loadAll()
+    }, [navigate, user?.isVerified])
+
+    const handleRequestVerification = async () => {
+        setRequesting(true)
+        try {
+            await userService.requestVerification()
+            message.success('Verification request submitted successfully!')
+            const vData = await userService.getVerificationStatus()
+            setVerification(vData)
+            if (vData?.status === 'APPROVED') {
+                setIsVerified(true)
+            }
+        } catch (e: any) {
+            message.error(e.message || 'Failed to request verification')
+        } finally {
+            setRequesting(false)
+        }
+    }
 
     const PRIMARY = BRAND_PORTAL_PRIMARY
 
@@ -74,7 +112,7 @@ export const ViewBrandProfile = () => {
                                 <div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                         <Title level={4} style={{ margin: 0, color: '#fff' }}>{profile.name}</Title>
-                                        {user?.isVerified && <CheckCircleFilled style={{ color: PRIMARY, fontSize: '1.1rem' }} />}
+                                        {isVerified && <CheckCircleFilled style={{ color: PRIMARY, fontSize: '1.1rem' }} />}
                                     </div>
                                     <Text type="secondary" style={{ fontSize: '0.9rem' }}>{profile.industry}</Text>
                                 </div>
@@ -87,6 +125,52 @@ export const ViewBrandProfile = () => {
                         }
                     >
                         <Space direction="vertical" size="large" style={{ width: '100%', marginTop: 8 }}>
+                            {!isVerified && (
+                                <Alert
+                                    message={
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                            <div>
+                                                <Text strong style={{ color: '#fff' }}>
+                                                    {verification?.status === 'PENDING' ? (
+                                                        <><ClockCircleOutlined /> Verification Pending</>
+                                                    ) : verification?.status === 'REJECTED' ? (
+                                                        <><CloseCircleOutlined /> Verification Rejected</>
+                                                    ) : (
+                                                        <><SafetyCertificateOutlined /> Get Verified!</>
+                                                    )}
+                                                </Text>
+                                                <Paragraph style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
+                                                    {verification?.status === 'PENDING' 
+                                                        ? 'An admin is currently reviewing your profile. You will be notified once a decision is made.'
+                                                        : verification?.status === 'REJECTED'
+                                                        ? `Reason: ${verification.adminReason || 'No reason provided.'}. Please update your profile and try again.`
+                                                        : 'Verified brands get a blue badge and can create unlimited campaigns, invite influencers, and use AI recommendations.'}
+                                                </Paragraph>
+                                            </div>
+                                            {(!verification || verification.status === 'REJECTED') && (
+                                                <Button 
+                                                    type="primary" 
+                                                    size="small" 
+                                                    icon={verification?.status === 'REJECTED' ? <ReloadOutlined /> : <SafetyCertificateOutlined />}
+                                                    loading={requesting}
+                                                    onClick={handleRequestVerification}
+                                                    style={{ width: 'fit-content' }}
+                                                >
+                                                    {verification?.status === 'REJECTED' ? 'Request Again' : 'Request Verification'}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    }
+                                    type={verification?.status === 'REJECTED' ? 'error' : 'info'}
+                                    showIcon={false}
+                                    style={{ 
+                                        backgroundColor: verification?.status === 'REJECTED' ? '#2a1215' : '#111b26', 
+                                        border: `1px solid ${verification?.status === 'REJECTED' ? '#5c2223' : '#153450'}`,
+                                        borderRadius: 12
+                                    }}
+                                />
+                            )}
+
                             {profile.description && (
                                 <div>
                                     <Title level={5} style={{ color: PRIMARY }}>About Us</Title>

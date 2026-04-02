@@ -102,6 +102,7 @@ export const Signup = () => {
                     {/* Logo */}
                     <div style={{ textAlign: 'center', marginBottom: 32 }}>
                         <div
+                            onClick={() => navigate('/')}
                             style={{
                                 width: 52,
                                 height: 52,
@@ -114,6 +115,7 @@ export const Signup = () => {
                                 fontWeight: 900,
                                 fontSize: 24,
                                 color: '#000',
+                                cursor: 'pointer',
                             }}
                         >
                             C

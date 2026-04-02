@@ -21,7 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -43,19 +43,19 @@ class CampaignControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
-    @MockBean
+    @MockitoBean
     private CampaignService campaignService;
-    @MockBean
+    @MockitoBean
     private CampaignReportService campaignReportService;
-    @MockBean
+    @MockitoBean
     private AiRecommendationService aiRecommendationService;
-    @MockBean
+    @MockitoBean
     private InvitationService invitationService;
-    @MockBean
+    @MockitoBean
     private CurrentUserProvider currentUserProvider;
-    @MockBean
+    @MockitoBean
     private JwtUtils jwtUtils;
-    @MockBean
+    @MockitoBean
     private GroqApiClient groqApiClient;
 
     private User brandUser;
@@ -334,19 +334,26 @@ class CampaignControllerTest {
 
     @Test
     @WithMockUser(username = "unverified@test.com")
-    void createCampaign_unverifiedBrand_returns403() throws Exception {
+    void createCampaign_unverifiedBrand_returns201() throws Exception {
         User unverifiedBrand = new User("unverified@test.com", "pass", Role.BRAND);
         unverifiedBrand.setId(30L);
         // isVerified() defaults to false
         when(currentUserProvider.getCurrentUser()).thenReturn(unverifiedBrand);
+        
         CampaignRequest request = new CampaignRequest();
         request.setName("Summer Promo");
         request.setBudgetRange(BudgetRange.ONE_K_5K);
 
+        CampaignResponse resp = new CampaignResponse();
+        resp.setId(2L);
+        resp.setName("Summer Promo");
+        when(campaignService.create(eq(30L), any(CampaignRequest.class))).thenReturn(resp);
+
         mockMvc.perform(post("/api/campaigns").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(2));
     }
 
     @Test

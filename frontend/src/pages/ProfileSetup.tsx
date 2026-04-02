@@ -177,12 +177,9 @@ export const ProfileSetup = () => {
         }
         try {
             await userService.linkSocialAccount(platform, handle)
-            const u = JSON.parse(localStorage.getItem('user') || '{}')
-            u.isVerified = true
-            localStorage.setItem('user', JSON.stringify(u))
             Modal.success({
                 title: `${label} Connected!`,
-                content: `@${handle} has been linked successfully. Your profile is now verified! Remember to click "Save Changes" to keep your handles.`,
+                content: `@${handle} has been linked successfully. Remember to click "Save Changes" to keep your handles.`,
                 okText: 'Awesome',
                 centered: true,
             })
@@ -495,7 +492,7 @@ export const ProfileSetup = () => {
                                     Connect Your Accounts
                                 </Text>
                                 <Text style={{ color: '#555', fontSize: 12, display: 'block', marginBottom: 20 }}>
-                                    At least one handle is required. Connecting verifies your profile.
+                                    At least one handle is required to showcase your presence.
                                 </Text>
 
                                 <div style={{ marginBottom: 20 }}>
@@ -543,7 +540,7 @@ export const ProfileSetup = () => {
 
                             <div style={{ marginTop: 16, padding: '12px 16px', background: `${PRIMARY}10`, borderRadius: 8, border: `1px solid ${PRIMARY}20` }}>
                                 <CheckCircleFilled style={{ color: PRIMARY, marginRight: 8 }} />
-                                <Text style={{ color: '#aaa', fontSize: 12 }}>Connecting a social account verifies your profile and makes you visible to brands.</Text>
+                                <Text style={{ color: '#aaa', fontSize: 12 }}>Connecting a social account makes you visible and builds trust with brands.</Text>
                             </div>
                         </div>
 

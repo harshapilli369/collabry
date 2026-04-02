@@ -51,6 +51,7 @@ export interface BrandProfileResponse {
     linkedInUrl?: string;
     twitterUrl?: string;
     budgetRange?: BudgetRange;
+    verified?: boolean;
     createdAt?: string;
     updatedAt?: string;
 }

@@ -6,15 +6,20 @@ import com.group4.backend.dto.invitation.InvitationResponse;
 import com.group4.backend.dto.invitation.NegotiationRequest;
 import com.group4.backend.dto.invitation.RespondRequest;
 import com.group4.backend.dto.invitation.UpdateInvitationRequest;
+import com.group4.backend.dto.DeliverableUpdateRequest;
 import com.group4.backend.model.*;
 import com.group4.backend.repository.campaign.CampaignRepository;
 import com.group4.backend.repository.profile.InfluencerRatingRepository;
 import com.group4.backend.repository.campaign.InvitationRepository;
 import com.group4.backend.repository.user.UserRepository;
+import com.group4.backend.repository.profile.BrandProfileRepository;
+import com.group4.backend.repository.profile.InfluencerProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,17 +36,23 @@ public class InvitationService {
     private final UserRepository userRepository;
     private final CampaignService campaignService;
     private final InfluencerRatingRepository influencerRatingRepository;
+    private final BrandProfileRepository brandProfileRepository;
+    private final InfluencerProfileRepository influencerProfileRepository;
 
     public InvitationService(InvitationRepository invitationRepository,
                              CampaignRepository campaignRepository,
                              UserRepository userRepository,
                              CampaignService campaignService,
-                             InfluencerRatingRepository influencerRatingRepository) {
+                             InfluencerRatingRepository influencerRatingRepository,
+                             BrandProfileRepository brandProfileRepository,
+                             InfluencerProfileRepository influencerProfileRepository) {
         this.invitationRepository = invitationRepository;
         this.campaignRepository = campaignRepository;
         this.userRepository = userRepository;
         this.campaignService = campaignService;
         this.influencerRatingRepository = influencerRatingRepository;
+        this.brandProfileRepository = brandProfileRepository;
+        this.influencerProfileRepository = influencerProfileRepository;
     }
 
     @Transactional
@@ -82,10 +93,8 @@ public class InvitationService {
     }
 
     public List<InvitationResponse> getInvitationsForInfluencer(Long influencerId) {
-        return invitationRepository.findByInfluencerIdOrderByCreatedAtDesc(influencerId)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        List<CollaborationInvitation> invitations = invitationRepository.findByInfluencerIdOrderByCreatedAtDesc(influencerId);
+        return enrichResponses(invitations);
     }
 
     @Transactional
@@ -133,7 +142,11 @@ public class InvitationService {
         }
 
         InvitationDetailResponse detail = toDetailResponse(inv);
-        campaignService.findById(inv.getCampaignId()).ifPresent(detail::setCampaign);
+        campaignService.findById(inv.getCampaignId()).ifPresent(c -> {
+            detail.setCampaign(c);
+            detail.setCampaignName(c.getName());
+        });
+        enrichDetailWithProfiles(detail, inv);
         return detail;
     }
 
@@ -183,21 +196,18 @@ public class InvitationService {
     }
 
     public List<InvitationResponse> getCollaborationHistory(Long influencerId) {
-        return invitationRepository.findByInfluencerIdAndStatusIn(influencerId, HISTORY_STATUSES)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        List<CollaborationInvitation> invitations = invitationRepository.findByInfluencerIdAndStatusIn(influencerId, HISTORY_STATUSES);
+        return enrichResponses(invitations);
     }
 
     public List<InvitationResponse> getInvitationsForBrand(Long brandId) {
-        return invitationRepository.findByBrandIdOrderByCreatedAtDesc(brandId)
-                .stream()
-                .map(inv -> {
-                    InvitationResponse r = toResponse(inv);
-                    r.setRated(influencerRatingRepository.findByInvitationId(inv.getId()).isPresent());
-                    return r;
-                })
-                .collect(Collectors.toList());
+        List<CollaborationInvitation> invitations = invitationRepository.findByBrandIdOrderByCreatedAtDesc(brandId);
+        List<InvitationResponse> responses = enrichResponses(invitations);
+        // Mark which ones already have ratings
+        for (int i = 0; i < invitations.size(); i++) {
+            responses.get(i).setRated(influencerRatingRepository.findByInvitationId(invitations.get(i).getId()).isPresent());
+        }
+        return responses;
     }
 
     @Transactional
@@ -238,6 +248,9 @@ public class InvitationService {
         r.setCreatedAt(inv.getCreatedAt());
         r.setUpdatedAt(inv.getUpdatedAt());
         r.setRespondedAt(inv.getRespondedAt());
+        r.setDeliverableStatus(inv.getDeliverableStatus() != null ? inv.getDeliverableStatus().name() : DeliverableStatus.NOT_STARTED.name());
+        r.setContentLink(inv.getContentLink());
+        r.setDeliverableNotes(inv.getDeliverableNotes());
         return r;
     }
 
@@ -252,6 +265,47 @@ public class InvitationService {
         return inv.getStatus() == InvitationStatus.PENDING
                 && inv.getExpiresAt() != null
                 && java.time.Instant.now().isAfter(inv.getExpiresAt());
+    }
+
+    @Transactional
+    public InvitationResponse updateDeliverableStatus(Long invitationId, Long influencerId, DeliverableUpdateRequest request) {
+        CollaborationInvitation inv = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+        if (!inv.getInfluencerId().equals(influencerId)) {
+            throw new IllegalArgumentException("You are not the assigned influencer");
+        }
+        if (inv.getStatus() != InvitationStatus.ACCEPTED && inv.getStatus() != InvitationStatus.CONFIRMED) {
+            throw new IllegalArgumentException("Deliverables can only be updated on accepted or confirmed collaborations");
+        }
+
+        if (request.getDeliverableStatus() != null) {
+            DeliverableStatus newStatus = DeliverableStatus.valueOf(request.getDeliverableStatus());
+            inv.setDeliverableStatus(newStatus);
+        }
+        if (request.getContentLink() != null) {
+            inv.setContentLink(request.getContentLink().trim().isEmpty() ? null : request.getContentLink().trim());
+        }
+        if (request.getDeliverableNotes() != null) {
+            inv.setDeliverableNotes(request.getDeliverableNotes().trim().isEmpty() ? null : request.getDeliverableNotes().trim());
+        }
+
+        inv = invitationRepository.save(inv);
+        return toResponse(inv);
+    }
+
+    @Transactional
+    public InvitationResponse approveDeliverable(Long invitationId, Long brandId) {
+        CollaborationInvitation inv = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+        if (!inv.getBrandId().equals(brandId)) {
+            throw new IllegalArgumentException("Only the brand can approve deliverables");
+        }
+        if (inv.getDeliverableStatus() != DeliverableStatus.SUBMITTED) {
+            throw new IllegalArgumentException("Only submitted deliverables can be approved");
+        }
+        inv.setDeliverableStatus(DeliverableStatus.APPROVED);
+        inv = invitationRepository.save(inv);
+        return toResponse(inv);
     }
 
     private InvitationDetailResponse toDetailResponse(CollaborationInvitation inv) {
@@ -272,5 +326,73 @@ public class InvitationService {
         r.setUpdatedAt(base.getUpdatedAt());
         r.setRespondedAt(base.getRespondedAt());
         return r;
+    }
+
+    /** Batch-enrich a list of invitation responses with profile data in 2 DB queries. */
+    private List<InvitationResponse> enrichResponses(List<CollaborationInvitation> invitations) {
+        List<InvitationResponse> responses = invitations.stream().map(this::toResponse).collect(Collectors.toList());
+
+        // Collect unique IDs
+        var brandIds = invitations.stream().map(CollaborationInvitation::getBrandId).distinct().collect(Collectors.toList());
+        var influencerIds = invitations.stream().map(CollaborationInvitation::getInfluencerId).distinct().collect(Collectors.toList());
+        var campaignIds = invitations.stream().map(CollaborationInvitation::getCampaignId).distinct().collect(Collectors.toList());
+
+        // Batch-load profiles
+        Map<Long, BrandProfile> brandMap = brandIds.stream()
+                .map(id -> brandProfileRepository.findByUserId(id).orElse(null))
+                .filter(p -> p != null)
+                .collect(Collectors.toMap(BrandProfile::getUserId, Function.identity(), (a, b) -> a));
+
+        Map<Long, InfluencerProfile> influencerMap = influencerIds.stream()
+                .map(id -> influencerProfileRepository.findByUserId(id).orElse(null))
+                .filter(p -> p != null)
+                .collect(Collectors.toMap(InfluencerProfile::getUserId, Function.identity(), (a, b) -> a));
+
+        Map<Long, Campaign> campaignMap = campaignIds.stream()
+                .map(id -> campaignRepository.findById(id).orElse(null))
+                .filter(c -> c != null)
+                .collect(Collectors.toMap(Campaign::getId, Function.identity(), (a, b) -> a));
+
+        // Populate responses
+        for (int i = 0; i < invitations.size(); i++) {
+            CollaborationInvitation inv = invitations.get(i);
+            InvitationResponse r = responses.get(i);
+
+            BrandProfile bp = brandMap.get(inv.getBrandId());
+            if (bp != null) {
+                r.setBrandName(bp.getName());
+                r.setBrandLogo(bp.getLogoUrl());
+                r.setBrandNiche(bp.getIndustry());
+            }
+
+            InfluencerProfile ip = influencerMap.get(inv.getInfluencerId());
+            if (ip != null) {
+                r.setInfluencerName(ip.getName());
+                r.setInfluencerProfilePicture(ip.getProfilePictureUrl());
+                r.setInfluencerNiche(ip.getNiche());
+                r.setInfluencerRate(ip.getRate() != null ? ip.getRate().toPlainString() : null);
+            }
+
+            Campaign c = campaignMap.get(inv.getCampaignId());
+            if (c != null) {
+                r.setCampaignName(c.getName());
+            }
+        }
+        return responses;
+    }
+
+    /** Enrich a single detail response with profile data. */
+    private void enrichDetailWithProfiles(InvitationDetailResponse r, CollaborationInvitation inv) {
+        brandProfileRepository.findByUserId(inv.getBrandId()).ifPresent(bp -> {
+            r.setBrandName(bp.getName());
+            r.setBrandLogo(bp.getLogoUrl());
+            r.setBrandNiche(bp.getIndustry());
+        });
+        influencerProfileRepository.findByUserId(inv.getInfluencerId()).ifPresent(ip -> {
+            r.setInfluencerName(ip.getName());
+            r.setInfluencerProfilePicture(ip.getProfilePictureUrl());
+            r.setInfluencerNiche(ip.getNiche());
+            r.setInfluencerRate(ip.getRate() != null ? ip.getRate().toPlainString() : null);
+        });
     }
 }

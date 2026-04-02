@@ -200,3 +200,63 @@ body {
 .brand-table .ant-table-tbody > tr:hover > td {
   background: #1a1a08 !important;
 }
+
+/* Premium Status Steps Styling */
+.premium-steps .ant-steps-item-process .ant-steps-item-icon,
+.premium-steps .ant-steps-item-finish .ant-steps-item-icon {
+  background: linear-gradient(135deg, #FFFD82, #e6d800) !important;
+  border-color: #FFFD82 !important;
+  box-shadow: 0 0 12px rgba(255, 253, 130, 0.4) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Black icons/numbers inside the bright yellow circles */
+.premium-steps .ant-steps-item-process .ant-steps-item-icon .ant-steps-icon,
+.premium-steps .ant-steps-item-finish .ant-steps-item-icon .ant-steps-icon {
+  color: #000000 !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+}
+
+/* Tail color matching the active step */
+.premium-steps .ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-tail::after {
+  background-color: #FFFD82 !important;
+}
+
+/* High visibility for step titles */
+.premium-steps .ant-steps-item-title {
+  color: #fff !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  opacity: 0.9 !important;
+}
+
+.premium-steps .ant-steps-item-wait .ant-steps-item-title {
+  color: #666 !important;
+  opacity: 0.6 !important;
+}
+
+/* Improve wait steps visibility slightly */
+.premium-steps .ant-steps-item-wait .ant-steps-item-icon {
+  background: #222 !important;
+  border-color: #333 !important;
+}
+
+/* Influencer Specific Purple Steps */
+.influencer-portal .premium-steps .ant-steps-item-process .ant-steps-item-icon,
+.influencer-portal .premium-steps .ant-steps-item-finish .ant-steps-item-icon {
+  background: linear-gradient(135deg, #d98eff, #8e44ad) !important;
+  border-color: #d98eff !important;
+  box-shadow: 0 0 12px rgba(189, 114, 235, 0.4) !important;
+}
+
+.influencer-portal .premium-steps .ant-steps-item-process .ant-steps-item-icon .ant-steps-icon,
+.influencer-portal .premium-steps .ant-steps-item-finish .ant-steps-item-icon .ant-steps-icon {
+  color: #ffffff !important; /* White text looks better on the dark purple */
+}
+
+.influencer-portal .premium-steps .ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-tail::after {
+  background-color: #BD72EB !important;
+}

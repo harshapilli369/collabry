@@ -89,12 +89,9 @@ export const BrandProfile = () => {
         }
         try {
             await userService.linkSocialAccount(platform, handle)
-            const u = JSON.parse(localStorage.getItem('user') || '{}')
-            u.isVerified = true
-            localStorage.setItem('user', JSON.stringify(u))
             Modal.success({
                 title: `${label} Connected!`,
-                content: `Your ${label} account has been linked successfully. Your brand is now verified! Remember to click "Save Changes" to keep your links.`,
+                content: `Your ${label} account has been linked successfully. Remember to click "Save Changes" to keep your links.`,
                 okText: 'Awesome',
                 centered: true,
             })
@@ -266,7 +263,7 @@ export const BrandProfile = () => {
                             Social Accounts
                         </Text>
                         <Text style={{ color: '#555', fontSize: 12, display: 'block', marginBottom: 20 }}>
-                            Connecting a social account verifies your brand profile.
+                            Connect your brand's official social media pages.
                         </Text>
 
                         <div style={{ marginBottom: 16 }}>
@@ -314,7 +311,7 @@ export const BrandProfile = () => {
 
                     <div style={{ marginTop: 16, padding: '12px 16px', background: `${PRIMARY}10`, borderRadius: 8, border: `1px solid ${PRIMARY}20`, marginBottom: 24 }}>
                         <CheckCircleFilled style={{ color: PRIMARY, marginRight: 8 }} />
-                        <Text style={{ color: '#aaa', fontSize: 12 }}>Connecting a social account verifies your brand and builds trust with influencers.</Text>
+                        <Text style={{ color: '#aaa', fontSize: 12 }}>Connecting a social account builds trust with influencers.</Text>
                     </div>
 
                     <Form.Item>

@@ -332,8 +332,6 @@ export const BrandDashboard = () => {
                             <Button
                                 icon={<PlusCircleOutlined />}
                                 onClick={() => navigate('/brand/campaigns/create')}
-                                disabled={!user?.isVerified}
-                                title={!user?.isVerified ? 'Only verified brands can create campaigns' : ''}
                                 style={{ borderRadius: 10 }}
                             >
                                 Create campaign
@@ -443,9 +441,14 @@ export const BrandDashboard = () => {
                                                     <Text strong style={{ color: '#fff' }}>
                                                         Campaign: {campaign?.name ?? `#${inv.campaignId}`}
                                                     </Text>
-                                                    <span style={{ marginLeft: 8 }}>
-                                                        <Text type="secondary">Influencer ID {inv.influencerId}</Text>
-                                                    </span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+                                                        {inv.influencerProfilePicture && (
+                                                            <img src={inv.influencerProfilePicture} alt={inv.influencerName || 'Influencer'} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1px solid #333' }} />
+                                                        )}
+                                                        <Text type="secondary">{inv.influencerName || `Influencer ID ${inv.influencerId}`}</Text>
+                                                        {inv.influencerNiche && <Tag style={{ fontSize: 11 }}>{inv.influencerNiche}</Tag>}
+                                                        {inv.influencerRate && <Text type="secondary" style={{ fontSize: 12 }}>· ${Number(inv.influencerRate).toLocaleString()}/post</Text>}
+                                                    </div>
                                                     {inv.proposedAmount != null && (
                                                         <span style={{ marginLeft: 8 }}>
                                                             <Text type="secondary">
