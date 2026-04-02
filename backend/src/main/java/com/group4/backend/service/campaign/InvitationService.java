@@ -6,6 +6,7 @@ import com.group4.backend.dto.invitation.InvitationResponse;
 import com.group4.backend.dto.invitation.NegotiationRequest;
 import com.group4.backend.dto.invitation.RespondRequest;
 import com.group4.backend.dto.invitation.UpdateInvitationRequest;
+import com.group4.backend.dto.DeliverableUpdateRequest;
 import com.group4.backend.model.*;
 import com.group4.backend.repository.campaign.CampaignRepository;
 import com.group4.backend.repository.profile.InfluencerRatingRepository;
