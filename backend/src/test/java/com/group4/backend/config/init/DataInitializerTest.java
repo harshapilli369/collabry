@@ -82,6 +82,7 @@ class DataInitializerTest {
 
         User existing = new User("influencer@collabry.com", "ENC", Role.INFLUENCER);
         existing.setId(42L);
+        existing.setVerified(true);
         when(userRepository.findByEmail("influencer@collabry.com")).thenReturn(Optional.of(existing));
         when(influencerProfileRepository.findByUserId(42L)).thenReturn(Optional.empty());
 
