@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Card, Col, Form, Input, InputNumber, Row, Select, Typography, Avatar, Modal, message } from 'antd'
+import { Button, Card, Col, Form, Input, InputNumber, Row, Select, Typography, Avatar, Modal, message, Rate } from 'antd'
 import { UserOutlined, SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
@@ -176,6 +176,12 @@ export const InfluencerSearch = () => {
                                                             </span>
                                                         )}
                                                     </div>
+                                                    {inf.totalRatings != null && inf.totalRatings > 0 && (
+                                                        <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                            <Rate disabled allowHalf value={inf.averageRating ?? 0} style={{ fontSize: 11, color: '#FFFD82' }} />
+                                                            <span style={{ fontSize: 11, color: '#888' }}>({inf.totalRatings})</span>
+                                                        </div>
+                                                    )}
                                                     <Button type="primary" size="small" style={{ marginTop: 10, borderRadius: 8 }} onClick={() => openInviteModal(inf)}>Invite</Button>
                                                 </div>
                                             </div>

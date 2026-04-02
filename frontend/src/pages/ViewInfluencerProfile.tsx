@@ -152,13 +152,37 @@ export const ViewInfluencerProfile = () => {
                     </Card>
 
                     {(profile?.totalRatings != null && profile.totalRatings > 0) && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, padding: '10px 16px', background: '#1a1a2e', borderRadius: 8 }}>
-                            <Text style={{ color: INFLUENCER_PORTAL_PRIMARY, fontSize: '0.9rem', fontWeight: 600 }}>Reviews</Text>
-                            <Rate disabled allowHalf value={profile.averageRating ?? 0} style={{ fontSize: 12, color: '#FFFD82' }} />
-                            <Text style={{ color: '#aaa', fontSize: '0.8rem' }}>
-                                {typeof profile.averageRating === 'number' ? profile.averageRating.toFixed(1) : '0'}/5 ({profile.totalRatings})
-                            </Text>
-                        </div>
+                        <Card style={{ backgroundColor: cardBackgroundColor, borderRadius: 12, marginTop: 16 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                                <Title level={5} style={{ color: INFLUENCER_PORTAL_PRIMARY, margin: 0 }}>Reviews</Title>
+                                <Rate disabled allowHalf value={profile.averageRating ?? 0} style={{ fontSize: 14, color: '#FFFD82' }} />
+                                <Text style={{ color: '#aaa', fontSize: '0.85rem' }}>
+                                    {typeof profile.averageRating === 'number' ? profile.averageRating.toFixed(1) : '0'}/5 ({profile.totalRatings})
+                                </Text>
+                            </div>
+                            {profile.recentReviews && profile.recentReviews.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    {profile.recentReviews.map((rev) => (
+                                        <div key={rev.id} style={{ padding: '12px 16px', background: '#111', borderRadius: 8, border: '1px solid #222' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                                <Rate disabled value={rev.rating} style={{ fontSize: 12, color: '#FFFD82' }} />
+                                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                                    Brand #{rev.brandId}
+                                                    {rev.createdAt && ` · ${new Date(rev.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}`}
+                                                </Text>
+                                            </div>
+                                            {rev.review && (
+                                                <Paragraph style={{ color: '#d9d9d9', margin: 0, fontSize: '0.9rem' }}>
+                                                    {rev.review}
+                                                </Paragraph>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <Text type="secondary">No written reviews yet.</Text>
+                            )}
+                        </Card>
                     )}
                 </Col>
             </Row>
