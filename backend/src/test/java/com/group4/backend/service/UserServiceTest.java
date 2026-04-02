@@ -167,4 +167,118 @@ class UserServiceTest {
                 .hasMessageContaining("User not found with ID: 99");
         verify(userRepository, never()).save(any(User.class));
     }
+
+    @Test
+    void linkSocialAccount_influencer_youtube_updatesYoutubeHandle() {
+        User user = new User("inf@test.com", "pass", Role.INFLUENCER);
+        user.setId(10L);
+        InfluencerProfile profile = new InfluencerProfile();
+        profile.setUserId(10L);
+
+        SocialLinkRequest request = new SocialLinkRequest();
+        request.setPlatform("youtube");
+        request.setHandle("@mychannel");
+
+        when(userRepository.findById(10L)).thenReturn(Optional.of(user));
+        when(influencerProfileRepository.findByUserId(10L)).thenReturn(Optional.of(profile));
+
+        userService.linkSocialAccount(10L, request);
+
+        assertThat(profile.getYoutubeHandle()).isEqualTo("@mychannel");
+        verify(influencerProfileRepository).save(profile);
+    }
+
+    @Test
+    void linkSocialAccount_influencer_tiktok_updatesTiktokHandle() {
+        User user = new User("inf@test.com", "pass", Role.INFLUENCER);
+        user.setId(10L);
+        InfluencerProfile profile = new InfluencerProfile();
+        profile.setUserId(10L);
+
+        SocialLinkRequest request = new SocialLinkRequest();
+        request.setPlatform("TIKTOK");
+        request.setHandle("@tiktokuser");
+
+        when(userRepository.findById(10L)).thenReturn(Optional.of(user));
+        when(influencerProfileRepository.findByUserId(10L)).thenReturn(Optional.of(profile));
+
+        userService.linkSocialAccount(10L, request);
+
+        assertThat(profile.getTiktokHandle()).isEqualTo("@tiktokuser");
+        verify(influencerProfileRepository).save(profile);
+    }
+
+    @Test
+    void linkSocialAccount_brand_instagram_updatesInstagramUrl() {
+        User user = new User("brand@test.com", "pass", Role.BRAND);
+        user.setId(20L);
+        BrandProfile profile = new BrandProfile();
+        profile.setUserId(20L);
+
+        SocialLinkRequest request = new SocialLinkRequest();
+        request.setPlatform("INSTAGRAM");
+        request.setHandle("https://instagram.com/brand");
+
+        when(userRepository.findById(20L)).thenReturn(Optional.of(user));
+        when(brandProfileRepository.findByUserId(20L)).thenReturn(Optional.of(profile));
+
+        userService.linkSocialAccount(20L, request);
+
+        assertThat(profile.getInstagramUrl()).isEqualTo("https://instagram.com/brand");
+        verify(brandProfileRepository).save(profile);
+    }
+
+    @Test
+    void linkSocialAccount_brand_twitter_updatesTwitterUrl() {
+        User user = new User("brand@test.com", "pass", Role.BRAND);
+        user.setId(20L);
+        BrandProfile profile = new BrandProfile();
+        profile.setUserId(20L);
+
+        SocialLinkRequest request = new SocialLinkRequest();
+        request.setPlatform("TWITTER");
+        request.setHandle("https://twitter.com/brand");
+
+        when(userRepository.findById(20L)).thenReturn(Optional.of(user));
+        when(brandProfileRepository.findByUserId(20L)).thenReturn(Optional.of(profile));
+
+        userService.linkSocialAccount(20L, request);
+
+        assertThat(profile.getTwitterUrl()).isEqualTo("https://twitter.com/brand");
+        verify(brandProfileRepository).save(profile);
+    }
+
+    @Test
+    void linkSocialAccount_influencer_noProfile_doesNotSave() {
+        User user = new User("inf@test.com", "pass", Role.INFLUENCER);
+        user.setId(10L);
+
+        SocialLinkRequest request = new SocialLinkRequest();
+        request.setPlatform("INSTAGRAM");
+        request.setHandle("@handle");
+
+        when(userRepository.findById(10L)).thenReturn(Optional.of(user));
+        when(influencerProfileRepository.findByUserId(10L)).thenReturn(Optional.empty());
+
+        userService.linkSocialAccount(10L, request);
+
+        verify(influencerProfileRepository, never()).save(any());
+    }
+
+    @Test
+    void linkSocialAccount_brand_noProfile_doesNotSave() {
+        User user = new User("brand@test.com", "pass", Role.BRAND);
+        user.setId(20L);
+
+        SocialLinkRequest request = new SocialLinkRequest();
+        request.setPlatform("LINKEDIN");
+        request.setHandle("https://linkedin.com/test");
+
+        when(userRepository.findById(20L)).thenReturn(Optional.of(user));
+        when(brandProfileRepository.findByUserId(20L)).thenReturn(Optional.empty());
+
+        userService.linkSocialAccount(20L, request);
+
+        verify(brandProfileRepository, never()).save(any());
+    }
 }

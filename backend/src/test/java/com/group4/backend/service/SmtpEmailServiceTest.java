@@ -114,4 +114,73 @@ class SmtpEmailServiceTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("connection refused");
     }
+
+    @Test
+    void sendVerificationStatusEmail_approved_shouldSendApprovedMessage() {
+        smtpEmailService.sendVerificationStatusEmail("user@test.com", true, "Great profile");
+
+        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mailSender).send(captor.capture());
+        SimpleMailMessage msg = captor.getValue();
+        assertAll(
+                () -> assertThat(msg.getFrom()).isEqualTo("noreply@collabry.test"),
+                () -> assertThat(msg.getTo()).containsExactly("user@test.com"),
+                () -> assertThat(msg.getSubject()).isEqualTo("Collabry Verification Status: Approved"),
+                () -> assertThat(msg.getText()).contains("approved"),
+                () -> assertThat(msg.getText()).contains("Great profile"),
+                () -> assertThat(msg.getText()).contains("premium features")
+        );
+    }
+
+    @Test
+    void sendVerificationStatusEmail_rejected_shouldSendRejectedMessage() {
+        smtpEmailService.sendVerificationStatusEmail("user@test.com", false, "Incomplete");
+
+        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mailSender).send(captor.capture());
+        SimpleMailMessage msg = captor.getValue();
+        assertAll(
+                () -> assertThat(msg.getSubject()).isEqualTo("Collabry Verification Status: Rejected"),
+                () -> assertThat(msg.getText()).contains("rejected"),
+                () -> assertThat(msg.getText()).contains("Incomplete"),
+                () -> assertThat(msg.getText()).contains("try requesting verification again")
+        );
+    }
+
+    @Test
+    void sendVerificationStatusEmail_withNullReason_shouldOmitReasonLine() {
+        smtpEmailService.sendVerificationStatusEmail("user@test.com", true, null);
+
+        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mailSender).send(captor.capture());
+        assertThat(captor.getValue().getText()).doesNotContain("Reason:");
+    }
+
+    @Test
+    void sendVerificationStatusEmail_withEmptyReason_shouldOmitReasonLine() {
+        smtpEmailService.sendVerificationStatusEmail("user@test.com", false, "   ");
+
+        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mailSender).send(captor.capture());
+        assertThat(captor.getValue().getText()).doesNotContain("Reason:");
+    }
+
+    @Test
+    void sendVerificationStatusEmail_shouldOmitFromWhenBlank() {
+        ReflectionTestUtils.setField(smtpEmailService, "fromAddress", "");
+
+        smtpEmailService.sendVerificationStatusEmail("user@test.com", true, null);
+
+        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mailSender).send(captor.capture());
+        assertThat(captor.getValue().getFrom()).isNull();
+    }
+
+    @Test
+    void sendVerificationStatusEmail_shouldNotThrowOnSendFailure() {
+        doThrow(new RuntimeException("SMTP down")).when(mailSender).send(any(SimpleMailMessage.class));
+
+        assertThatCode(() -> smtpEmailService.sendVerificationStatusEmail("user@test.com", true, null))
+                .doesNotThrowAnyException();
+    }
 }

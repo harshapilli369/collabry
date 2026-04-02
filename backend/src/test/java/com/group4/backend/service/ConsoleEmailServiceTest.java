@@ -66,4 +66,43 @@ class ConsoleEmailServiceTest {
                 () -> assertThat(output).contains("------------------------------------------------")
         );
     }
+
+    @Test
+    void sendVerificationStatusEmail_approved_shouldPrintApprovedStatus() {
+        consoleEmailService.sendVerificationStatusEmail("user@test.com", true, "Looks good");
+
+        String output = capturedOut.toString(StandardCharsets.UTF_8);
+        assertAll(
+                () -> assertThat(output).contains("VERIFICATION STATUS UPDATE (simulated) FOR: user@test.com"),
+                () -> assertThat(output).contains("Status: APPROVED"),
+                () -> assertThat(output).contains("Reason: Looks good")
+        );
+    }
+
+    @Test
+    void sendVerificationStatusEmail_rejected_shouldPrintRejectedStatus() {
+        consoleEmailService.sendVerificationStatusEmail("user@test.com", false, "Incomplete profile");
+
+        String output = capturedOut.toString(StandardCharsets.UTF_8);
+        assertAll(
+                () -> assertThat(output).contains("Status: REJECTED"),
+                () -> assertThat(output).contains("Reason: Incomplete profile")
+        );
+    }
+
+    @Test
+    void sendVerificationStatusEmail_withNullReason_shouldOmitReasonLine() {
+        consoleEmailService.sendVerificationStatusEmail("user@test.com", true, null);
+
+        String output = capturedOut.toString(StandardCharsets.UTF_8);
+        assertThat(output).doesNotContain("Reason:");
+    }
+
+    @Test
+    void sendVerificationStatusEmail_withEmptyReason_shouldOmitReasonLine() {
+        consoleEmailService.sendVerificationStatusEmail("user@test.com", false, "");
+
+        String output = capturedOut.toString(StandardCharsets.UTF_8);
+        assertThat(output).doesNotContain("Reason:");
+    }
 }

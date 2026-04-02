@@ -431,6 +431,121 @@ class InfluencerProfileServiceTest {
         );
     }
 
+    @Test
+    void createOrUpdateForUser_emptyStringFields_shouldBeStoredAsNull() {
+        InfluencerProfileRequest request = completeRequest();
+        request.setSaveAsDraft(true);
+        request.setBio("");
+        request.setProfilePictureUrl("   ");
+        request.setAudienceInfo("");
+
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.empty());
+        when(influencerProfileRepository.save(any(InfluencerProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
+
+        assertAll(
+                () -> assertThat(response.getBio()).isNull(),
+                () -> assertThat(response.getProfilePictureUrl()).isNull(),
+                () -> assertThat(response.getAudienceInfo()).isNull()
+        );
+    }
+
+    @Test
+    void createOrUpdateForUser_withAllSocialHandles_setsAll() {
+        InfluencerProfileRequest request = completeRequest();
+        request.setSaveAsDraft(false);
+        request.setInstagramHandle("insta");
+        request.setYoutubeHandle("yt");
+        request.setTiktokHandle("tt");
+
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.empty());
+        when(influencerProfileRepository.save(any(InfluencerProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
+
+        assertAll(
+                () -> assertThat(response.getInstagramHandle()).isEqualTo("insta"),
+                () -> assertThat(response.getYoutubeHandle()).isEqualTo("yt"),
+                () -> assertThat(response.getTiktokHandle()).isEqualTo("tt"),
+                () -> assertThat(response.isComplete()).isTrue()
+        );
+    }
+
+    @Test
+    void createOrUpdateForUser_withOnlyTiktokHandle_succeeds() {
+        InfluencerProfileRequest request = completeRequest();
+        request.setSaveAsDraft(false);
+        request.setInstagramHandle(null);
+        request.setYoutubeHandle(null);
+        request.setTiktokHandle("tiktokuser");
+
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.empty());
+        when(influencerProfileRepository.save(any(InfluencerProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
+
+        assertThat(response.isComplete()).isTrue();
+    }
+
+    @Test
+    void search_withAvailableOnlyFalse_shouldNotFilterByAvailability() {
+        when(influencerProfileRepository.findAll(any(Specification.class)))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(
+                new InfluencerSearchFilter(null, null, null, null, null, false));
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void search_withOnlyMinFollowers_returnsFilteredResults() {
+        when(influencerProfileRepository.findAll(any(Specification.class)))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(
+                new InfluencerSearchFilter(null, null, 1000L, null, null, null));
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void search_withOnlyMaxFollowers_returnsFilteredResults() {
+        when(influencerProfileRepository.findAll(any(Specification.class)))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(
+                new InfluencerSearchFilter(null, null, null, 100000L, null, null));
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void search_withEngagementRateFilter_returnsResults() {
+        when(influencerProfileRepository.findAll(any(Specification.class)))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(
+                new InfluencerSearchFilter(null, null, null, null, BigDecimal.valueOf(1.0), null));
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void search_withLocationFilter_returnsResults() {
+        when(influencerProfileRepository.findAll(any(Specification.class)))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(
+                new InfluencerSearchFilter(null, "New York", null, null, null, null));
+
+        assertThat(result).hasSize(1);
+    }
+
     private static InfluencerProfileRequest completeRequest() {
         InfluencerProfileRequest r = new InfluencerProfileRequest();
         r.setName("Jane Doe");
