@@ -1,8 +1,8 @@
 package com.group4.backend.service;
 import com.group4.backend.service.campaign.CampaignService;
 
-import com.group4.backend.dto.CampaignRequest;
-import com.group4.backend.dto.CampaignResponse;
+import com.group4.backend.dto.campaign.CampaignRequest;
+import com.group4.backend.dto.campaign.CampaignResponse;
 import com.group4.backend.model.BudgetRange;
 import com.group4.backend.model.Campaign;
 import com.group4.backend.model.CampaignGoal;

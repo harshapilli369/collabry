@@ -1,4 +1,4 @@
-package com.group4.backend.dto;
+package com.group4.backend.dto.campaign;
 
 import com.group4.backend.model.BudgetRange;
 import com.group4.backend.model.CampaignGoal;
