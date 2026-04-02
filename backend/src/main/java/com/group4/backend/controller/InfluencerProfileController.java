@@ -107,13 +107,16 @@ public class InfluencerProfileController extends BaseController {
         }
     }
 
+    private static final String ENHANCE_BIO_PROMPT_TEMPLATE =
+            "You are a professional copywriter for influencer profiles. "
+            + "Rewrite the following bio to sound more professional, engaging, and appealing to brands looking for collaborations. "
+            + "Keep the same meaning and personality but make it polished. "
+            + "Keep it concise (2-4 sentences max). "
+            + "Return ONLY the enhanced bio text, nothing else.\n\n"
+            + "Original bio:\n";
+
     private String callEnhanceBioAi(String bio) {
-        String prompt = "You are a professional copywriter for influencer profiles. " +
-                "Rewrite the following bio to sound more professional, engaging, and appealing to brands looking for collaborations. " +
-                "Keep the same meaning and personality but make it polished. " +
-                "Keep it concise (2-4 sentences max). " +
-                "Return ONLY the enhanced bio text, nothing else.\n\n" +
-                "Original bio:\n" + bio;
+        String prompt = ENHANCE_BIO_PROMPT_TEMPLATE + bio;
         String enhanced = groqApiClient.getTextCompletion(prompt).trim();
         if (enhanced.startsWith("\"") && enhanced.endsWith("\"")) {
             enhanced = enhanced.substring(1, enhanced.length() - 1);
