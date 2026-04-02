@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Service
 public class InvitationService {
 
-    private static final List<InvitationStatus> COLLABORATION_HISTORY_STATUSES =
+    private static final List<InvitationStatus> HISTORY_STATUSES =
             List.of(InvitationStatus.ACCEPTED, InvitationStatus.CONFIRMED);
 
     private static final int DEFAULT_EXPIRY_DAYS = 14;
@@ -174,7 +174,7 @@ public class InvitationService {
     }
 
     public List<InvitationResponse> getCollaborationHistory(Long influencerId) {
-        return invitationRepository.findByInfluencerIdAndStatusIn(influencerId, COLLABORATION_HISTORY_STATUSES)
+        return invitationRepository.findByInfluencerIdAndStatusIn(influencerId, HISTORY_STATUSES)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
