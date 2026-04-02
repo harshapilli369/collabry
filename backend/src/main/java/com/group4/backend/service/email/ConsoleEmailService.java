@@ -37,4 +37,16 @@ public class ConsoleEmailService implements EmailService {
         System.out.println("Reset your password: " + resetLink);
         System.out.println("------------------------------------------------");
     }
+
+    @Override
+    public void sendVerificationStatusEmail(String email, boolean approved, String reason) {
+        String status = approved ? "APPROVED" : "REJECTED";
+        System.out.println("------------------------------------------------");
+        System.out.println("VERIFICATION STATUS UPDATE (simulated) FOR: " + email);
+        System.out.println("Status: " + status);
+        if (reason != null && !reason.isEmpty()) {
+            System.out.println("Reason: " + reason);
+        }
+        System.out.println("------------------------------------------------");
+    }
 }

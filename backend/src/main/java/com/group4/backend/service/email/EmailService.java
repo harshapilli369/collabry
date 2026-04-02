@@ -11,4 +11,8 @@ public interface EmailService {
      * Send a password reset email with the reset link (or log for dev).
      */
     void sendPasswordResetEmail(String email, String resetLink);
+    /**
+     * Send a verification status email (approved/rejected).
+     */
+    void sendVerificationStatusEmail(String email, boolean approved, String reason);
 }

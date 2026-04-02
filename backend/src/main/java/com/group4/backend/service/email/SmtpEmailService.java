@@ -83,4 +83,39 @@ public class SmtpEmailService implements EmailService {
             throw e;
         }
     }
+
+    @Override
+    public void sendVerificationStatusEmail(String email, boolean approved, String reason) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        if (fromAddress != null && !fromAddress.isBlank()) {
+            message.setFrom(fromAddress);
+        }
+        message.setTo(email);
+        
+        String status = approved ? "Approved" : "Rejected";
+        message.setSubject("Collabry Verification Status: " + status);
+        
+        StringBuilder text = new StringBuilder();
+        text.append("Your verification request has been ").append(status.toLowerCase()).append(".\n\n");
+        if (reason != null && !reason.trim().isEmpty()) {
+            text.append("Reason: ").append(reason).append("\n\n");
+        }
+        
+        if (approved) {
+            text.append("You now have access to premium features like campaign creation and AI recommendations!\n\n");
+        } else {
+            text.append("You can update your profile and try requesting verification again at any time.\n\n");
+        }
+        
+        text.append("Best,\n— The Collabry Team");
+        message.setText(text.toString());
+
+        try {
+            mailSender.send(message);
+            log.info("Verification status email ({}) sent to {}", status, email);
+        } catch (Exception e) {
+            log.error("Failed to send verification status email to {}: {}", email, e.getMessage());
+            // No throw: status email failure shouldn't crash the whole process
+        }
+    }
 }

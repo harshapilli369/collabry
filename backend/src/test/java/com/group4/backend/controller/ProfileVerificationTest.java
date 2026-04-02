@@ -15,7 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,23 +34,23 @@ public class ProfileVerificationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private CampaignService campaignService;
-    @MockBean
+    @MockitoBean
     private CampaignReportService campaignReportService;
 
-    @MockBean
+    @MockitoBean
     private AiRecommendationService aiRecommendationService;
 
-    @MockBean
+    @MockitoBean
     private InvitationService invitationService;
 
-    @MockBean
+    @MockitoBean
     private CurrentUserProvider currentUserProvider;
 
-    @MockBean
+    @MockitoBean
     private JwtUtils jwtUtils;
-    @MockBean
+    @MockitoBean
     private GroqApiClient groqApiClient;
 
     private User unverifiedBrand;
@@ -59,25 +59,22 @@ public class ProfileVerificationTest {
     void setUp() {
         unverifiedBrand = new User("unverified@test.com", "password", Role.BRAND);
         unverifiedBrand.setId(1L);
-        // Note: isVerified is not yet in the User model, but we will add it in the GREEN phase.
-        // For the RED phase, the controller naturally won't check it, so the test will fail
-        // because we expect 403 but get 201.
+        unverifiedBrand.setVerified(false);
     }
 
     @Test
     @WithMockUser(username = "unverified@test.com")
-    void createCampaign_asUnverifiedBrand_returns403() throws Exception {
+    void createCampaign_asUnverifiedBrand_returns201() throws Exception {
         when(currentUserProvider.getCurrentUser()).thenReturn(unverifiedBrand);
 
         CampaignRequest request = new CampaignRequest();
         request.setName("New Campaign");
         request.setBudgetRange(BudgetRange.ONE_K_5K);
 
-        // This should fail (fail to return 403) because isVerified check isn't implemented.
         mockMvc.perform(post("/api/campaigns")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isCreated());
     }
 }

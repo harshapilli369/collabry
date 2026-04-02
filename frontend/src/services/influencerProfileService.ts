@@ -56,6 +56,7 @@ export interface InfluencerProfileResponse {
     complete: boolean;
     /** When false, influencer is not seeking new collaborations */
     openToCollaborations?: boolean;
+    verified?: boolean;
     createdAt?: string;
     updatedAt?: string;
     averageRating?: number;

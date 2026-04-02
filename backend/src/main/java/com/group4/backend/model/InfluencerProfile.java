@@ -73,6 +73,9 @@ public class InfluencerProfile {
     @Column(name = "open_to_collaborations")
     private Boolean openToCollaborations;
 
+    @Column(name = "is_verified")
+    private Boolean verified = false;
+
     @Column(name = "created_at")
     private Instant createdAt;
 
@@ -229,6 +232,14 @@ public class InfluencerProfile {
 
     public void setOpenToCollaborations(boolean openToCollaborations) {
         this.openToCollaborations = openToCollaborations;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 
     public Instant getCreatedAt() {

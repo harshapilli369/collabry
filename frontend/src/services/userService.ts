@@ -42,4 +42,28 @@ export const userService = {
         }
         return response.json();
     },
+
+    requestVerification: async (): Promise<void> => {
+        const response = await fetch(`${getUsersApiUrl()}/me/verification/request`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+        });
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.message || 'Failed to request verification');
+        }
+    },
+
+    getVerificationStatus: async (): Promise<any> => {
+        const response = await fetch(`${getUsersApiUrl()}/me/verification/status`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+        if (response.status === 204) return null;
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.message || 'Failed to check verification status');
+        }
+        return response.json();
+    },
 };

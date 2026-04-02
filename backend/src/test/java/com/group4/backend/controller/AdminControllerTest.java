@@ -8,6 +8,7 @@ import com.group4.backend.dto.admin.AdminUserSummaryDto;
 import com.group4.backend.model.Role;
 import com.group4.backend.security.JwtUtils;
 import com.group4.backend.service.admin.AdminService;
+import com.group4.backend.service.user.VerificationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -37,7 +40,44 @@ class AdminControllerTest {
     @MockBean
     private AdminService adminService;
     @MockBean
+    private VerificationService verificationService;
+    @MockBean
     private JwtUtils jwtUtils;
+    @MockBean
+    private com.group4.backend.repository.user.UserRepository userRepository;
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void listVerificationRequests_asAdmin_returns200() throws Exception {
+        var dto = new com.group4.backend.dto.admin.AdminVerificationRequestDto();
+        dto.setId(100L);
+        dto.setUserEmail("influencer@test.com");
+        dto.setUserRole(Role.INFLUENCER);
+        dto.setStatus(com.group4.backend.model.VerificationRequestStatus.PENDING);
+        
+        when(verificationService.listPendingRequests()).thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/api/admin/verification-requests"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].userEmail").value("influencer@test.com"))
+                .andExpect(jsonPath("$[0].userRole").value("INFLUENCER"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void processVerificationRequest_asAdmin_returns200() throws Exception {
+        var request = new com.group4.backend.dto.admin.AdminVerificationProcessRequest();
+        request.setApproved(true);
+        request.setReason("Valid profile");
+
+        mockMvc.perform(put("/api/admin/verification-requests/100").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Verification request processed"));
+
+        verify(verificationService).processRequest(eq(100L), any());
+    }
 
     @Test
     @WithMockUser(roles = "ADMIN")

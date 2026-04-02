@@ -58,14 +58,13 @@ public class DatabaseSeeder implements CommandLineRunner {
         System.out.println("Starting Database Seeder (Upsert Mode)...");
         seedBrandUser();
         seedInfluencers();
-        verifyUnverifiedBrands();
         System.out.println("Database Seeder check completed.");
     }
 
     private void seedBrandUser() {
         if (userRepository.existsByEmail("admin@brand.com")) return;
         User brandUser = new User("admin@brand.com", passwordEncoder.encode("password123"), Role.BRAND);
-        brandUser.setVerified(true);
+        brandUser.setVerified(false);
         brandUser = userRepository.save(brandUser);
 
         BrandProfile brandProfile = new BrandProfile();
@@ -75,7 +74,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         brandProfile.setDescription("Premium electronics & lifestyle accessories for the modern world.");
         brandProfile.setIndustry("Technology");
         brandProfile.setWebsite("https://techhaven.com");
-        brandProfile.setVerified(true);
+        brandProfile.setVerified(false);
         brandProfileRepository.save(brandProfile);
         System.out.println(" => Seeded Brand: admin@brand.com");
     }
@@ -85,7 +84,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         for (MockInfluencer m : buildMockInfluencers()) {
             if (userRepository.existsByEmail(m.email())) continue;
             User u = new User(m.email(), password, Role.INFLUENCER);
-            u.setVerified(true);
+            u.setVerified(false);
             u = userRepository.save(u);
             saveInfluencerProfile(u.getId(), m);
             System.out.println(" => Seeded Influencer: " + m.email() + " (" + m.niche() + ")");

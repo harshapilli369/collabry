@@ -66,7 +66,7 @@ public class BrandProfile {
             createdAt = now;
         updatedAt = now;
         if (verified == null) {
-            verified = true;
+            verified = false;
         }
     }
 
