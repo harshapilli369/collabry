@@ -22,7 +22,12 @@ export const Login = () => {
 
     const navigateAfterLogin = async (role: string) => {
         if (role === 'INFLUENCER') {
-            const profile = await getMyInfluencerProfile()
+            let profile = null
+            try {
+                profile = await getMyInfluencerProfile()
+            } catch {
+                // Profile load failed — direct to profile setup
+            }
             const dest = profile?.complete ? '/influencer/dashboard' : '/influencer/profile/edit'
             navigate(dest, { replace: true })
         } else if (role === 'BRAND') {
