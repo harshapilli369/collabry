@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, Card, Row, Col, Avatar, Progress, message } from 'antd'
-import { MailOutlined, UserOutlined, ArrowRightOutlined, SyncOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { Typography, Button, Card, Row, Col, Avatar, Progress } from 'antd'
+import { MailOutlined, UserOutlined, ArrowRightOutlined, SyncOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import {
     getMyInvitations,
     getMyCollaborations,
     DELIVERABLE_STATUS_LABELS,
     type InvitationResponse,
+    type DeliverableStatus,
 } from '../services/invitationService'
 import { getMyInfluencerProfile } from '../services/influencerProfileService'
 import { getMyPayments, type PaymentResponse } from '../services/paymentService'
@@ -164,7 +165,7 @@ export const InfluencerDashboard = () => {
                                                         color: isSubmitted ? '#faad14' : INFLUENCER_PORTAL_PRIMARY,
                                                         fontWeight: 500
                                                     }}>
-                                                        {DELIVERABLE_STATUS_LABELS[collab.deliverableStatus as any] || 'Not Started'}
+                                                        {DELIVERABLE_STATUS_LABELS[collab.deliverableStatus as DeliverableStatus] || 'Not Started'}
                                                     </Text>
                                                 </div>
                                                 <Progress
@@ -178,7 +179,8 @@ export const InfluencerDashboard = () => {
                                             </div>
                                             <div style={{ textAlign: 'right' }}>
                                                 <Button 
-                                                    type="ghost" 
+                                                    type="default" 
+                                                    ghost 
                                                     size="small" 
                                                     icon={<ArrowRightOutlined />}
                                                     style={{ color: INFLUENCER_PORTAL_PRIMARY, border: `1px solid ${INFLUENCER_PORTAL_PRIMARY}40` }}
