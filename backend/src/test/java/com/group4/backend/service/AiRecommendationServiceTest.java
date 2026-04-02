@@ -3,7 +3,7 @@ import com.group4.backend.service.ai.AiRecommendationService;
 import com.group4.backend.service.ai.GroqApiClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group4.backend.dto.InfluencerRecommendationDTO;
+import com.group4.backend.dto.profile.InfluencerRecommendationDTO;
 import com.group4.backend.model.Campaign;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.repository.campaign.CampaignRepository;

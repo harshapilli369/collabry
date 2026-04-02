@@ -2,10 +2,10 @@ package com.group4.backend.service;
 import com.group4.backend.service.profile.InfluencerProfileService;
 import com.group4.backend.service.profile.RatingService;
 
-import com.group4.backend.dto.InfluencerProfileRequest;
-import com.group4.backend.dto.InfluencerProfileResponse;
-import com.group4.backend.dto.InfluencerSearchFilter;
-import com.group4.backend.dto.RatingResponse;
+import com.group4.backend.dto.profile.InfluencerProfileRequest;
+import com.group4.backend.dto.profile.InfluencerProfileResponse;
+import com.group4.backend.dto.profile.InfluencerSearchFilter;
+import com.group4.backend.dto.rating.RatingResponse;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -93,7 +92,7 @@ class InfluencerProfileServiceTest {
         when(influencerProfileRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of(completeProfile));
 
-        List<InfluencerProfileResponse> result = influencerProfileService.search(null, null, null, null, null, null);
+        List<InfluencerProfileResponse> result = influencerProfileService.search(new InfluencerSearchFilter(null, null, null, null, null, null));
 
         assertAll(
                 () -> assertThat(result).hasSize(1),
@@ -112,7 +111,7 @@ class InfluencerProfileServiceTest {
                 .thenReturn(List.of(completeProfile));
 
         List<InfluencerProfileResponse> result = influencerProfileService.search(
-                "Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5), null);
+                new InfluencerSearchFilter("Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5), null));
 
         assertThat(result).hasSize(1);
         ArgumentCaptor<Specification<InfluencerProfile>> specCaptor = ArgumentCaptor.forClass(Specification.class);
@@ -125,14 +124,14 @@ class InfluencerProfileServiceTest {
         when(influencerProfileRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of());
 
-        List<InfluencerProfileResponse> result = influencerProfileService.search("Tech", null, null, null, null, null);
+        List<InfluencerProfileResponse> result = influencerProfileService.search(new InfluencerSearchFilter("Tech", null, null, null, null, null));
 
         assertThat(result).isEmpty();
     }
 
     @Test
     void search_whenMinFollowersGreaterThanMaxFollowers_throws() {
-        assertThatThrownBy(() -> influencerProfileService.search(null, null, 10000L, 1000L, null, null))
+        assertThatThrownBy(() -> influencerProfileService.search(new InfluencerSearchFilter(null, null, 10000L, 1000L, null, null)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("minFollowers cannot be greater than maxFollowers");
     }
@@ -142,7 +141,7 @@ class InfluencerProfileServiceTest {
         when(influencerProfileRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of(completeProfile));
 
-        List<InfluencerProfileResponse> result = influencerProfileService.search("Fash", null, null, null, null, null);
+        List<InfluencerProfileResponse> result = influencerProfileService.search(new InfluencerSearchFilter("Fash", null, null, null, null, null));
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getNiche()).isEqualTo("Fashion");
@@ -175,7 +174,7 @@ class InfluencerProfileServiceTest {
         when(influencerProfileRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of(retroGaming, pureGaming));
 
-        List<InfluencerProfileResponse> result = influencerProfileService.search("gaming", null, null, null, null, null);
+        List<InfluencerProfileResponse> result = influencerProfileService.search(new InfluencerSearchFilter("gaming", null, null, null, null, null));
 
         assertAll(
                 () -> assertThat(result).hasSize(2),
@@ -237,7 +236,7 @@ class InfluencerProfileServiceTest {
         when(influencerProfileRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of(completeProfile));
 
-        List<InfluencerProfileResponse> result = influencerProfileService.search(null, null, null, null, null, true);
+        List<InfluencerProfileResponse> result = influencerProfileService.search(new InfluencerSearchFilter(null, null, null, null, null, true));
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).isOpenToCollaborations()).isTrue();

@@ -1,8 +1,8 @@
 package com.group4.backend.service;
 import com.group4.backend.service.user.UserService;
 
-import com.group4.backend.dto.InfluencerSearchResult;
-import com.group4.backend.dto.SocialLinkRequest;
+import com.group4.backend.dto.profile.InfluencerSearchResult;
+import com.group4.backend.dto.profile.SocialLinkRequest;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;

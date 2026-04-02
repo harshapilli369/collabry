@@ -1,7 +1,7 @@
 package com.group4.backend.service.profile;
 
-import com.group4.backend.dto.RatingRequest;
-import com.group4.backend.dto.RatingResponse;
+import com.group4.backend.dto.rating.RatingRequest;
+import com.group4.backend.dto.rating.RatingResponse;
 import com.group4.backend.model.CollaborationInvitation;
 import com.group4.backend.model.InfluencerRating;
 import com.group4.backend.model.InvitationStatus;

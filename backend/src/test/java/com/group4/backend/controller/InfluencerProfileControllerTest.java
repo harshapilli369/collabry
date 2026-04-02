@@ -1,10 +1,10 @@
 package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group4.backend.dto.CollaborationAvailabilityRequest;
-import com.group4.backend.dto.InfluencerProfileRequest;
-import com.group4.backend.dto.InfluencerProfileResponse;
-import com.group4.backend.dto.InfluencerSearchFilter;
+import com.group4.backend.dto.profile.CollaborationAvailabilityRequest;
+import com.group4.backend.dto.profile.InfluencerProfileRequest;
+import com.group4.backend.dto.profile.InfluencerProfileResponse;
+import com.group4.backend.dto.profile.InfluencerSearchFilter;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;
@@ -81,7 +81,7 @@ class InfluencerProfileControllerTest {
         resp.setNiche("Fashion");
         resp.setLocation("NYC");
         resp.setComplete(true);
-        when(influencerProfileService.search(any(), any(), any(), any(), any(), any())).thenReturn(List.of(resp));
+        when(influencerProfileService.search(any(InfluencerSearchFilter.class))).thenReturn(List.of(resp));
 
         mockMvc.perform(get("/api/influencers/search"))
                 .andExpect(status().isOk())
@@ -90,14 +90,14 @@ class InfluencerProfileControllerTest {
                 .andExpect(jsonPath("$[0].name").value("Jane"))
                 .andExpect(jsonPath("$[0].niche").value("Fashion"));
 
-        verify(influencerProfileService).search(null, null, null, null, null, null);
+        verify(influencerProfileService).search(new InfluencerSearchFilter(null, null, null, null, null, null));
     }
 
     @Test
     @WithMockUser(username = "brand@test.com")
     void search_asBrand_withQueryParams_passesParamsToService() throws Exception {
         when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
-        when(influencerProfileService.search("Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5), null))
+        when(influencerProfileService.search(new InfluencerSearchFilter("Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5), null)))
                 .thenReturn(List.of());
 
         mockMvc.perform(get("/api/influencers/search")
@@ -108,19 +108,19 @@ class InfluencerProfileControllerTest {
                         .param("minEngagementRate", "2.5"))
                 .andExpect(status().isOk());
 
-        verify(influencerProfileService).search("Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5), null);
+        verify(influencerProfileService).search(new InfluencerSearchFilter("Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5), null));
     }
 
     @Test
     @WithMockUser(username = "brand@test.com")
     void search_asBrand_withAvailableOnly_passesToService() throws Exception {
         when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
-        when(influencerProfileService.search(null, null, null, null, null, true)).thenReturn(List.of());
+        when(influencerProfileService.search(new InfluencerSearchFilter(null, null, null, null, null, true))).thenReturn(List.of());
 
         mockMvc.perform(get("/api/influencers/search").param("availableOnly", "true"))
                 .andExpect(status().isOk());
 
-        verify(influencerProfileService).search(null, null, null, null, null, true);
+        verify(influencerProfileService).search(new InfluencerSearchFilter(null, null, null, null, null, true));
     }
 
     @Test
@@ -131,14 +131,14 @@ class InfluencerProfileControllerTest {
         mockMvc.perform(get("/api/influencers/search"))
                 .andExpect(status().isForbidden());
 
-        verify(influencerProfileService, never()).search(any(), any(), any(), any(), any(), any());
+        verify(influencerProfileService, never()).search(any(InfluencerSearchFilter.class));
     }
 
     @Test
     @WithMockUser(username = "brand@test.com")
     void search_withMinFollowersGreaterThanMaxFollowers_returns400() throws Exception {
         when(userRepository.findByEmail("brand@test.com")).thenReturn(Optional.of(brandUser));
-        when(influencerProfileService.search(any(), any(), eq(10000L), eq(1000L), any(), any()))
+        when(influencerProfileService.search(new InfluencerSearchFilter(null, null, 10000L, 1000L, null, null)))
                 .thenThrow(new IllegalArgumentException("minFollowers cannot be greater than maxFollowers"));
 
         mockMvc.perform(get("/api/influencers/search")
@@ -147,7 +147,7 @@ class InfluencerProfileControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("minFollowers cannot be greater than maxFollowers"));
 
-        verify(influencerProfileService).search(null, null, 10000L, 1000L, null, null);
+        verify(influencerProfileService).search(new InfluencerSearchFilter(null, null, 10000L, 1000L, null, null));
     }
 
     @Test

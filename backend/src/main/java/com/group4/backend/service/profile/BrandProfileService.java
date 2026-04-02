@@ -1,7 +1,7 @@
 package com.group4.backend.service.profile;
 
-import com.group4.backend.dto.BrandProfileRequest;
-import com.group4.backend.dto.BrandProfileResponse;
+import com.group4.backend.dto.profile.BrandProfileRequest;
+import com.group4.backend.dto.profile.BrandProfileResponse;
 import com.group4.backend.model.BrandProfile;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;

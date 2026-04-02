@@ -1,7 +1,7 @@
 package com.group4.backend.service.payment;
 
-import com.group4.backend.dto.PaymentRequest;
-import com.group4.backend.dto.PaymentResponse;
+import com.group4.backend.dto.payment.PaymentRequest;
+import com.group4.backend.dto.payment.PaymentResponse;
 import com.group4.backend.model.Campaign;
 import com.group4.backend.model.Payment;
 import com.group4.backend.model.PaymentStatus;

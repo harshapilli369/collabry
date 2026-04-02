@@ -1,4 +1,4 @@
-package com.group4.backend.dto;
+package com.group4.backend.dto.payment;
 
 import com.group4.backend.model.PaymentStatus;
 
