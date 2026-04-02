@@ -8,6 +8,7 @@ import com.group4.backend.repository.profile.BrandProfileRepository;
 import com.group4.backend.repository.profile.InfluencerProfileRepository;
 import com.group4.backend.repository.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+@Order(2)
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
