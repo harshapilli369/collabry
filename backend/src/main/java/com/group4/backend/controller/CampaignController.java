@@ -132,15 +132,18 @@ public class CampaignController extends BaseController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
     }
 
+    private static final String DESCRIPTION_PROMPT_PREFIX =
+            "You are a marketing copywriter for brand-influencer campaigns. "
+            + "Generate a professional, compelling campaign description based on the following details. "
+            + "The description should be 3-5 sentences, mention the campaign goal and target audience, "
+            + "and sound appealing to influencers who might want to participate. "
+            + "Return ONLY the description text, nothing else.\n\n";
+
     private String callDescriptionAi(String name, String goal, String budget) {
-        String prompt = "You are a marketing copywriter for brand-influencer campaigns. " +
-                "Generate a professional, compelling campaign description based on the following details. " +
-                "The description should be 3-5 sentences, mention the campaign goal and target audience, " +
-                "and sound appealing to influencers who might want to participate. " +
-                "Return ONLY the description text, nothing else.\n\n" +
-                "Campaign name: " + name + "\n" +
-                (goal.isEmpty() ? "" : "Campaign goal: " + goal + "\n") +
-                (budget.isEmpty() ? "" : "Budget range: " + budget + "\n");
+        String prompt = DESCRIPTION_PROMPT_PREFIX
+                + "Campaign name: " + name + "\n"
+                + (goal.isEmpty() ? "" : "Campaign goal: " + goal + "\n")
+                + (budget.isEmpty() ? "" : "Budget range: " + budget + "\n");
         String description = groqApiClient.getTextCompletion(prompt).trim();
         if (description.startsWith("\"") && description.endsWith("\"")) {
             description = description.substring(1, description.length() - 1);
