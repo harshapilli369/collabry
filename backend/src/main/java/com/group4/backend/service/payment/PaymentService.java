@@ -93,20 +93,20 @@ public class PaymentService {
 
     @Transactional
     public List<PaymentResponse> getDelayedPayments(Long brandId) {
-        // 1. Find and update any newly delayed payments
-        paymentRepository.findByStatusAndDueDateBefore(PaymentStatus.PENDING, LocalDate.now())
-                .stream()
-                .filter(p -> p.getBrandId().equals(brandId))
-                .forEach(p -> {
-                    p.setStatus(PaymentStatus.DELAYED);
-                    paymentRepository.save(p);
-                });
-
-        // 2. Return all currently delayed payments for this brand
+        markOverduePaymentsAsDelayed(brandId);
         return paymentRepository.findByBrandIdAndStatus(brandId, PaymentStatus.DELAYED)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    private void markOverduePaymentsAsDelayed(Long brandId) {
+        List<Payment> overduePayments = paymentRepository.findByBrandIdAndStatusAndDueDateBefore(
+                brandId, PaymentStatus.PENDING, LocalDate.now());
+        for (Payment payment : overduePayments) {
+            payment.setStatus(PaymentStatus.DELAYED);
+        }
+        paymentRepository.saveAll(overduePayments);
     }
 
     public PaymentResponse getInvoice(Long paymentId, Long userId) {
