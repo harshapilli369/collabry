@@ -1,11 +1,11 @@
-package com.group4.backend.dto;
+package com.group4.backend.dto.invitation;
 
 import com.group4.backend.model.InvitationStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
-public class InvitationDetailResponse {
+public class InvitationResponse {
 
     private Long id;
     private Long campaignId;
@@ -21,9 +21,9 @@ public class InvitationDetailResponse {
     private Instant createdAt;
     private Instant updatedAt;
     private Instant respondedAt;
-    private CampaignResponse campaign;
+    private Boolean rated;
 
-    public InvitationDetailResponse() {
+    public InvitationResponse() {
     }
 
     public Long getId() { return id; }
@@ -54,6 +54,6 @@ public class InvitationDetailResponse {
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
     public Instant getRespondedAt() { return respondedAt; }
     public void setRespondedAt(Instant respondedAt) { this.respondedAt = respondedAt; }
-    public CampaignResponse getCampaign() { return campaign; }
-    public void setCampaign(CampaignResponse campaign) { this.campaign = campaign; }
+    public Boolean getRated() { return rated; }
+    public void setRated(Boolean rated) { this.rated = rated; }
 }

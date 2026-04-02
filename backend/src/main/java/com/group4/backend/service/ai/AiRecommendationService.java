@@ -3,7 +3,7 @@ package com.group4.backend.service.ai;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group4.backend.dto.InfluencerRecommendationDTO;
+import com.group4.backend.dto.profile.InfluencerRecommendationDTO;
 import com.group4.backend.model.Campaign;
 import com.group4.backend.model.InfluencerProfile;
 import com.group4.backend.repository.campaign.CampaignRepository;

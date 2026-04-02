@@ -1,10 +1,10 @@
 package com.group4.backend.controller;
 
-import com.group4.backend.dto.CampaignRequest;
-import com.group4.backend.dto.CampaignResponse;
-import com.group4.backend.dto.InvitationRequest;
-import com.group4.backend.dto.InvitationResponse;
-import com.group4.backend.dto.InfluencerRecommendationDTO;
+import com.group4.backend.dto.campaign.CampaignRequest;
+import com.group4.backend.dto.campaign.CampaignResponse;
+import com.group4.backend.dto.invitation.InvitationRequest;
+import com.group4.backend.dto.invitation.InvitationResponse;
+import com.group4.backend.dto.profile.InfluencerRecommendationDTO;
 import com.group4.backend.model.Role;
 import com.group4.backend.model.User;
 import com.group4.backend.repository.user.UserRepository;

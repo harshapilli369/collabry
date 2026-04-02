@@ -1,42 +1,57 @@
-package com.group4.backend.dto;
+package com.group4.backend.dto.profile;
+
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
 
-public class InfluencerProfileResponse {
+public class InfluencerProfileRequest {
 
-    private Long id;
-    private Long userId;
+    @NotBlank(message = "Name is required")
+    @Size(max = 200)
     private String name;
+
+    @NotNull(message = "Age is required")
+    @Min(value = 13, message = "Age must be at least 13")
+    @Max(value = 120, message = "Age must be at most 120")
     private Integer age;
+
+    @NotBlank(message = "Location is required")
+    @Size(max = 200)
     private String location;
+
+    @NotBlank(message = "Niche is required")
+    @Size(max = 100)
     private String niche;
+
+    @Size(max = 2000)
     private String bio;
+
+    @Size(max = 500)
     private String profilePictureUrl;
+
+    @Size(max = 100)
     private String instagramHandle;
+
+    @Size(max = 100)
     private String youtubeHandle;
+
+    @Size(max = 100)
     private String tiktokHandle;
+
     private BigDecimal rate;
+
     private Long followerCount;
+
+    @DecimalMin("0") @DecimalMax("100")
     private BigDecimal engagementRate;
+
+    @Size(max = 2000)
     private String audienceInfo;
-    private boolean isComplete;
-    private boolean openToCollaborations = true;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private Double averageRating;
-    private Integer totalRatings;
-    private List<RatingResponse> recentReviews;
 
-    public InfluencerProfileResponse() {
+    private boolean saveAsDraft = false;
+
+    public InfluencerProfileRequest() {
     }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -77,22 +92,6 @@ public class InfluencerProfileResponse {
     public String getAudienceInfo() { return audienceInfo; }
     public void setAudienceInfo(String audienceInfo) { this.audienceInfo = audienceInfo; }
 
-    public boolean isComplete() { return isComplete; }
-    public void setComplete(boolean complete) { isComplete = complete; }
-
-    public boolean isOpenToCollaborations() { return openToCollaborations; }
-    public void setOpenToCollaborations(boolean openToCollaborations) { this.openToCollaborations = openToCollaborations; }
-
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
-
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
-
-    public Double getAverageRating() { return averageRating; }
-    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
-    public Integer getTotalRatings() { return totalRatings; }
-    public void setTotalRatings(Integer totalRatings) { this.totalRatings = totalRatings; }
-    public List<RatingResponse> getRecentReviews() { return recentReviews; }
-    public void setRecentReviews(List<RatingResponse> recentReviews) { this.recentReviews = recentReviews; }
+    public boolean isSaveAsDraft() { return saveAsDraft; }
+    public void setSaveAsDraft(boolean saveAsDraft) { this.saveAsDraft = saveAsDraft; }
 }

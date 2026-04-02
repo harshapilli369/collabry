@@ -1,10 +1,10 @@
 package com.group4.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group4.backend.dto.CampaignRequest;
-import com.group4.backend.dto.CampaignResponse;
-import com.group4.backend.dto.InvitationRequest;
-import com.group4.backend.dto.InvitationResponse;
+import com.group4.backend.dto.campaign.CampaignRequest;
+import com.group4.backend.dto.campaign.CampaignResponse;
+import com.group4.backend.dto.invitation.InvitationRequest;
+import com.group4.backend.dto.invitation.InvitationResponse;
 import com.group4.backend.model.BudgetRange;
 import com.group4.backend.model.CampaignGoal;
 import com.group4.backend.model.InvitationStatus;
@@ -17,7 +17,7 @@ import com.group4.backend.service.campaign.CampaignReportService;
 import com.group4.backend.service.campaign.InvitationService;
 import com.group4.backend.service.ai.AiRecommendationService;
 import com.group4.backend.service.ai.GroqApiClient;
-import com.group4.backend.dto.InfluencerRecommendationDTO;
+import com.group4.backend.dto.profile.InfluencerRecommendationDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
