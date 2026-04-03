@@ -50,7 +50,7 @@ const { Title, Text } = Typography
 
 export const BrandDashboard = () => {
     const navigate = useNavigate()
-    const { message, modal } = App.useApp()
+    const { message } = App.useApp()
     const [profileCheckDone, setProfileCheckDone] = useState(false)
     const [brandProfile, setBrandProfile] = useState<any>(null)
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
