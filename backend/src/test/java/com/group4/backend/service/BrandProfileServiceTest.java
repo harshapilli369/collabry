@@ -63,13 +63,13 @@ class BrandProfileServiceTest {
         Optional<BrandProfileResponse> result = brandProfileService.getByUserId(10L);
 
         assertAll(
-                () -> assertThat(result).isPresent(),
-                () -> assertThat(result.get().getId()).isEqualTo(1L),
-                () -> assertThat(result.get().getUserId()).isEqualTo(10L),
-                () -> assertThat(result.get().getName()).isEqualTo("Old Name"),
-                () -> assertThat(result.get().getIndustry()).isEqualTo("Tech"),
-                () -> assertThat(result.get().getWebsite()).isEqualTo("https://old.com"),
-                () -> assertThat(result.get().getEmail()).isEqualTo("old@brand.com")
+                () -> assertThat(result).as("result present").isPresent(),
+                () -> assertThat(result.get().getId()).as("profile id").isEqualTo(1L),
+                () -> assertThat(result.get().getUserId()).as("user id").isEqualTo(10L),
+                () -> assertThat(result.get().getName()).as("name").isEqualTo("Old Name"),
+                () -> assertThat(result.get().getIndustry()).as("industry").isEqualTo("Tech"),
+                () -> assertThat(result.get().getWebsite()).as("website").isEqualTo("https://old.com"),
+                () -> assertThat(result.get().getEmail()).as("email").isEqualTo("old@brand.com")
         );
     }
 
@@ -120,13 +120,13 @@ class BrandProfileServiceTest {
         BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
 
         assertAll(
-                () -> assertThat(response).isNotNull(),
-                () -> assertThat(response.getUserId()).isEqualTo(10L),
-                () -> assertThat(response.getName()).isEqualTo("Acme Inc"),
-                () -> assertThat(response.getIndustry()).isEqualTo("Fashion"),
-                () -> assertThat(response.getWebsite()).isEqualTo("https://acme.com"),
-                () -> assertThat(response.getEmail()).isEqualTo("contact@acme.com"),
-                () -> assertThat(response.getBudgetRange()).isEqualTo(BudgetRange.ONE_K_5K)
+                () -> assertThat(response).as("response not null").isNotNull(),
+                () -> assertThat(response.getUserId()).as("user id").isEqualTo(10L),
+                () -> assertThat(response.getName()).as("name").isEqualTo("Acme Inc"),
+                () -> assertThat(response.getIndustry()).as("industry").isEqualTo("Fashion"),
+                () -> assertThat(response.getWebsite()).as("website").isEqualTo("https://acme.com"),
+                () -> assertThat(response.getEmail()).as("email").isEqualTo("contact@acme.com"),
+                () -> assertThat(response.getBudgetRange()).as("budget range").isEqualTo(BudgetRange.ONE_K_5K)
         );
         verify(brandProfileRepository).save(any(BrandProfile.class));
     }
@@ -142,9 +142,9 @@ class BrandProfileServiceTest {
         BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
 
         assertAll(
-                () -> assertThat(response).isNotNull(),
-                () -> assertThat(response.getName()).isEqualTo("Acme Updated"),
-                () -> assertThat(response.getIndustry()).isEqualTo("Fashion")
+                () -> assertThat(response).as("response not null").isNotNull(),
+                () -> assertThat(response.getName()).as("updated name").isEqualTo("Acme Updated"),
+                () -> assertThat(response.getIndustry()).as("industry").isEqualTo("Fashion")
         );
         verify(brandProfileRepository).save(any(BrandProfile.class));
     }
@@ -169,10 +169,10 @@ class BrandProfileServiceTest {
         Optional<BrandProfileResponse> result = brandProfileService.getPublicProfile(10L);
 
         assertAll(
-                () -> assertThat(result).isPresent(),
-                () -> assertThat(result.get().getId()).isEqualTo(1L),
-                () -> assertThat(result.get().getUserId()).isEqualTo(10L),
-                () -> assertThat(result.get().getName()).isEqualTo("Old Name")
+                () -> assertThat(result).as("result present").isPresent(),
+                () -> assertThat(result.get().getId()).as("profile id").isEqualTo(1L),
+                () -> assertThat(result.get().getUserId()).as("user id").isEqualTo(10L),
+                () -> assertThat(result.get().getName()).as("name").isEqualTo("Old Name")
         );
     }
 
@@ -252,11 +252,11 @@ class BrandProfileServiceTest {
         BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
 
         assertAll(
-                () -> assertThat(response.getLogoUrl()).isNull(),
-                () -> assertThat(response.getDescription()).isNull(),
-                () -> assertThat(response.getInstagramUrl()).isNull(),
-                () -> assertThat(response.getLinkedInUrl()).isNull(),
-                () -> assertThat(response.getTwitterUrl()).isNull()
+                () -> assertThat(response.getLogoUrl()).as("logo url null").isNull(),
+                () -> assertThat(response.getDescription()).as("description null").isNull(),
+                () -> assertThat(response.getInstagramUrl()).as("instagram url null").isNull(),
+                () -> assertThat(response.getLinkedInUrl()).as("linkedin url null").isNull(),
+                () -> assertThat(response.getTwitterUrl()).as("twitter url null").isNull()
         );
     }
 
@@ -275,11 +275,11 @@ class BrandProfileServiceTest {
         BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
 
         assertAll(
-                () -> assertThat(response.getLogoUrl()).isNull(),
-                () -> assertThat(response.getDescription()).isNull(),
-                () -> assertThat(response.getInstagramUrl()).isNull(),
-                () -> assertThat(response.getLinkedInUrl()).isNull(),
-                () -> assertThat(response.getTwitterUrl()).isNull()
+                () -> assertThat(response.getLogoUrl()).as("logo url null").isNull(),
+                () -> assertThat(response.getDescription()).as("description null").isNull(),
+                () -> assertThat(response.getInstagramUrl()).as("instagram url null").isNull(),
+                () -> assertThat(response.getLinkedInUrl()).as("linkedin url null").isNull(),
+                () -> assertThat(response.getTwitterUrl()).as("twitter url null").isNull()
         );
     }
 

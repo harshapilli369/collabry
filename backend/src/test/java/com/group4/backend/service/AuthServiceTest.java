@@ -58,10 +58,10 @@ class AuthServiceTest {
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         assertAll(
-                () -> assertThat(response.getToken()).isEqualTo("jwt-token"),
-                () -> assertThat(response.getEmail()).isEqualTo("influencer@test.com"),
-                () -> assertThat(response.getRole()).isEqualTo(Role.INFLUENCER),
-                () -> assertThat(response.getId()).isEqualTo(55L)
+                () -> assertThat(response.getToken()).as("token").isEqualTo("jwt-token"),
+                () -> assertThat(response.getEmail()).as("email").isEqualTo("influencer@test.com"),
+                () -> assertThat(response.getRole()).as("role").isEqualTo(Role.INFLUENCER),
+                () -> assertThat(response.getId()).as("user id").isEqualTo(55L)
         );
     }
 
@@ -85,8 +85,9 @@ class AuthServiceTest {
         when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
         when(jwtUtils.generateToken("user@test.com", "INFLUENCER", false)).thenReturn("jwt");
 
-        authService.login(request);
+        AuthResponse response = authService.login(request);
 
+        assertThat(response).as("login response").isNotNull();
         verify(jwtUtils).generateToken("user@test.com", "INFLUENCER", false);
     }
 

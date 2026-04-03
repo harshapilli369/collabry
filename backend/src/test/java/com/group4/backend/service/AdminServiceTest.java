@@ -85,15 +85,15 @@ class AdminServiceTest {
 
         var dash = adminService.buildDashboard();
 
-        assertThat(dash.getBrandCount()).isEqualTo(3);
-        assertThat(dash.getInfluencerCount()).isEqualTo(7);
-        assertThat(dash.getCampaignCount()).isEqualTo(12);
-        assertThat(dash.getRecentSignups()).hasSize(1);
-        assertThat(dash.getRecentSignups().get(0).getEmail()).isEqualTo("b@test.com");
-        assertThat(dash.getActiveCollaborations()).hasSize(1);
-        assertThat(dash.getActiveCollaborations().get(0).getInvitationId()).isEqualTo(10L);
-        assertThat(dash.getPaymentsByStatus().get("PENDING")).isEqualTo(4);
-        assertThat(dash.getPaymentsByStatus().get("PAID")).isEqualTo(8);
+        assertThat(dash.getBrandCount()).as("brand count").isEqualTo(3);
+        assertThat(dash.getInfluencerCount()).as("influencer count").isEqualTo(7);
+        assertThat(dash.getCampaignCount()).as("campaign count").isEqualTo(12);
+        assertThat(dash.getRecentSignups()).as("recent signups size").hasSize(1);
+        assertThat(dash.getRecentSignups().get(0).getEmail()).as("signup email").isEqualTo("b@test.com");
+        assertThat(dash.getActiveCollaborations()).as("active collabs size").hasSize(1);
+        assertThat(dash.getActiveCollaborations().get(0).getInvitationId()).as("collab invitation id").isEqualTo(10L);
+        assertThat(dash.getPaymentsByStatus().get("PENDING")).as("pending payments").isEqualTo(4);
+        assertThat(dash.getPaymentsByStatus().get("PAID")).as("paid payments").isEqualTo(8);
     }
 
     @Test
@@ -121,8 +121,8 @@ class AdminServiceTest {
 
         var out = adminService.updateUserStatus(1L, false, true);
 
-        assertThat(out.isActive()).isFalse();
-        assertThat(out.isFlagged()).isTrue();
+        assertThat(out.isActive()).as("active status").isFalse();
+        assertThat(out.isFlagged()).as("flagged status").isTrue();
         verify(userRepository).save(brandUser);
     }
 
@@ -133,7 +133,7 @@ class AdminServiceTest {
 
         var page = adminService.listUsers(PageRequest.of(0, 20));
 
-        assertThat(page.getContent()).hasSize(1);
-        assertThat(page.getTotalElements()).isEqualTo(1);
+        assertThat(page.getContent()).as("page content size").hasSize(1);
+        assertThat(page.getTotalElements()).as("total elements").isEqualTo(1);
     }
 }

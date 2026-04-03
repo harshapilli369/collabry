@@ -69,10 +69,10 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result).hasSize(1),
-                () -> assertThat(result.get(0).getInfluencerId()).isEqualTo(10L),
-                () -> assertThat(result.get(0).getMatchScore()).isEqualTo(95),
-                () -> assertThat(result.get(0).getReason()).isEqualTo("Perfect match.")
+                () -> assertThat(result).as("result size").hasSize(1),
+                () -> assertThat(result.get(0).getInfluencerId()).as("influencer id").isEqualTo(10L),
+                () -> assertThat(result.get(0).getMatchScore()).as("match score").isEqualTo(95),
+                () -> assertThat(result.get(0).getReason()).as("reason").isEqualTo("Perfect match.")
         );
     }
 
@@ -105,9 +105,9 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result).isNotEmpty(),
-                () -> assertThat(result.get(0).getInfluencerId()).isEqualTo(10L),
-                () -> assertThat(result.get(0).getName()).isEqualTo("Alex")
+                () -> assertThat(result).as("result not empty").isNotEmpty(),
+                () -> assertThat(result.get(0).getInfluencerId()).as("influencer id").isEqualTo(10L),
+                () -> assertThat(result.get(0).getName()).as("name").isEqualTo("Alex")
         );
         verify(groqApiClient, never()).getChatCompletion(anyString());
     }
@@ -122,9 +122,9 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result).hasSize(1),
-                () -> assertThat(result.get(0).getMatchScore()).isBetween(90, 97),
-                () -> assertThat(result.get(0).getReason()).contains("Gaming")
+                () -> assertThat(result).as("result size").hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).as("match score range").isBetween(90, 97),
+                () -> assertThat(result.get(0).getReason()).as("reason contains Gaming").contains("Gaming")
         );
     }
 
@@ -138,9 +138,9 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result).hasSize(1),
-                () -> assertThat(result.get(0).getMatchScore()).isBetween(85, 94),
-                () -> assertThat(result.get(0).getReason()).contains("Technology")
+                () -> assertThat(result).as("result size").hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).as("match score range").isBetween(85, 94),
+                () -> assertThat(result.get(0).getReason()).as("reason contains Technology").contains("Technology")
         );
     }
 
@@ -154,9 +154,9 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result).hasSize(1),
-                () -> assertThat(result.get(0).getMatchScore()).isBetween(88, 98),
-                () -> assertThat(result.get(0).getReason()).contains("aesthetic")
+                () -> assertThat(result).as("result size").hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).as("match score range").isBetween(88, 98),
+                () -> assertThat(result.get(0).getReason()).as("reason contains aesthetic").contains("aesthetic")
         );
     }
 
@@ -171,9 +171,9 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result).hasSize(1),
-                () -> assertThat(result.get(0).getMatchScore()).isBetween(75, 89),
-                () -> assertThat(result.get(0).getReason()).contains("crossover")
+                () -> assertThat(result).as("result size").hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).as("match score range").isBetween(75, 89),
+                () -> assertThat(result.get(0).getReason()).as("reason contains crossover").contains("crossover")
         );
     }
 
@@ -188,9 +188,9 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result).hasSize(1),
-                () -> assertThat(result.get(0).getMatchScore()).isBetween(30, 49),
-                () -> assertThat(result.get(0).getReason()).contains("differs from your campaign")
+                () -> assertThat(result).as("result size").hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).as("match score range").isBetween(30, 49),
+                () -> assertThat(result.get(0).getReason()).as("reason").contains("differs from your campaign")
         );
     }
 
@@ -208,8 +208,8 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result).hasSize(1),
-                () -> assertThat(result.get(0).getMatchScore()).isBetween(30, 49)
+                () -> assertThat(result).as("result size").hasSize(1),
+                () -> assertThat(result.get(0).getMatchScore()).as("match score range").isBetween(30, 49)
         );
     }
 
@@ -237,8 +237,8 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result).isNotEmpty(),
-                () -> assertThat(result.get(0).getInfluencerId()).isEqualTo(10L)
+                () -> assertThat(result).as("fallback result not empty").isNotEmpty(),
+                () -> assertThat(result.get(0).getInfluencerId()).as("influencer id").isEqualTo(10L)
         );
     }
 
@@ -257,9 +257,9 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result).hasSize(2),
-                () -> assertThat(result.get(0).getMatchScore()).isEqualTo(99),
-                () -> assertThat(result.get(1).getMatchScore()).isEqualTo(70)
+                () -> assertThat(result).as("result size").hasSize(2),
+                () -> assertThat(result.get(0).getMatchScore()).as("first score").isEqualTo(99),
+                () -> assertThat(result.get(1).getMatchScore()).as("second score").isEqualTo(70)
         );
     }
 
@@ -276,9 +276,9 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result.get(0).getName()).isEqualTo("Enriched Name"),
-                () -> assertThat(result.get(0).getNiche()).isEqualTo("NicheX"),
-                () -> assertThat(result.get(0).getProfilePictureUrl()).isEqualTo("https://pic.test/id.png")
+                () -> assertThat(result.get(0).getName()).as("enriched name").isEqualTo("Enriched Name"),
+                () -> assertThat(result.get(0).getNiche()).as("enriched niche").isEqualTo("NicheX"),
+                () -> assertThat(result.get(0).getProfilePictureUrl()).as("profile picture url").isEqualTo("https://pic.test/id.png")
         );
     }
 
@@ -294,8 +294,8 @@ class AiRecommendationServiceTest {
         List<InfluencerRecommendationDTO> result = aiRecommendationService.getRecommendations(1L);
 
         assertAll(
-                () -> assertThat(result.get(0).getName()).isNull(),
-                () -> assertThat(result.get(0).getNiche()).isNull()
+                () -> assertThat(result.get(0).getName()).as("name is null").isNull(),
+                () -> assertThat(result.get(0).getNiche()).as("niche is null").isNull()
         );
     }
 
