@@ -546,6 +546,124 @@ class InfluencerProfileServiceTest {
         assertThat(result).hasSize(1);
     }
 
+    @Test
+    void updateCollaborationAvailability_whenUserNotFound_throws() {
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> influencerProfileService.updateCollaborationAvailability(999L, true))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("User not found");
+    }
+
+    @Test
+    void createOrUpdateForUser_withBlankNameLocationNiche_doesNotOverwriteExisting() {
+        InfluencerProfileRequest request = completeRequest();
+        request.setSaveAsDraft(true);
+        request.setName("");
+        request.setLocation("   ");
+        request.setNiche("");
+
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(existingProfile));
+        when(influencerProfileRepository.save(any(InfluencerProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
+
+        assertAll(
+                () -> assertThat(response.getName()).isEqualTo("Jane Doe"),
+                () -> assertThat(response.getLocation()).isEqualTo("NYC"),
+                () -> assertThat(response.getNiche()).isEqualTo("Fashion")
+        );
+    }
+
+    @Test
+    void createOrUpdateForUser_withNullNameLocationNiche_doesNotOverwriteExisting() {
+        InfluencerProfileRequest request = completeRequest();
+        request.setSaveAsDraft(true);
+        request.setName(null);
+        request.setLocation(null);
+        request.setNiche(null);
+
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(existingProfile));
+        when(influencerProfileRepository.save(any(InfluencerProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
+
+        assertAll(
+                () -> assertThat(response.getName()).isEqualTo("Jane Doe"),
+                () -> assertThat(response.getLocation()).isEqualTo("NYC"),
+                () -> assertThat(response.getNiche()).isEqualTo("Fashion")
+        );
+    }
+
+    @Test
+    void search_withBlankNiche_treatsAsNoFilter() {
+        when(influencerProfileRepository.findAll(any(Specification.class)))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(
+                new InfluencerSearchFilter("   ", null, null, null, null, null));
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void search_withBlankLocation_treatsAsNoFilter() {
+        when(influencerProfileRepository.findAll(any(Specification.class)))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(
+                new InfluencerSearchFilter(null, "   ", null, null, null, null));
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void search_withEqualMinAndMaxFollowers_succeeds() {
+        when(influencerProfileRepository.findAll(any(Specification.class)))
+                .thenReturn(List.of(completeProfile));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(
+                new InfluencerSearchFilter(null, null, 50000L, 50000L, null, null));
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void createOrUpdateForUser_completeWithBlankOnlyHandles_throws() {
+        InfluencerProfileRequest request = completeRequest();
+        request.setSaveAsDraft(false);
+        request.setInstagramHandle("   ");
+        request.setYoutubeHandle("   ");
+        request.setTiktokHandle("   ");
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> influencerProfileService.createOrUpdateForUser(20L, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("At least one social media handle");
+    }
+
+    @Test
+    void search_multipleProfilesWithNullCreatedAt_doesNotThrow() {
+        InfluencerProfile noDate = new InfluencerProfile();
+        noDate.setId(99L);
+        noDate.setUserId(99L);
+        noDate.setName("No Date");
+        noDate.setNiche("Tech");
+        noDate.setComplete(true);
+        noDate.setCreatedAt(null);
+
+        when(influencerProfileRepository.findAll(any(Specification.class)))
+                .thenReturn(List.of(completeProfile, noDate));
+
+        List<InfluencerProfileResponse> result = influencerProfileService.search(
+                new InfluencerSearchFilter(null, null, null, null, null, null));
+
+        assertThat(result).hasSize(2);
+    }
+
     private static InfluencerProfileRequest completeRequest() {
         InfluencerProfileRequest r = new InfluencerProfileRequest();
         r.setName("Jane Doe");
