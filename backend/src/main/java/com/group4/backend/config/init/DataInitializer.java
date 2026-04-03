@@ -115,11 +115,19 @@ public class DataInitializer {
     }
 
     private void applyInfluencerDefaults(InfluencerProfile profile) {
+        applyInfluencerIdentityDefaults(profile);
+        applyInfluencerSocialAndMetricsDefaults(profile);
+    }
+
+    private void applyInfluencerIdentityDefaults(InfluencerProfile profile) {
         if (profile.getName() == null) profile.setName(SEED_INFLUENCER_NAME);
         if (profile.getAge() == null) profile.setAge(SEED_INFLUENCER_AGE);
         if (profile.getLocation() == null) profile.setLocation(SEED_INFLUENCER_LOCATION);
         if (profile.getNiche() == null) profile.setNiche(SEED_INFLUENCER_NICHE);
         if (profile.getBio() == null) profile.setBio(SEED_INFLUENCER_BIO);
+    }
+
+    private void applyInfluencerSocialAndMetricsDefaults(InfluencerProfile profile) {
         if (profile.getInstagramHandle() == null) profile.setInstagramHandle(SEED_INFLUENCER_INSTAGRAM);
         if (profile.getTiktokHandle() == null) profile.setTiktokHandle(SEED_INFLUENCER_TIKTOK);
         if (profile.getRate() == null) profile.setRate(SEED_INFLUENCER_RATE);

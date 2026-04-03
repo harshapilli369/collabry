@@ -69,6 +69,12 @@ public class DemoDataSeeder implements CommandLineRunner {
     private static final String GAMER1_EMAIL  = "gamer1@test.com";
     private static final String FIT1_EMAIL    = "fit1@test.com";
 
+    /** Target influencer headcount on seeded campaigns (demo narrative). */
+    private static final int DEMO_Q1_CAMPAIGN_INFLUENCER_SLOTS = 3;
+    private static final int DEMO_SPRING_CAMPAIGN_INFLUENCER_SLOTS = 4;
+    private static final int DEMO_GAMING_CAMPAIGN_INFLUENCER_SLOTS = 5;
+    private static final int DEMO_RATING_STARS_MAX = 5;
+
     private final UserRepository           userRepository;
     private final CampaignRepository       campaignRepository;
     private final InvitationRepository     invitationRepository;
@@ -118,7 +124,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                 BudgetRange.FIVE_K_10K, CampaignStatus.COMPLETED, CampaignGoal.AWARENESS,
                 "Instagram Reels, YouTube Review",
                 LocalDate.of(DEMO_YEAR, DEMO_Q1_LAUNCH_START_MONTH, DEMO_Q1_LAUNCH_START_DAY),
-                LocalDate.of(DEMO_YEAR, DEMO_Q1_LAUNCH_END_MONTH, DEMO_Q1_LAUNCH_END_DAY), 3));
+                LocalDate.of(DEMO_YEAR, DEMO_Q1_LAUNCH_END_MONTH, DEMO_Q1_LAUNCH_END_DAY),
+                DEMO_Q1_CAMPAIGN_INFLUENCER_SLOTS));
 
         // Invitations for Campaign 1
         CollaborationInvitation inv1a = saveInvitation(q1Launch.getId(), influencerId, brand.getId(),
@@ -147,10 +154,10 @@ public class DemoDataSeeder implements CommandLineRunner {
                         "INV-2026-0002", "Payment for YouTube review — Q1 Tech Launch"));
 
         // Ratings for Campaign 1
-        saveRating(inv1a.getId(), brand.getId(), influencerId, 5,
+        saveRating(inv1a.getId(), brand.getId(), influencerId, DEMO_RATING_STARS_MAX,
                 "Alex delivered exceptional content — on time, on brief, and the engagement was incredible. Will definitely work together again.");
 
-        saveRating(inv1b.getId(), brand.getId(), tech1Id, 5,
+        saveRating(inv1b.getId(), brand.getId(), tech1Id, DEMO_RATING_STARS_MAX,
                 "Sam's review was thorough and authentic. Our product page traffic spiked 40% the week the video went live.");
 
         // ── Campaign 2: ACTIVE ────────────────────────────────────────────────
@@ -160,7 +167,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                 BudgetRange.ONE_K_5K, CampaignStatus.ACTIVE, CampaignGoal.ENGAGEMENT,
                 "Instagram Posts, TikTok",
                 LocalDate.of(DEMO_YEAR, DEMO_SPRING_START_MONTH, DEMO_SPRING_START_DAY),
-                LocalDate.of(DEMO_YEAR, DEMO_SPRING_END_MONTH, DEMO_SPRING_END_DAY), 4));
+                LocalDate.of(DEMO_YEAR, DEMO_SPRING_END_MONTH, DEMO_SPRING_END_DAY),
+                DEMO_SPRING_CAMPAIGN_INFLUENCER_SLOTS));
 
         saveInvitation(springFashion.getId(), influencerId, brand.getId(),
                 new InvitationData(InvitationStatus.ACCEPTED,
@@ -199,7 +207,8 @@ public class DemoDataSeeder implements CommandLineRunner {
                 BudgetRange.TEN_K_50K, CampaignStatus.ACTIVE, CampaignGoal.CONVERSIONS,
                 "YouTube, Twitch, TikTok",
                 LocalDate.of(DEMO_YEAR, DEMO_GAMING_START_MONTH, DEMO_GAMING_START_DAY),
-                LocalDate.of(DEMO_YEAR, DEMO_GAMING_END_MONTH, DEMO_GAMING_END_DAY), 5));
+                LocalDate.of(DEMO_YEAR, DEMO_GAMING_END_MONTH, DEMO_GAMING_END_DAY),
+                DEMO_GAMING_CAMPAIGN_INFLUENCER_SLOTS));
 
         saveInvitation(gamingCampaign.getId(), gamer1Id, brand.getId(),
                 new InvitationData(InvitationStatus.PENDING,
@@ -258,8 +267,7 @@ public class DemoDataSeeder implements CommandLineRunner {
 
     private void savePayment(Long campaignId, Long influencerId, Long brandId, PaymentData data) {
         if (influencerId == null) return;
-        if (paymentRepository.findByCampaignIdOrderByDueDateAsc(campaignId).stream()
-                .anyMatch(p -> p.getInvoiceNumber().equals(data.invoiceNumber()))) return;
+        if (paymentInvoiceExistsForCampaign(campaignId, data.invoiceNumber())) return;
 
         Payment p = new Payment();
         p.setCampaignId(campaignId);
@@ -273,6 +281,11 @@ public class DemoDataSeeder implements CommandLineRunner {
         p.setInvoiceNumber(data.invoiceNumber());
         p.setNotes(data.notes());
         paymentRepository.save(p);
+    }
+
+    private boolean paymentInvoiceExistsForCampaign(Long campaignId, String invoiceNumber) {
+        return paymentRepository.findByCampaignIdOrderByDueDateAsc(campaignId).stream()
+                .anyMatch(p -> p.getInvoiceNumber().equals(invoiceNumber));
     }
 
     private void saveRating(Long invitationId, Long brandId, Long influencerId,

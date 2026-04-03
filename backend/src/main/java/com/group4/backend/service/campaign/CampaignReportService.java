@@ -93,7 +93,7 @@ public class CampaignReportService {
             lines.add("Outstanding: $" + total.subtract(paid));
         }
 
-        return SimplePdfBuilder.build(lines);
+        return buildCampaignPdf(lines);
     }
 
     private String influencerLabel(Long userId) {
@@ -115,63 +115,55 @@ public class CampaignReportService {
         return value == null ? "-" : String.valueOf(value);
     }
 
-    /**
-     * Minimal PDF builder using plain text content. Keeps dependencies light while generating valid PDFs.
-     */
-    static final class SimplePdfBuilder {
-        private SimplePdfBuilder() {
-        }
-
-        static byte[] build(List<String> lines) {
-            StringBuilder textOps = new StringBuilder();
-            textOps.append("BT\n/F1 11 Tf\n50 780 Td\n");
-            boolean first = true;
-            for (String line : lines) {
-                if (!first) {
-                    textOps.append("0 -14 Td\n");
-                }
-                first = false;
-                textOps.append("(").append(escapePdf(line)).append(") Tj\n");
+    /** Minimal PDF from plain text lines; no extra PDF library dependency. */
+    private static byte[] buildCampaignPdf(List<String> lines) {
+        StringBuilder textOps = new StringBuilder();
+        textOps.append("BT\n/F1 11 Tf\n50 780 Td\n");
+        boolean first = true;
+        for (String line : lines) {
+            if (!first) {
+                textOps.append("0 -14 Td\n");
             }
-            textOps.append("ET");
-
-            byte[] streamBytes = textOps.toString().getBytes(StandardCharsets.ISO_8859_1);
-            List<Integer> offsets = new ArrayList<>();
-            StringBuilder pdf = new StringBuilder();
-            pdf.append("%PDF-1.4\n");
-
-            offsets.add(pdf.length());
-            pdf.append("1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n");
-            offsets.add(pdf.length());
-            pdf.append("2 0 obj << /Type /Pages /Count 1 /Kids [3 0 R] >> endobj\n");
-            offsets.add(pdf.length());
-            pdf.append("3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] ");
-            pdf.append("/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj\n");
-            offsets.add(pdf.length());
-            pdf.append("4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n");
-            offsets.add(pdf.length());
-            pdf.append("5 0 obj << /Length ").append(streamBytes.length).append(" >> stream\n");
-            int streamStart = pdf.length();
-            pdf.append(new String(streamBytes, StandardCharsets.ISO_8859_1));
-            pdf.append("\nendstream endobj\n");
-
-            int xrefStart = pdf.length();
-            pdf.append("xref\n0 6\n");
-            pdf.append("0000000000 65535 f \n");
-            for (Integer offset : offsets) {
-                pdf.append(String.format("%010d 00000 n \n", offset));
-            }
-            pdf.append("trailer << /Size 6 /Root 1 0 R >>\n");
-            pdf.append("startxref\n").append(xrefStart).append("\n%%EOF");
-
-            return pdf.toString().getBytes(StandardCharsets.ISO_8859_1);
+            first = false;
+            textOps.append("(").append(escapePdfText(line)).append(") Tj\n");
         }
+        textOps.append("ET");
 
-        private static String escapePdf(String value) {
-            return value
-                    .replace("\\", "\\\\")
-                    .replace("(", "\\(")
-                    .replace(")", "\\)");
+        byte[] streamBytes = textOps.toString().getBytes(StandardCharsets.ISO_8859_1);
+        List<Integer> offsets = new ArrayList<>();
+        StringBuilder pdf = new StringBuilder();
+        pdf.append("%PDF-1.4\n");
+
+        offsets.add(pdf.length());
+        pdf.append("1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n");
+        offsets.add(pdf.length());
+        pdf.append("2 0 obj << /Type /Pages /Count 1 /Kids [3 0 R] >> endobj\n");
+        offsets.add(pdf.length());
+        pdf.append("3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] ");
+        pdf.append("/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj\n");
+        offsets.add(pdf.length());
+        pdf.append("4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n");
+        offsets.add(pdf.length());
+        pdf.append("5 0 obj << /Length ").append(streamBytes.length).append(" >> stream\n");
+        pdf.append(new String(streamBytes, StandardCharsets.ISO_8859_1));
+        pdf.append("\nendstream endobj\n");
+
+        int xrefStart = pdf.length();
+        pdf.append("xref\n0 6\n");
+        pdf.append("0000000000 65535 f \n");
+        for (Integer offset : offsets) {
+            pdf.append(String.format("%010d 00000 n \n", offset));
         }
+        pdf.append("trailer << /Size 6 /Root 1 0 R >>\n");
+        pdf.append("startxref\n").append(xrefStart).append("\n%%EOF");
+
+        return pdf.toString().getBytes(StandardCharsets.ISO_8859_1);
+    }
+
+    private static String escapePdfText(String value) {
+        return value
+                .replace("\\", "\\\\")
+                .replace("(", "\\(")
+                .replace(")", "\\)");
     }
 }

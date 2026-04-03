@@ -46,24 +46,33 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
         if (user.getRole() == Role.INFLUENCER) {
-            influencerProfileRepository.findByUserId(userId).ifPresent((InfluencerProfile profile) -> {
-                String platform = request.getPlatform().toUpperCase();
-                if (platform.equals("INSTAGRAM")) profile.setInstagramHandle(request.getHandle());
-                else if (platform.equals("YOUTUBE")) profile.setYoutubeHandle(request.getHandle());
-                else if (platform.equals("TIKTOK")) profile.setTiktokHandle(request.getHandle());
-                influencerProfileRepository.save(profile);
-            });
+            influencerProfileRepository.findByUserId(userId)
+                    .ifPresent(profile -> applyInfluencerSocialLink(profile, request));
         } else if (user.getRole() == Role.BRAND) {
-            brandProfileRepository.findByUserId(userId).ifPresent((BrandProfile profile) -> {
-                String platform = request.getPlatform().toUpperCase();
-                if (platform.equals("INSTAGRAM")) profile.setInstagramUrl(request.getHandle());
-                else if (platform.equals("LINKEDIN")) profile.setLinkedInUrl(request.getHandle());
-                else if (platform.equals("TWITTER")) profile.setTwitterUrl(request.getHandle());
-                brandProfileRepository.save(profile);
-            });
+            brandProfileRepository.findByUserId(userId)
+                    .ifPresent(profile -> applyBrandSocialLink(profile, request));
         }
-        
-        // Removed: user.setVerified(true);
-        // Verification is now strictly controlled by admin via VerificationService
+    }
+
+    private void applyInfluencerSocialLink(InfluencerProfile profile, SocialLinkRequest request) {
+        String platform = request.getPlatform().toUpperCase();
+        switch (platform) {
+            case "INSTAGRAM" -> profile.setInstagramHandle(request.getHandle());
+            case "YOUTUBE" -> profile.setYoutubeHandle(request.getHandle());
+            case "TIKTOK" -> profile.setTiktokHandle(request.getHandle());
+            default -> { /* unknown platform: no-op */ }
+        }
+        influencerProfileRepository.save(profile);
+    }
+
+    private void applyBrandSocialLink(BrandProfile profile, SocialLinkRequest request) {
+        String platform = request.getPlatform().toUpperCase();
+        switch (platform) {
+            case "INSTAGRAM" -> profile.setInstagramUrl(request.getHandle());
+            case "LINKEDIN" -> profile.setLinkedInUrl(request.getHandle());
+            case "TWITTER" -> profile.setTwitterUrl(request.getHandle());
+            default -> { /* unknown platform: no-op */ }
+        }
+        brandProfileRepository.save(profile);
     }
 }
