@@ -1,4 +1,4 @@
-package com.group4.backend.controller;
+package com.group4.backend.controller.admin;
 
 import com.group4.backend.dto.admin.*;
 import com.group4.backend.service.admin.AdminService;

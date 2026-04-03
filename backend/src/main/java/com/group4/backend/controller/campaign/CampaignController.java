@@ -1,5 +1,6 @@
-package com.group4.backend.controller;
+package com.group4.backend.controller.campaign;
 
+import com.group4.backend.controller.support.CurrentUserProvider;
 import com.group4.backend.dto.campaign.CampaignRequest;
 import com.group4.backend.dto.campaign.CampaignResponse;
 import com.group4.backend.dto.invitation.InvitationRequest;

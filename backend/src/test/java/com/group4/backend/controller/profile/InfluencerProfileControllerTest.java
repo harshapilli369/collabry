@@ -1,6 +1,7 @@
-package com.group4.backend.controller;
+package com.group4.backend.controller.profile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group4.backend.controller.support.CurrentUserProvider;
 import com.group4.backend.dto.profile.CollaborationAvailabilityRequest;
 import com.group4.backend.dto.profile.InfluencerProfileRequest;
 import com.group4.backend.dto.profile.InfluencerProfileResponse;
