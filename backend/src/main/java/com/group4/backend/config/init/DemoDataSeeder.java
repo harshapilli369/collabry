@@ -267,8 +267,7 @@ public class DemoDataSeeder implements CommandLineRunner {
 
     private void savePayment(Long campaignId, Long influencerId, Long brandId, PaymentData data) {
         if (influencerId == null) return;
-        if (paymentRepository.findByCampaignIdOrderByDueDateAsc(campaignId).stream()
-                .anyMatch(p -> p.getInvoiceNumber().equals(data.invoiceNumber()))) return;
+        if (paymentInvoiceExistsForCampaign(campaignId, data.invoiceNumber())) return;
 
         Payment p = new Payment();
         p.setCampaignId(campaignId);
@@ -282,6 +281,11 @@ public class DemoDataSeeder implements CommandLineRunner {
         p.setInvoiceNumber(data.invoiceNumber());
         p.setNotes(data.notes());
         paymentRepository.save(p);
+    }
+
+    private boolean paymentInvoiceExistsForCampaign(Long campaignId, String invoiceNumber) {
+        return paymentRepository.findByCampaignIdOrderByDueDateAsc(campaignId).stream()
+                .anyMatch(p -> p.getInvoiceNumber().equals(invoiceNumber));
     }
 
     private void saveRating(Long invitationId, Long brandId, Long influencerId,
