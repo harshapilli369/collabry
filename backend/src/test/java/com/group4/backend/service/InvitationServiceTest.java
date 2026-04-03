@@ -112,12 +112,12 @@ class InvitationServiceTest {
         InvitationResponse response = invitationService.createInvitation(10L, 1L, request);
 
         assertAll(
-                () -> assertThat(response).isNotNull(),
-                () -> assertThat(response.getCampaignId()).isEqualTo(1L),
-                () -> assertThat(response.getInfluencerId()).isEqualTo(20L),
-                () -> assertThat(response.getBrandId()).isEqualTo(10L),
-                () -> assertThat(response.getStatus()).isEqualTo(InvitationStatus.PENDING),
-                () -> assertThat(response.getBrandMessage()).isEqualTo("Join our campaign")
+                () -> assertThat(response).as("response not null").isNotNull(),
+                () -> assertThat(response.getCampaignId()).as("campaign id").isEqualTo(1L),
+                () -> assertThat(response.getInfluencerId()).as("influencer id").isEqualTo(20L),
+                () -> assertThat(response.getBrandId()).as("brand id").isEqualTo(10L),
+                () -> assertThat(response.getStatus()).as("status").isEqualTo(InvitationStatus.PENDING),
+                () -> assertThat(response.getBrandMessage()).as("brand message").isEqualTo("Join our campaign")
         );
         verify(invitationRepository).save(any(CollaborationInvitation.class));
     }
@@ -141,9 +141,9 @@ class InvitationServiceTest {
         List<InvitationResponse> list = invitationService.getInvitationsForInfluencer(20L);
 
         assertAll(
-                () -> assertThat(list).hasSize(1),
-                () -> assertThat(list.get(0).getId()).isEqualTo(100L),
-                () -> assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.PENDING)
+                () -> assertThat(list).as("result size").hasSize(1),
+                () -> assertThat(list.get(0).getId()).as("invitation id").isEqualTo(100L),
+                () -> assertThat(list.get(0).getStatus()).as("status").isEqualTo(InvitationStatus.PENDING)
         );
     }
 
@@ -159,10 +159,10 @@ class InvitationServiceTest {
         InvitationDetailResponse detail = invitationService.getInvitationWithCampaignDetails(100L, 20L);
 
         assertAll(
-                () -> assertThat(detail).isNotNull(),
-                () -> assertThat(detail.getId()).isEqualTo(100L),
-                () -> assertThat(detail.getCampaign()).isNotNull(),
-                () -> assertThat(detail.getCampaign().getName()).isEqualTo("Test Campaign")
+                () -> assertThat(detail).as("detail not null").isNotNull(),
+                () -> assertThat(detail.getId()).as("invitation id").isEqualTo(100L),
+                () -> assertThat(detail.getCampaign()).as("campaign not null").isNotNull(),
+                () -> assertThat(detail.getCampaign().getName()).as("campaign name").isEqualTo("Test Campaign")
         );
     }
 
@@ -192,8 +192,8 @@ class InvitationServiceTest {
         InvitationResponse response = invitationService.negotiate(100L, 20L, request);
 
         assertAll(
-                () -> assertThat(response.getStatus()).isEqualTo(InvitationStatus.NEGOTIATING),
-                () -> assertThat(response.getProposedAmount()).isEqualByComparingTo("500.00")
+                () -> assertThat(response.getStatus()).as("status").isEqualTo(InvitationStatus.NEGOTIATING),
+                () -> assertThat(response.getProposedAmount()).as("proposed amount").isEqualByComparingTo("500.00")
         );
     }
 
@@ -205,8 +205,8 @@ class InvitationServiceTest {
         List<InvitationResponse> list = invitationService.getCollaborationHistory(20L);
 
         assertAll(
-                () -> assertThat(list).hasSize(1),
-                () -> assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.ACCEPTED)
+                () -> assertThat(list).as("result size").hasSize(1),
+                () -> assertThat(list.get(0).getStatus()).as("status").isEqualTo(InvitationStatus.ACCEPTED)
         );
     }
 
@@ -219,9 +219,9 @@ class InvitationServiceTest {
         List<InvitationResponse> list = invitationService.getInvitationsForBrand(10L);
 
         assertAll(
-                () -> assertThat(list).hasSize(1),
-                () -> assertThat(list.get(0).getId()).isEqualTo(100L),
-                () -> assertThat(list.get(0).getBrandId()).isEqualTo(10L)
+                () -> assertThat(list).as("result size").hasSize(1),
+                () -> assertThat(list.get(0).getId()).as("invitation id").isEqualTo(100L),
+                () -> assertThat(list.get(0).getBrandId()).as("brand id").isEqualTo(10L)
         );
     }
 
@@ -250,11 +250,11 @@ class InvitationServiceTest {
         InvitationResponse response = invitationService.createInvitation(10L, 1L, request);
 
         assertAll(
-                () -> assertThat(response.getProposedAmount()).isEqualByComparingTo("1000.00"),
-                () -> assertThat(response.getProposedTimeline()).isEqualTo("2 weeks"),
-                () -> assertThat(response.getProposedDeliverables()).isEqualTo("2 Reels, 3 Stories"),
-                () -> assertThat(response.getPlatform()).isEqualTo("INSTAGRAM_REEL"),
-                () -> assertThat(response.getExpiresAt()).isNotNull()
+                () -> assertThat(response.getProposedAmount()).as("proposed amount").isEqualByComparingTo("1000.00"),
+                () -> assertThat(response.getProposedTimeline()).as("proposed timeline").isEqualTo("2 weeks"),
+                () -> assertThat(response.getProposedDeliverables()).as("proposed deliverables").isEqualTo("2 Reels, 3 Stories"),
+                () -> assertThat(response.getPlatform()).as("platform").isEqualTo("INSTAGRAM_REEL"),
+                () -> assertThat(response.getExpiresAt()).as("expires at").isNotNull()
         );
     }
 
@@ -304,8 +304,8 @@ class InvitationServiceTest {
         InvitationResponse response = invitationService.updateInvitation(100L, 10L, request);
 
         assertAll(
-                () -> assertThat(response.getBrandMessage()).isEqualTo("Updated message"),
-                () -> assertThat(response.getProposedAmount()).isEqualByComparingTo("750")
+                () -> assertThat(response.getBrandMessage()).as("updated message").isEqualTo("Updated message"),
+                () -> assertThat(response.getProposedAmount()).as("updated amount").isEqualByComparingTo("750")
         );
         verify(invitationRepository).save(invitation);
     }
@@ -330,8 +330,8 @@ class InvitationServiceTest {
         List<InvitationResponse> list = invitationService.getInvitationsForBrand(10L);
 
         assertAll(
-                () -> assertThat(list).hasSize(1),
-                () -> assertThat(list.get(0).getStatus()).isEqualTo(InvitationStatus.EXPIRED)
+                () -> assertThat(list).as("result size").hasSize(1),
+                () -> assertThat(list.get(0).getStatus()).as("effective status").isEqualTo(InvitationStatus.EXPIRED)
         );
     }
 
@@ -440,8 +440,8 @@ class InvitationServiceTest {
         verify(invitationRepository).save(cap.capture());
         Instant exp = cap.getValue().getExpiresAt();
         assertAll(
-                () -> assertThat(exp).isAfter(Instant.now()),
-                () -> assertThat(exp).isBefore(Instant.now().plusSeconds(15L * 86400L))
+                () -> assertThat(exp).as("expires after now").isAfter(Instant.now()),
+                () -> assertThat(exp).as("expires within 15 days").isBefore(Instant.now().plusSeconds(15L * 86400L))
         );
     }
 
@@ -461,8 +461,8 @@ class InvitationServiceTest {
         ArgumentCaptor<CollaborationInvitation> cap = ArgumentCaptor.forClass(CollaborationInvitation.class);
         verify(invitationRepository).save(cap.capture());
         assertAll(
-                () -> assertThat(cap.getValue().getExpiresAt()).isAfter(Instant.now()),
-                () -> assertThat(cap.getValue().getExpiresAt()).isBefore(Instant.now().plusSeconds(15L * 86400L))
+                () -> assertThat(cap.getValue().getExpiresAt()).as("expires after now").isAfter(Instant.now()),
+                () -> assertThat(cap.getValue().getExpiresAt()).as("expires within 15 days").isBefore(Instant.now().plusSeconds(15L * 86400L))
         );
     }
 
@@ -670,9 +670,9 @@ class InvitationServiceTest {
         InvitationResponse response = invitationService.updateDeliverableStatus(100L, 20L, request);
 
         assertAll(
-                () -> assertThat(response.getDeliverableStatus()).isEqualTo("SUBMITTED"),
-                () -> assertThat(response.getContentLink()).isEqualTo("https://example.com/post"),
-                () -> assertThat(response.getDeliverableNotes()).isEqualTo("Draft ready")
+                () -> assertThat(response.getDeliverableStatus()).as("deliverable status").isEqualTo("SUBMITTED"),
+                () -> assertThat(response.getContentLink()).as("content link").isEqualTo("https://example.com/post"),
+                () -> assertThat(response.getDeliverableNotes()).as("deliverable notes").isEqualTo("Draft ready")
         );
     }
 
@@ -732,8 +732,8 @@ class InvitationServiceTest {
         InvitationResponse response = invitationService.updateDeliverableStatus(100L, 20L, request);
 
         assertAll(
-                () -> assertThat(response.getContentLink()).isNull(),
-                () -> assertThat(response.getDeliverableNotes()).isNull()
+                () -> assertThat(response.getContentLink()).as("blank content link normalized to null").isNull(),
+                () -> assertThat(response.getDeliverableNotes()).as("blank notes normalized to null").isNull()
         );
     }
 
@@ -751,8 +751,8 @@ class InvitationServiceTest {
         InvitationResponse response = invitationService.updateDeliverableStatus(100L, 20L, request);
 
         assertAll(
-                () -> assertThat(response.getContentLink()).isEqualTo("existing-link"),
-                () -> assertThat(response.getDeliverableNotes()).isEqualTo("existing-notes")
+                () -> assertThat(response.getContentLink()).as("content link preserved").isEqualTo("existing-link"),
+                () -> assertThat(response.getDeliverableNotes()).as("notes preserved").isEqualTo("existing-notes")
         );
     }
 
@@ -827,14 +827,14 @@ class InvitationServiceTest {
         List<InvitationResponse> list = invitationService.getInvitationsForInfluencer(20L);
 
         assertAll(
-                () -> assertThat(list.get(0).getBrandName()).isEqualTo("Test Brand"),
-                () -> assertThat(list.get(0).getBrandLogo()).isEqualTo("https://logo.test/brand.png"),
-                () -> assertThat(list.get(0).getBrandNiche()).isEqualTo("Tech"),
-                () -> assertThat(list.get(0).getInfluencerName()).isEqualTo("Test Influencer"),
-                () -> assertThat(list.get(0).getInfluencerProfilePicture()).isEqualTo("https://pic.test/inf.png"),
-                () -> assertThat(list.get(0).getInfluencerNiche()).isEqualTo("Gaming"),
-                () -> assertThat(list.get(0).getInfluencerRate()).isEqualTo("500.00"),
-                () -> assertThat(list.get(0).getCampaignName()).isEqualTo("Test Campaign")
+                () -> assertThat(list.get(0).getBrandName()).as("brand name").isEqualTo("Test Brand"),
+                () -> assertThat(list.get(0).getBrandLogo()).as("brand logo").isEqualTo("https://logo.test/brand.png"),
+                () -> assertThat(list.get(0).getBrandNiche()).as("brand niche").isEqualTo("Tech"),
+                () -> assertThat(list.get(0).getInfluencerName()).as("influencer name").isEqualTo("Test Influencer"),
+                () -> assertThat(list.get(0).getInfluencerProfilePicture()).as("influencer picture").isEqualTo("https://pic.test/inf.png"),
+                () -> assertThat(list.get(0).getInfluencerNiche()).as("influencer niche").isEqualTo("Gaming"),
+                () -> assertThat(list.get(0).getInfluencerRate()).as("influencer rate").isEqualTo("500.00"),
+                () -> assertThat(list.get(0).getCampaignName()).as("campaign name").isEqualTo("Test Campaign")
         );
     }
 
@@ -865,9 +865,9 @@ class InvitationServiceTest {
         InvitationDetailResponse detail = invitationService.getInvitationWithCampaignDetails(100L, 20L);
 
         assertAll(
-                () -> assertThat(detail.getBrandName()).isEqualTo("Brand X"),
-                () -> assertThat(detail.getInfluencerName()).isEqualTo("Inf Y"),
-                () -> assertThat(detail.getInfluencerRate()).isEqualTo("300.00")
+                () -> assertThat(detail.getBrandName()).as("brand name").isEqualTo("Brand X"),
+                () -> assertThat(detail.getInfluencerName()).as("influencer name").isEqualTo("Inf Y"),
+                () -> assertThat(detail.getInfluencerRate()).as("influencer rate").isEqualTo("300.00")
         );
     }
 
@@ -1006,9 +1006,9 @@ class InvitationServiceTest {
         List<InvitationResponse> list = invitationService.getInvitationsForBrand(10L);
 
         assertAll(
-                () -> assertThat(list.get(0).getBrandName()).isNull(),
-                () -> assertThat(list.get(0).getInfluencerName()).isNull(),
-                () -> assertThat(list.get(0).getCampaignName()).isNull()
+                () -> assertThat(list.get(0).getBrandName()).as("brand name null").isNull(),
+                () -> assertThat(list.get(0).getInfluencerName()).as("influencer name null").isNull(),
+                () -> assertThat(list.get(0).getCampaignName()).as("campaign name null").isNull()
         );
     }
 

@@ -70,9 +70,9 @@ class RatingServiceTest {
         RatingResponse response = ratingService.submitRating(brandId, request);
 
         assertAll(
-                () -> assertThat(response).isNotNull(),
-                () -> assertThat(response.getRating()).isEqualTo(5),
-                () -> assertThat(response.getReview()).isEqualTo("Great collaboration!")
+                () -> assertThat(response).as("response not null").isNotNull(),
+                () -> assertThat(response.getRating()).as("rating").isEqualTo(5),
+                () -> assertThat(response.getReview()).as("review").isEqualTo("Great collaboration!")
         );
         verify(ratingRepository).save(any(InfluencerRating.class));
     }
@@ -137,8 +137,8 @@ class RatingServiceTest {
         RatingResponse response = ratingService.submitRating(brandId, request);
 
         assertAll(
-                () -> assertThat(response.getRating()).isEqualTo(4),
-                () -> assertThat(response.getReview()).isEqualTo("Good work")
+                () -> assertThat(response.getRating()).as("rating").isEqualTo(4),
+                () -> assertThat(response.getReview()).as("review").isEqualTo("Good work")
         );
     }
 
@@ -194,9 +194,9 @@ class RatingServiceTest {
         RatingResponse response = ratingService.submitRating(brandId, request);
 
         assertAll(
-                () -> assertThat(response.getRating()).isEqualTo(5),
-                () -> assertThat(response.getReview()).isEqualTo("Updated review"),
-                () -> assertThat(existing.getId()).isEqualTo(50L)
+                () -> assertThat(response.getRating()).as("updated rating").isEqualTo(5),
+                () -> assertThat(response.getReview()).as("updated review").isEqualTo("Updated review"),
+                () -> assertThat(existing.getId()).as("reused entity id").isEqualTo(50L)
         );
     }
 
@@ -216,11 +216,11 @@ class RatingServiceTest {
         List<RatingResponse> list = ratingService.getRatingsForInfluencer(influencerId);
 
         assertAll(
-                () -> assertThat(list).hasSize(1),
-                () -> assertThat(list.get(0).getId()).isEqualTo(1L),
-                () -> assertThat(list.get(0).getInvitationId()).isEqualTo(100L),
-                () -> assertThat(list.get(0).getRating()).isEqualTo(5),
-                () -> assertThat(list.get(0).getReview()).isEqualTo("A")
+                () -> assertThat(list).as("result size").hasSize(1),
+                () -> assertThat(list.get(0).getId()).as("rating id").isEqualTo(1L),
+                () -> assertThat(list.get(0).getInvitationId()).as("invitation id").isEqualTo(100L),
+                () -> assertThat(list.get(0).getRating()).as("rating value").isEqualTo(5),
+                () -> assertThat(list.get(0).getReview()).as("review text").isEqualTo("A")
         );
     }
 
@@ -235,9 +235,9 @@ class RatingServiceTest {
         List<RatingResponse> list = ratingService.getRecentReviews(influencerId, 2);
 
         assertAll(
-                () -> assertThat(list).hasSize(2),
-                () -> assertThat(list.get(0).getRating()).isEqualTo(5),
-                () -> assertThat(list.get(1).getRating()).isEqualTo(4)
+                () -> assertThat(list).as("limited result size").hasSize(2),
+                () -> assertThat(list.get(0).getRating()).as("first rating").isEqualTo(5),
+                () -> assertThat(list.get(1).getRating()).as("second rating").isEqualTo(4)
         );
     }
 

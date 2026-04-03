@@ -83,8 +83,8 @@ class CloudinaryServiceTest {
         String result = cloudinaryService.uploadImage(file, "brand-logos");
 
         assertAll(
-                () -> assertThat(result).isEqualTo(expectedUrl),
-                () -> assertThat(result).startsWith("https://")
+                () -> assertThat(result).as("secure url").isEqualTo(expectedUrl),
+                () -> assertThat(result).as("url uses https").startsWith("https://")
         );
     }
 
@@ -113,7 +113,7 @@ class CloudinaryServiceTest {
         String second = cloudinaryService.uploadImage(file, "profile-pictures");
 
         verify(uploader, org.mockito.Mockito.times(2)).upload(any(byte[].class), any(Map.class));
-        assertThat(first).isNotNull();
-        assertThat(second).isNotNull();
+        assertThat(first).as("first upload result").isNotNull();
+        assertThat(second).as("second upload result").isNotNull();
     }
 }

@@ -57,11 +57,11 @@ class SecurityConfigTest {
 
         CorsConfiguration cors = source.getCorsConfiguration(request);
         assertAll(
-                () -> assertThat(cors).isNotNull(),
-                () -> assertThat(cors.getAllowedOrigins()).contains("http://localhost:5173", "http://localhost:8073"),
-                () -> assertThat(cors.getAllowedMethods()).contains("GET", "POST", "PUT", "DELETE", "OPTIONS"),
-                () -> assertThat(cors.getAllowedHeaders()).contains("Authorization", "Content-Type"),
-                () -> assertThat(cors.getAllowCredentials()).isTrue()
+                () -> assertThat(cors).as("CORS config exists").isNotNull(),
+                () -> assertThat(cors.getAllowedOrigins()).as("allowed origins").contains("http://localhost:5173", "http://localhost:8073"),
+                () -> assertThat(cors.getAllowedMethods()).as("allowed methods").contains("GET", "POST", "PUT", "DELETE", "OPTIONS"),
+                () -> assertThat(cors.getAllowedHeaders()).as("allowed headers").contains("Authorization", "Content-Type"),
+                () -> assertThat(cors.getAllowCredentials()).as("allow credentials").isTrue()
         );
     }
 

@@ -40,9 +40,9 @@ class ApplicationConfigTest {
         UserDetails details = uds.loadUserByUsername("a@b.com");
 
         assertAll(
-                () -> assertThat(details.getUsername()).isEqualTo("a@b.com"),
-                () -> assertThat(details.getPassword()).isEqualTo("hash"),
-                () -> assertThat(details.getAuthorities()).extracting(Object::toString).containsExactly("ROLE_INFLUENCER")
+                () -> assertThat(details.getUsername()).as("username").isEqualTo("a@b.com"),
+                () -> assertThat(details.getPassword()).as("password").isEqualTo("hash"),
+                () -> assertThat(details.getAuthorities()).as("authorities").extracting(Object::toString).containsExactly("ROLE_INFLUENCER")
         );
     }
 

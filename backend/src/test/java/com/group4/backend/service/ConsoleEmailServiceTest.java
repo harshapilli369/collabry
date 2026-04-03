@@ -46,9 +46,9 @@ class ConsoleEmailServiceTest {
 
         String output = capturedOut.toString(StandardCharsets.UTF_8);
         assertAll(
-                () -> assertThat(output).contains("CONFIRMATION EMAIL (simulated) FOR: " + email),
-                () -> assertThat(output).contains("Confirm your account: " + link),
-                () -> assertThat(output).contains("------------------------------------------------")
+                () -> assertThat(output).as("confirmation header").contains("CONFIRMATION EMAIL (simulated) FOR: " + email),
+                () -> assertThat(output).as("confirmation link").contains("Confirm your account: " + link),
+                () -> assertThat(output).as("separator line").contains("------------------------------------------------")
         );
     }
 
@@ -61,9 +61,9 @@ class ConsoleEmailServiceTest {
 
         String output = capturedOut.toString(StandardCharsets.UTF_8);
         assertAll(
-                () -> assertThat(output).contains("PASSWORD RESET EMAIL (simulated) FOR: " + email),
-                () -> assertThat(output).contains("Reset your password: " + resetLink),
-                () -> assertThat(output).contains("------------------------------------------------")
+                () -> assertThat(output).as("password reset header").contains("PASSWORD RESET EMAIL (simulated) FOR: " + email),
+                () -> assertThat(output).as("reset link").contains("Reset your password: " + resetLink),
+                () -> assertThat(output).as("separator line").contains("------------------------------------------------")
         );
     }
 
@@ -73,9 +73,9 @@ class ConsoleEmailServiceTest {
 
         String output = capturedOut.toString(StandardCharsets.UTF_8);
         assertAll(
-                () -> assertThat(output).contains("VERIFICATION STATUS UPDATE (simulated) FOR: user@test.com"),
-                () -> assertThat(output).contains("Status: APPROVED"),
-                () -> assertThat(output).contains("Reason: Looks good")
+                () -> assertThat(output).as("verification header").contains("VERIFICATION STATUS UPDATE (simulated) FOR: user@test.com"),
+                () -> assertThat(output).as("approved status").contains("Status: APPROVED"),
+                () -> assertThat(output).as("reason text").contains("Reason: Looks good")
         );
     }
 
@@ -85,8 +85,8 @@ class ConsoleEmailServiceTest {
 
         String output = capturedOut.toString(StandardCharsets.UTF_8);
         assertAll(
-                () -> assertThat(output).contains("Status: REJECTED"),
-                () -> assertThat(output).contains("Reason: Incomplete profile")
+                () -> assertThat(output).as("rejected status").contains("Status: REJECTED"),
+                () -> assertThat(output).as("rejection reason").contains("Reason: Incomplete profile")
         );
     }
 

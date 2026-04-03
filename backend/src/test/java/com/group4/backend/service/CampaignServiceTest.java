@@ -73,12 +73,12 @@ class CampaignServiceTest {
         CampaignResponse response = campaignService.create(10L, baseRequest);
 
         assertAll(
-                () -> assertThat(response.getId()).isEqualTo(101L),
-                () -> assertThat(response.getUserId()).isEqualTo(10L),
-                () -> assertThat(response.getName()).isEqualTo("Summer Promotion"),
-                () -> assertThat(response.getDescription()).isEqualTo("seasonal campaign"),
-                () -> assertThat(response.getPreferredContentTypes()).isEqualTo("REELS,STORIES"),
-                () -> assertThat(response.getStatus()).isEqualTo(CampaignStatus.DRAFT)
+                () -> assertThat(response.getId()).as("campaign id").isEqualTo(101L),
+                () -> assertThat(response.getUserId()).as("user id").isEqualTo(10L),
+                () -> assertThat(response.getName()).as("trimmed name").isEqualTo("Summer Promotion"),
+                () -> assertThat(response.getDescription()).as("trimmed description").isEqualTo("seasonal campaign"),
+                () -> assertThat(response.getPreferredContentTypes()).as("trimmed content types").isEqualTo("REELS,STORIES"),
+                () -> assertThat(response.getStatus()).as("status").isEqualTo(CampaignStatus.DRAFT)
         );
     }
 
@@ -93,8 +93,8 @@ class CampaignServiceTest {
         CampaignResponse response = campaignService.create(10L, baseRequest);
 
         assertAll(
-                () -> assertThat(response.getDescription()).isNull(),
-                () -> assertThat(response.getPreferredContentTypes()).isNull()
+                () -> assertThat(response.getDescription()).as("blank description normalized to null").isNull(),
+                () -> assertThat(response.getPreferredContentTypes()).as("blank content types normalized to null").isNull()
         );
     }
 
@@ -109,8 +109,8 @@ class CampaignServiceTest {
         CampaignResponse response = campaignService.create(10L, baseRequest);
 
         assertAll(
-                () -> assertThat(response.getDescription()).isNull(),
-                () -> assertThat(response.getPreferredContentTypes()).isNull()
+                () -> assertThat(response.getDescription()).as("null description stays null").isNull(),
+                () -> assertThat(response.getPreferredContentTypes()).as("null content types stays null").isNull()
         );
     }
 
@@ -144,10 +144,10 @@ class CampaignServiceTest {
         List<CampaignResponse> responses = campaignService.findByUserId(10L);
 
         assertAll(
-                () -> assertThat(responses).hasSize(1),
-                () -> assertThat(responses.get(0).getId()).isEqualTo(300L),
-                () -> assertThat(responses.get(0).getName()).isEqualTo("Campaign A"),
-                () -> assertThat(responses.get(0).getBudgetRange()).isEqualTo(BudgetRange.FIVE_K_10K)
+                () -> assertThat(responses).as("result size").hasSize(1),
+                () -> assertThat(responses.get(0).getId()).as("campaign id").isEqualTo(300L),
+                () -> assertThat(responses.get(0).getName()).as("name").isEqualTo("Campaign A"),
+                () -> assertThat(responses.get(0).getBudgetRange()).as("budget range").isEqualTo(BudgetRange.FIVE_K_10K)
         );
     }
 
@@ -159,9 +159,9 @@ class CampaignServiceTest {
         Optional<CampaignResponse> response = campaignService.findById(301L);
 
         assertAll(
-                () -> assertThat(response).isPresent(),
-                () -> assertThat(response.get().getId()).isEqualTo(301L),
-                () -> assertThat(response.get().getStatus()).isEqualTo(CampaignStatus.DRAFT)
+                () -> assertThat(response).as("result present").isPresent(),
+                () -> assertThat(response.get().getId()).as("campaign id").isEqualTo(301L),
+                () -> assertThat(response.get().getStatus()).as("status").isEqualTo(CampaignStatus.DRAFT)
         );
     }
 

@@ -33,11 +33,11 @@ class RelaxedMailConfigSslPortTest {
         JavaMailSenderImpl impl = (JavaMailSenderImpl) javaMailSender;
         Properties props = impl.getJavaMailProperties();
         assertAll(
-                () -> assertThat(impl.getHost()).isEqualTo("smtp.example.com"),
-                () -> assertThat(impl.getPort()).isEqualTo(465),
-                () -> assertThat(props.getProperty("mail.smtp.ssl.enable")).isEqualTo("true"),
-                () -> assertThat(props.getProperty("mail.smtp.starttls.enable")).isNull(),
-                () -> assertThat(props.get("mail.smtp.ssl.socketFactory")).isNotNull()
+                () -> assertThat(impl.getHost()).as("mail host").isEqualTo("smtp.example.com"),
+                () -> assertThat(impl.getPort()).as("mail port").isEqualTo(465),
+                () -> assertThat(props.getProperty("mail.smtp.ssl.enable")).as("SSL enabled").isEqualTo("true"),
+                () -> assertThat(props.getProperty("mail.smtp.starttls.enable")).as("STARTTLS not set").isNull(),
+                () -> assertThat(props.get("mail.smtp.ssl.socketFactory")).as("SSL socket factory present").isNotNull()
         );
     }
 }

@@ -62,10 +62,10 @@ class UserServiceTest {
         List<InfluencerSearchResult> results = userService.listInfluencers();
 
         assertAll(
-                () -> assertThat(results).hasSize(1),
-                () -> assertThat(results.get(0).getId()).isEqualTo(1L),
-                () -> assertThat(results.get(0).getEmail()).isEqualTo("inf1@test.com"),
-                () -> assertThat(results.get(0).getDisplayName()).isEqualTo("Creator One")
+                () -> assertThat(results).as("result size").hasSize(1),
+                () -> assertThat(results.get(0).getId()).as("user id").isEqualTo(1L),
+                () -> assertThat(results.get(0).getEmail()).as("email").isEqualTo("inf1@test.com"),
+                () -> assertThat(results.get(0).getDisplayName()).as("display name from profile").isEqualTo("Creator One")
         );
     }
 
@@ -80,8 +80,8 @@ class UserServiceTest {
         List<InfluencerSearchResult> results = userService.listInfluencers();
 
         assertAll(
-                () -> assertThat(results).hasSize(1),
-                () -> assertThat(results.get(0).getDisplayName()).isEqualTo("inf2@test.com")
+                () -> assertThat(results).as("result size").hasSize(1),
+                () -> assertThat(results.get(0).getDisplayName()).as("display name fallback to email").isEqualTo("inf2@test.com")
         );
     }
 
@@ -101,9 +101,9 @@ class UserServiceTest {
         List<InfluencerSearchResult> results = userService.listInfluencers();
 
         assertAll(
-                () -> assertThat(results).hasSize(2),
-                () -> assertThat(results.get(0).getDisplayName()).isEqualTo("a@test.com"),
-                () -> assertThat(results.get(1).getDisplayName()).isEqualTo("B Name")
+                () -> assertThat(results).as("result size").hasSize(2),
+                () -> assertThat(results.get(0).getDisplayName()).as("first display name").isEqualTo("a@test.com"),
+                () -> assertThat(results.get(1).getDisplayName()).as("second display name").isEqualTo("B Name")
         );
     }
 
@@ -125,8 +125,8 @@ class UserServiceTest {
 
         userService.linkSocialAccount(10L, request);
 
-        assertThat(user.isVerified()).isFalse(); // Should NOT be auto-verified
-        assertThat(profile.getInstagramHandle()).isEqualTo("@creator");
+        assertThat(user.isVerified()).as("verified status unchanged").isFalse();
+        assertThat(profile.getInstagramHandle()).as("instagram handle").isEqualTo("@creator");
         verify(influencerProfileRepository).save(profile);
         verify(userRepository, never()).save(user);
     }
@@ -149,8 +149,8 @@ class UserServiceTest {
 
         userService.linkSocialAccount(20L, request);
 
-        assertThat(user.isVerified()).isFalse(); // Should NOT be auto-verified
-        assertThat(profile.getLinkedInUrl()).isEqualTo("https://linkedin.com/company/test");
+        assertThat(user.isVerified()).as("verified status unchanged").isFalse();
+        assertThat(profile.getLinkedInUrl()).as("linkedin url").isEqualTo("https://linkedin.com/company/test");
         verify(brandProfileRepository).save(profile);
         verify(userRepository, never()).save(user);
     }
@@ -262,6 +262,7 @@ class UserServiceTest {
 
         userService.linkSocialAccount(10L, request);
 
+        assertThat(user.isVerified()).as("verified status unchanged").isFalse();
         verify(influencerProfileRepository, never()).save(any());
     }
 
@@ -279,6 +280,7 @@ class UserServiceTest {
 
         userService.linkSocialAccount(20L, request);
 
+        assertThat(user.isVerified()).as("verified status unchanged").isFalse();
         verify(brandProfileRepository, never()).save(any());
     }
 }
