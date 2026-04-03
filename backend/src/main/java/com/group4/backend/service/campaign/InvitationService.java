@@ -1,5 +1,7 @@
 package com.group4.backend.service.campaign;
 
+import com.group4.backend.dto.campaign.CampaignResponse;
+import com.group4.backend.dto.invitation.InvitationCampaignView;
 import com.group4.backend.dto.invitation.InvitationDetailResponse;
 import com.group4.backend.dto.invitation.InvitationRequest;
 import com.group4.backend.dto.invitation.InvitationResponse;
@@ -143,7 +145,7 @@ public class InvitationService {
 
         InvitationDetailResponse detail = toDetailResponse(inv);
         campaignService.findById(inv.getCampaignId()).ifPresent(c -> {
-            detail.setCampaign(c);
+            detail.setCampaign(toInvitationCampaignView(c));
             detail.setCampaignName(c.getName());
         });
         enrichDetailWithProfiles(detail, inv);
@@ -382,6 +384,24 @@ public class InvitationService {
     }
 
     /** Enrich a single detail response with profile data. */
+    private static InvitationCampaignView toInvitationCampaignView(CampaignResponse c) {
+        InvitationCampaignView v = new InvitationCampaignView();
+        v.setId(c.getId());
+        v.setUserId(c.getUserId());
+        v.setName(c.getName());
+        v.setDescription(c.getDescription());
+        v.setBudgetRange(c.getBudgetRange());
+        v.setStatus(c.getStatus());
+        v.setCampaignGoal(c.getCampaignGoal());
+        v.setPreferredContentTypes(c.getPreferredContentTypes());
+        v.setStartDate(c.getStartDate());
+        v.setEndDate(c.getEndDate());
+        v.setNumberOfInfluencers(c.getNumberOfInfluencers());
+        v.setCreatedAt(c.getCreatedAt());
+        v.setUpdatedAt(c.getUpdatedAt());
+        return v;
+    }
+
     private void enrichDetailWithProfiles(InvitationDetailResponse r, CollaborationInvitation inv) {
         brandProfileRepository.findByUserId(inv.getBrandId()).ifPresent(bp -> {
             r.setBrandName(bp.getName());

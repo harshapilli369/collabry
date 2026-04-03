@@ -9,6 +9,7 @@ import com.group4.backend.dto.auth.SignupResponse;
 import com.group4.backend.dto.auth.TokenRequest;
 import com.group4.backend.dto.campaign.CampaignRequest;
 import com.group4.backend.dto.campaign.CampaignResponse;
+import com.group4.backend.dto.invitation.InvitationCampaignView;
 import com.group4.backend.dto.invitation.InvitationDetailResponse;
 import com.group4.backend.dto.invitation.InvitationRequest;
 import com.group4.backend.dto.invitation.InvitationResponse;
@@ -199,6 +200,7 @@ class DtoBranchCoverageTest {
                 CampaignRequest.class,
                 CampaignResponse.class,
                 InfluencerRecommendationDTO.class,
+                InvitationCampaignView.class,
                 InfluencerProfileRequest.class,
                 InfluencerProfileResponse.class,
                 InfluencerSearchResult.class,
@@ -288,6 +290,12 @@ class DtoBranchCoverageTest {
                 c.setId(42L);
                 c.setName("n");
                 return c;
+            }
+            if (type == InvitationCampaignView.class) {
+                InvitationCampaignView v = new InvitationCampaignView();
+                v.setId(42L);
+                v.setName("n");
+                return v;
             }
             throw new IllegalArgumentException("Add sample for property type: " + type.getName());
         }
