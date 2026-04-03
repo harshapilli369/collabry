@@ -185,6 +185,127 @@ class BrandProfileServiceTest {
         assertThat(result).isEmpty();
     }
 
+    @Test
+    void createOrUpdateForUser_websiteWithHttpPrefix_keepsAsIs() {
+        BrandProfileRequest request = validRequest();
+        request.setWebsite("http://acme.com");
+        when(userRepository.findById(10L)).thenReturn(Optional.of(brandUser));
+        when(brandProfileRepository.findByUserId(10L)).thenReturn(Optional.empty());
+        when(brandProfileRepository.save(any(BrandProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
+
+        assertThat(response.getWebsite()).isEqualTo("http://acme.com");
+    }
+
+    @Test
+    void createOrUpdateForUser_websiteWithFtpPrefix_keepsAsIs() {
+        BrandProfileRequest request = validRequest();
+        request.setWebsite("ftp://files.acme.com");
+        when(userRepository.findById(10L)).thenReturn(Optional.of(brandUser));
+        when(brandProfileRepository.findByUserId(10L)).thenReturn(Optional.empty());
+        when(brandProfileRepository.save(any(BrandProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
+
+        assertThat(response.getWebsite()).isEqualTo("ftp://files.acme.com");
+    }
+
+    @Test
+    void createOrUpdateForUser_websiteNull_storesNull() {
+        BrandProfileRequest request = validRequest();
+        request.setWebsite(null);
+        when(userRepository.findById(10L)).thenReturn(Optional.of(brandUser));
+        when(brandProfileRepository.findByUserId(10L)).thenReturn(Optional.empty());
+        when(brandProfileRepository.save(any(BrandProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
+
+        assertThat(response.getWebsite()).isNull();
+    }
+
+    @Test
+    void createOrUpdateForUser_websiteEmpty_storesEmpty() {
+        BrandProfileRequest request = validRequest();
+        request.setWebsite("   ");
+        when(userRepository.findById(10L)).thenReturn(Optional.of(brandUser));
+        when(brandProfileRepository.findByUserId(10L)).thenReturn(Optional.empty());
+        when(brandProfileRepository.save(any(BrandProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
+
+        assertThat(response.getWebsite()).isEmpty();
+    }
+
+    @Test
+    void createOrUpdateForUser_emptyOptionalFields_storedAsNull() {
+        BrandProfileRequest request = validRequest();
+        request.setLogoUrl("   ");
+        request.setDescription("");
+        request.setInstagramUrl("   ");
+        request.setLinkedInUrl("");
+        request.setTwitterUrl("   ");
+        when(userRepository.findById(10L)).thenReturn(Optional.of(brandUser));
+        when(brandProfileRepository.findByUserId(10L)).thenReturn(Optional.empty());
+        when(brandProfileRepository.save(any(BrandProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
+
+        assertAll(
+                () -> assertThat(response.getLogoUrl()).isNull(),
+                () -> assertThat(response.getDescription()).isNull(),
+                () -> assertThat(response.getInstagramUrl()).isNull(),
+                () -> assertThat(response.getLinkedInUrl()).isNull(),
+                () -> assertThat(response.getTwitterUrl()).isNull()
+        );
+    }
+
+    @Test
+    void createOrUpdateForUser_nullOptionalFields_storedAsNull() {
+        BrandProfileRequest request = validRequest();
+        request.setLogoUrl(null);
+        request.setDescription(null);
+        request.setInstagramUrl(null);
+        request.setLinkedInUrl(null);
+        request.setTwitterUrl(null);
+        when(userRepository.findById(10L)).thenReturn(Optional.of(brandUser));
+        when(brandProfileRepository.findByUserId(10L)).thenReturn(Optional.empty());
+        when(brandProfileRepository.save(any(BrandProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
+
+        assertAll(
+                () -> assertThat(response.getLogoUrl()).isNull(),
+                () -> assertThat(response.getDescription()).isNull(),
+                () -> assertThat(response.getInstagramUrl()).isNull(),
+                () -> assertThat(response.getLinkedInUrl()).isNull(),
+                () -> assertThat(response.getTwitterUrl()).isNull()
+        );
+    }
+
+    @Test
+    void createOrUpdateForUser_withAllOptionalFields_storesAll() {
+        BrandProfileRequest request = validRequest();
+        request.setLogoUrl("https://logo.test/brand.png");
+        request.setDescription("A great brand");
+        request.setInstagramUrl("https://instagram.com/brand");
+        request.setLinkedInUrl("https://linkedin.com/company/brand");
+        request.setTwitterUrl("https://twitter.com/brand");
+        when(userRepository.findById(10L)).thenReturn(Optional.of(brandUser));
+        when(brandProfileRepository.findByUserId(10L)).thenReturn(Optional.empty());
+        when(brandProfileRepository.save(any(BrandProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        BrandProfileResponse response = brandProfileService.createOrUpdateForUser(10L, request);
+
+        assertAll(
+                () -> assertThat(response.getLogoUrl()).isEqualTo("https://logo.test/brand.png"),
+                () -> assertThat(response.getDescription()).isEqualTo("A great brand"),
+                () -> assertThat(response.getInstagramUrl()).isEqualTo("https://instagram.com/brand"),
+                () -> assertThat(response.getLinkedInUrl()).isEqualTo("https://linkedin.com/company/brand"),
+                () -> assertThat(response.getTwitterUrl()).isEqualTo("https://twitter.com/brand")
+        );
+    }
+
     private static BrandProfileRequest validRequest() {
         BrandProfileRequest r = new BrandProfileRequest();
         r.setName("Acme Inc");
