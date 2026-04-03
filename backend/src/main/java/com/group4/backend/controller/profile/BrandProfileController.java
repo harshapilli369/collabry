@@ -1,5 +1,6 @@
-package com.group4.backend.controller;
+package com.group4.backend.controller.profile;
 
+import com.group4.backend.controller.support.CurrentUserProvider;
 import com.group4.backend.dto.profile.BrandProfileRequest;
 import com.group4.backend.dto.profile.BrandProfileResponse;
 import com.group4.backend.model.Role;

@@ -1,6 +1,7 @@
-package com.group4.backend.controller;
+package com.group4.backend.controller.payment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group4.backend.controller.support.CurrentUserProvider;
 import com.group4.backend.dto.payment.PaymentRequest;
 import com.group4.backend.dto.payment.PaymentResponse;
 import com.group4.backend.model.PaymentStatus;

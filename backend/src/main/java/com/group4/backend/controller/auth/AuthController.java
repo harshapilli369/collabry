@@ -1,4 +1,4 @@
-package com.group4.backend.controller;
+package com.group4.backend.controller.auth;
 
 import com.group4.backend.dto.auth.AuthResponse;
 import com.group4.backend.dto.auth.LoginRequest;

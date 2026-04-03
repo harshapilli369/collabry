@@ -1,7 +1,8 @@
-package com.group4.backend.controller;
+package com.group4.backend.controller.campaign;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group4.backend.dto.campaign.CampaignResponse;
+import com.group4.backend.controller.support.CurrentUserProvider;
+import com.group4.backend.dto.invitation.InvitationCampaignView;
 import com.group4.backend.dto.invitation.InvitationDetailResponse;
 import com.group4.backend.dto.invitation.InvitationResponse;
 import com.group4.backend.dto.invitation.NegotiationRequest;
@@ -93,7 +94,7 @@ class InvitationControllerTest {
         InvitationDetailResponse detail = new InvitationDetailResponse();
         detail.setId(100L);
         detail.setStatus(InvitationStatus.PENDING);
-        CampaignResponse campaign = new CampaignResponse();
+        InvitationCampaignView campaign = new InvitationCampaignView();
         campaign.setId(1L);
         campaign.setName("Test Campaign");
         detail.setCampaign(campaign);

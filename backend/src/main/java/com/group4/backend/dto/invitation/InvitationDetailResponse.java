@@ -1,6 +1,5 @@
 package com.group4.backend.dto.invitation;
 
-import com.group4.backend.dto.campaign.CampaignResponse;
 import com.group4.backend.model.InvitationStatus;
 
 import java.math.BigDecimal;
@@ -22,7 +21,7 @@ public class InvitationDetailResponse {
     private Instant createdAt;
     private Instant updatedAt;
     private Instant respondedAt;
-    private CampaignResponse campaign;
+    private InvitationCampaignView campaign;
 
     // Brand profile fields
     private String brandName;
@@ -69,8 +68,8 @@ public class InvitationDetailResponse {
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
     public Instant getRespondedAt() { return respondedAt; }
     public void setRespondedAt(Instant respondedAt) { this.respondedAt = respondedAt; }
-    public CampaignResponse getCampaign() { return campaign; }
-    public void setCampaign(CampaignResponse campaign) { this.campaign = campaign; }
+    public InvitationCampaignView getCampaign() { return campaign; }
+    public void setCampaign(InvitationCampaignView campaign) { this.campaign = campaign; }
 
     public String getBrandName() { return brandName; }
     public void setBrandName(String brandName) { this.brandName = brandName; }
