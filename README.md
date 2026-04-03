@@ -14,6 +14,8 @@ Collabry is a full-stack web application that connects **brands** with **influen
 - [Build Instructions](#build-instructions)
 - [Deployment Instructions](#deployment-instructions)
 - [Usage Scenarios](#usage-scenarios)
+- [Design Principles](#design-principles)
+- [Code Smells Reasoning Report](#code-smells-reasoning-report)
 - [Project Structure](#project-structure)
 - [Configuration](#configuration)
 - [Testing](#testing)
@@ -360,7 +362,32 @@ docker run -d --name my-app -p 8073:8073 <previous-image-tag>
 
 ## Usage Scenarios
 
-[View Usage Scenarios](./USAGE.md)
+The usage scenario report documents end-to-end user workflows for brands, influencers, and administrators — including campaign creation, collaboration lifecycle, payments, and AI features.
+
+[View Usage Scenario Report (PDF)](./quality/collabry-usage-scenario-report.pdf)
+
+---
+
+## Design Principles
+
+Collabry follows a strict **Layered Architecture** with full adherence to **SOLID principles**, ensuring high cohesion, loose coupling, and clean separation of concerns across controllers, services, repositories, and domain models. The design report covers SRP, OCP, LSP, ISP, DIP with concrete code examples, LCOM/CBO metrics, applied architectural patterns (DTO, Strategy, Repository, Specification), and clean code practices.
+
+[View Design Principles Report](./quality/Design_Principals.md)
+
+---
+
+## Code Smells Reasoning Report
+
+The code smells analysis was performed using DesigniteJava to identify architecture, design, implementation, and test smells across the codebase. Each identified smell includes a rationale explaining whether it was accepted, refactored, or flagged for future improvement.
+
+| Report | Description |
+|--------|-------------|
+| [Architecture Smells](./quality/Smells_Reasoning_Report/ArchitectureSmells_with_rationale.csv) | Package-level structural issues |
+| [Design Smells](./quality/Smells_Reasoning_Report/DesignSmells_with_rationale.csv) | Class-level design issues |
+| [Implementation Smells](./quality/Smells_Reasoning_Report/ImplementationSmells_with_rationale.csv) | Method-level code issues |
+| [Test Smells](./quality/Smells_Reasoning_Report/TestSmells_Updated.csv) | Test quality issues |
+
+[View All Smell Reports](./quality/Smells_Reasoning_Report/)
 
 ---
 
