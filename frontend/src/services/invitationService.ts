@@ -246,8 +246,8 @@ export async function createInvitation(campaignId: number, request: InvitationRe
         body: JSON.stringify(request),
     });
     if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.message || 'Failed to send invitation');
+        const data = await response.json().catch(() => ({})) as { message?: string; error?: string };
+        throw new Error(data.message || data.error || 'Failed to send invitation');
     }
     return response.json();
 }

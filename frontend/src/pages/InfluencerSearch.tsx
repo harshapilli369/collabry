@@ -62,13 +62,31 @@ export const InfluencerSearch = () => {
     }
 
     const onInviteSubmit = async (values: InvitationRequest & { campaignId?: number; expiresInDays?: number }) => {
-        if (!values.campaignId || !selectedInfluencer) return
+        if (!selectedInfluencer) {
+            message.error('No influencer selected.')
+            return
+        }
+        const influencerUserId = selectedInfluencer.userId
+        if (influencerUserId == null) {
+            message.error('Influencer account id is missing. Run search again and retry.')
+            return
+        }
+        const rawCampaignId = values.campaignId
+        if (rawCampaignId === undefined || rawCampaignId === null) {
+            message.warning('Select a campaign.')
+            return
+        }
+        const campaignId = typeof rawCampaignId === 'number' ? rawCampaignId : Number(rawCampaignId)
+        if (!Number.isFinite(campaignId)) {
+            message.error('Invalid campaign.')
+            return
+        }
         setInviteSubmitting(true)
         try {
-            await createInvitation(values.campaignId, {
-                influencerId: selectedInfluencer.userId,
+            await createInvitation(campaignId, {
+                influencerId: influencerUserId,
                 message: values.message?.trim() || undefined,
-                proposedAmount: values.proposedAmount,
+                proposedAmount: values.proposedAmount ?? undefined,
                 proposedTimeline: values.proposedTimeline?.trim() || undefined,
                 proposedDeliverables: values.proposedDeliverables?.trim() || undefined,
                 platform: values.platform || undefined,
@@ -198,6 +216,7 @@ export const InfluencerSearch = () => {
                 footer={null}
                 destroyOnClose
                 width={560}
+                key={selectedInfluencer?.userId ?? 'invite-modal'}
             >
                 <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>
                     <Form.Item name="campaignId" label="Campaign" rules={[{ required: true, message: 'Select a campaign' }]}>
@@ -225,7 +244,15 @@ export const InfluencerSearch = () => {
                         <InputNumber min={1} max={90} style={{ width: '100%' }} />
                     </Form.Item>
                     <Form.Item>
-                        <Button type="primary" htmlType="submit" loading={inviteSubmitting} style={{ color: '#000000' }}>Send invitation</Button>
+                        <Button
+                            type="primary"
+                            htmlType="button"
+                            loading={inviteSubmitting}
+                            style={{ color: '#000000' }}
+                            onClick={() => inviteForm.submit()}
+                        >
+                            Send invitation
+                        </Button>
                         <Button style={{ marginLeft: 8 }} onClick={closeInviteModal}>Cancel</Button>
                     </Form.Item>
                 </Form>
