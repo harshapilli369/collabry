@@ -16,6 +16,7 @@ Collabry is a full-stack web application that connects **brands** with **influen
 - [Usage Scenarios](#usage-scenarios)
 - [Design Principles](#design-principles)
 - [Code Smells Reasoning Report](#code-smells-reasoning-report)
+- [TDD (Test-Driven Development)](#tdd-test-driven-development)
 - [Project Structure](#project-structure)
 - [Configuration](#configuration)
 - [Testing](#testing)
@@ -388,6 +389,63 @@ The code smells analysis was performed using DesigniteJava to identify architect
 | [Test Smells](./quality/Smells_Reasoning_Report/TestSmells_Updated.csv) | Test quality issues |
 
 [View All Smell Reports](./quality/Smells_Reasoning_Report/)
+
+---
+
+## TDD (Test-Driven Development)
+
+The project followed a **Red-Green-Refactor** TDD workflow for key features. Tests were written first (Red — failing tests), then the minimal implementation was added to make them pass (Green), followed by cleanup (Refactor). The commit history below demonstrates this discipline with explicitly tagged commits.
+
+### 1. Collaboration Invitation Lifecycle
+
+| Phase | Commit | Description |
+|-------|--------|-------------|
+| RED | `ef96285` | [RED] InvitationService create, respond, negotiate, history |
+| GREEN | `d217ff8` | [GREEN] InvitationService create, respond, negotiate, history |
+
+### 2. Verified Brand Campaign Restriction
+
+| Phase | Commit | Description |
+|-------|--------|-------------|
+| RED | `ba84d09` | [RED] Restricted Campaign creation to verified brands |
+| GREEN | `2bfbccc` | [GREEN] Move isVerified to User model and restrict CampaignController |
+
+### 3. AI Recommendation Service
+
+| Phase | Commit | Description |
+|-------|--------|-------------|
+| RED | `e41c958` | [RED] AiRecommendationService stub and failing test |
+| GREEN | `314f6d3` | [GREEN] AiRecommendationService JSON parser implementation |
+
+### 4. AI Recommendations API Endpoint
+
+| Phase | Commit | Description |
+|-------|--------|-------------|
+| RED | `12f84f5` | [RED] CampaignController AI recommendations endpoint test |
+| GREEN | `33c95f1` | [GREEN] CampaignController AI recommendations endpoint |
+
+### 5. Brand Rating System
+
+| Phase | Commit | Description |
+|-------|--------|-------------|
+| RED | `ad119d0` | [RED] Brand rate influencer after collaboration; rating on profile |
+| GREEN | `18ce8ac` | [GREEN] Brand rate influencer after collaboration; rating on profile |
+
+### 6. Campaign Description Generation (AI)
+
+| Phase | Commit | Description |
+|-------|--------|-------------|
+| RED | `7038c41` | [RED] CampaignController generate-description endpoint test |
+| GREEN | `b2955b4` | [GREEN] CampaignController generate-description endpoint |
+
+### 7. Cloudinary Image Upload (Full Red-Green-Refactor)
+
+| Phase | Commit | Description |
+|-------|--------|-------------|
+| RED | `d66db57` | [TDD Red] add failing tests for CloudinaryService and ImageUploadController |
+| GREEN | `aaaa49a` | [TDD Green] implement Cloudinary image upload to satisfy all Red tests |
+| REFACTOR | `4df2ade` | [TDD Refactor] replace URL text inputs with direct file upload UI |
+| FIX | `345f458` | [TDD Fix] correct unauthenticated POST expectation from 401 to 403 |
 
 ---
 
