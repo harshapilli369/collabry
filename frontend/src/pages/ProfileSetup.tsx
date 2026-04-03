@@ -559,6 +559,10 @@ export const ProfileSetup = () => {
                                         try {
                                             const fields = current === 0 ? ['name', 'age', 'location', 'niche'] : []
                                             if (fields.length) await form.validateFields(fields)
+                                            if (current === 1 && !hasSocialHandle(form.getFieldsValue())) {
+                                                notification.error({ message: 'At least one social media handle is required', placement: 'topRight' })
+                                                return
+                                            }
                                             setCurrent(current + 1)
                                         } catch {
                                             /* validation failed */
