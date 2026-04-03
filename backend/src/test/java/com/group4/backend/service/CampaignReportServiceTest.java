@@ -85,8 +85,8 @@ class CampaignReportServiceTest {
         byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
 
         String pdfText = new String(bytes);
-        assertThat(pdfText).startsWith("%PDF-");
-        assertThat(bytes.length).isGreaterThan(200);
+        assertThat(pdfText).as("pdf starts with header").startsWith("%PDF-");
+        assertThat(bytes.length).as("pdf byte length exceeds minimum").isGreaterThan(200);
     }
 
     @Test
@@ -112,8 +112,8 @@ class CampaignReportServiceTest {
 
         byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
 
-        assertThat(bytes).isNotEmpty();
-        assertThat(new String(bytes)).startsWith("%PDF-");
+        assertThat(bytes).as("pdf bytes not empty").isNotEmpty();
+        assertThat(new String(bytes)).as("pdf starts with header").startsWith("%PDF-");
     }
 
     @Test
@@ -136,8 +136,8 @@ class CampaignReportServiceTest {
         byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
 
         String pdf = new String(bytes);
-        assertThat(pdf).contains("Jane Doe");
-        assertThat(pdf).contains("influencer@test.com");
+        assertThat(pdf).as("pdf contains influencer name").contains("Jane Doe");
+        assertThat(pdf).as("pdf contains influencer email").contains("influencer@test.com");
     }
 
     @Test
@@ -209,9 +209,9 @@ class CampaignReportServiceTest {
         byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
 
         String pdf = new String(bytes);
-        assertThat(pdf).contains("Total scheduled: $800");
-        assertThat(pdf).contains("Total paid: $500");
-        assertThat(pdf).contains("Outstanding: $300");
+        assertThat(pdf).as("total scheduled amount").contains("Total scheduled: $800");
+        assertThat(pdf).as("total paid amount").contains("Total paid: $500");
+        assertThat(pdf).as("outstanding amount").contains("Outstanding: $300");
     }
 
     @Test
@@ -229,8 +229,8 @@ class CampaignReportServiceTest {
         byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
 
         String pdf = new String(bytes);
-        assertThat(pdf).contains("Goal: -");
-        assertThat(pdf).contains("Budget range: -");
+        assertThat(pdf).as("goal shows dash for null").contains("Goal: -");
+        assertThat(pdf).as("budget range shows dash for null").contains("Budget range: -");
     }
 
     @Test
@@ -242,8 +242,8 @@ class CampaignReportServiceTest {
         byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
 
         String pdf = new String(bytes);
-        assertThat(pdf).contains("\\(with\\)");
-        assertThat(pdf).contains("\\\\backslash");
+        assertThat(pdf).as("parentheses escaped").contains("\\(with\\)");
+        assertThat(pdf).as("backslash escaped").contains("\\\\backslash");
     }
 
     @Test

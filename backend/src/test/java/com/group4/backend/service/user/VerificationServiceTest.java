@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import org.mockito.ArgumentCaptor;
 
 @ExtendWith(MockitoExtension.class)
 class VerificationServiceTest {
@@ -55,9 +56,11 @@ class VerificationServiceTest {
 
         verificationService.createRequest(1L);
 
-        verify(verificationRequestRepository).save(argThat(req -> 
-            req.getUserId().equals(1L) && req.getStatus() == VerificationRequestStatus.PENDING
-        ));
+        ArgumentCaptor<VerificationRequest> captor = ArgumentCaptor.forClass(VerificationRequest.class);
+        verify(verificationRequestRepository).save(captor.capture());
+        VerificationRequest saved = captor.getValue();
+        assertThat(saved.getUserId()).as("saved user id").isEqualTo(1L);
+        assertThat(saved.getStatus()).as("saved status").isEqualTo(VerificationRequestStatus.PENDING);
     }
 
     @Test
@@ -97,10 +100,10 @@ class VerificationServiceTest {
 
         verificationService.processRequest(100L, processRequest);
 
-        assertThat(request.getStatus()).isEqualTo(VerificationRequestStatus.APPROVED);
-        assertThat(user.isVerified()).isTrue();
-        assertThat(brand.isVerified()).isTrue();
-        
+        assertThat(request.getStatus()).as("request status after approval").isEqualTo(VerificationRequestStatus.APPROVED);
+        assertThat(user.isVerified()).as("user verified after approval").isTrue();
+        assertThat(brand.isVerified()).as("brand profile verified after approval").isTrue();
+
         verify(verificationRequestRepository).save(request);
         verify(userRepository).save(user);
         verify(brandProfileRepository).save(brand);
@@ -126,9 +129,9 @@ class VerificationServiceTest {
 
         verificationService.processRequest(100L, processRequest);
 
-        assertThat(request.getStatus()).isEqualTo(VerificationRequestStatus.REJECTED);
-        assertThat(request.getAdminReason()).isEqualTo("Incomplete profile");
-        assertThat(user.isVerified()).isFalse();
+        assertThat(request.getStatus()).as("request status after rejection").isEqualTo(VerificationRequestStatus.REJECTED);
+        assertThat(request.getAdminReason()).as("admin rejection reason").isEqualTo("Incomplete profile");
+        assertThat(user.isVerified()).as("user not verified after rejection").isFalse();
 
         verify(verificationRequestRepository).save(request);
         verify(emailService).sendVerificationStatusEmail("brand@test.com", false, "Incomplete profile");
@@ -149,10 +152,10 @@ class VerificationServiceTest {
 
         java.util.List<com.group4.backend.dto.admin.AdminVerificationRequestDto> results = verificationService.listPendingRequests();
 
-        assertThat(results).hasSize(1);
-        assertThat(results.get(0).getUserEmail()).isEqualTo("influencer@test.com");
-        assertThat(results.get(0).getUserRole()).isEqualTo(Role.INFLUENCER);
-        assertThat(results.get(0).getId()).isEqualTo(200L);
+        assertThat(results).as("results size").hasSize(1);
+        assertThat(results.get(0).getUserEmail()).as("user email").isEqualTo("influencer@test.com");
+        assertThat(results.get(0).getUserRole()).as("user role").isEqualTo(Role.INFLUENCER);
+        assertThat(results.get(0).getId()).as("request id").isEqualTo(200L);
     }
 
     @Test
@@ -168,9 +171,9 @@ class VerificationServiceTest {
 
         var results = verificationService.listPendingRequests();
 
-        assertThat(results).hasSize(1);
-        assertThat(results.get(0).getUserEmail()).isEqualTo("Unknown");
-        assertThat(results.get(0).getUserRole()).isNull();
+        assertThat(results).as("results size").hasSize(1);
+        assertThat(results.get(0).getUserEmail()).as("fallback email").isEqualTo("Unknown");
+        assertThat(results.get(0).getUserRole()).as("fallback role null").isNull();
     }
 
     @Test
@@ -195,8 +198,8 @@ class VerificationServiceTest {
 
         Optional<VerificationStatusResponse> result = verificationService.getLatestRequest(1L);
 
-        assertThat(result).isPresent();
-        assertThat(result.get().getStatus()).isEqualTo(VerificationRequestStatus.PENDING);
+        assertThat(result).as("latest request present").isPresent();
+        assertThat(result.get().getStatus()).as("latest request status").isEqualTo(VerificationRequestStatus.PENDING);
     }
 
     @Test
@@ -259,9 +262,9 @@ class VerificationServiceTest {
 
         verificationService.processRequest(200L, processRequest);
 
-        assertThat(request.getStatus()).isEqualTo(VerificationRequestStatus.APPROVED);
-        assertThat(user.isVerified()).isTrue();
-        assertThat(profile.isVerified()).isTrue();
+        assertThat(request.getStatus()).as("request status after influencer approval").isEqualTo(VerificationRequestStatus.APPROVED);
+        assertThat(user.isVerified()).as("user verified after approval").isTrue();
+        assertThat(profile.isVerified()).as("influencer profile verified after approval").isTrue();
 
         verify(influencerProfileRepository).save(profile);
         verify(userRepository).save(user);

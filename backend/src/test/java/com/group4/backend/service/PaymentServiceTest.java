@@ -73,12 +73,12 @@ class PaymentServiceTest {
         PaymentResponse response = paymentService.createPayment(10L, request);
 
         assertAll(
-                () -> assertThat(response.getId()).isEqualTo(99L),
-                () -> assertThat(response.getStatus()).isEqualTo(PaymentStatus.PENDING),
-                () -> assertThat(response.getMilestoneName()).isEqualTo("Publish Reel"),
-                () -> assertThat(response.getNotes()).isNull(),
-                () -> assertThat(response.getInvoiceNumber()).startsWith("INV-"),
-                () -> assertThat(response.getCampaignName()).isEqualTo("Spring Launch")
+                () -> assertThat(response.getId()).as("payment id").isEqualTo(99L),
+                () -> assertThat(response.getStatus()).as("status").isEqualTo(PaymentStatus.PENDING),
+                () -> assertThat(response.getMilestoneName()).as("trimmed milestone name").isEqualTo("Publish Reel"),
+                () -> assertThat(response.getNotes()).as("blank notes normalized to null").isNull(),
+                () -> assertThat(response.getInvoiceNumber()).as("invoice number prefix").startsWith("INV-"),
+                () -> assertThat(response.getCampaignName()).as("campaign name").isEqualTo("Spring Launch")
         );
     }
 
@@ -143,9 +143,9 @@ class PaymentServiceTest {
         List<PaymentResponse> responses = paymentService.getPaymentsForInfluencer(22L);
 
         assertAll(
-                () -> assertThat(responses).hasSize(1),
-                () -> assertThat(responses.get(0).getCampaignName()).isEqualTo("Spring Launch"),
-                () -> assertThat(responses.get(0).getInfluencerId()).isEqualTo(22L)
+                () -> assertThat(responses).as("result size").hasSize(1),
+                () -> assertThat(responses.get(0).getCampaignName()).as("campaign name").isEqualTo("Spring Launch"),
+                () -> assertThat(responses.get(0).getInfluencerId()).as("influencer id").isEqualTo(22L)
         );
     }
 
@@ -178,9 +178,9 @@ class PaymentServiceTest {
         List<PaymentResponse> responses = paymentService.getPaymentsForCampaign(1L, 10L);
 
         assertAll(
-                () -> assertThat(responses).hasSize(1),
-                () -> assertThat(responses.get(0).getId()).isEqualTo(200L),
-                () -> assertThat(responses.get(0).getCampaignName()).isEqualTo("Spring Launch")
+                () -> assertThat(responses).as("result size").hasSize(1),
+                () -> assertThat(responses.get(0).getId()).as("payment id").isEqualTo(200L),
+                () -> assertThat(responses.get(0).getCampaignName()).as("campaign name").isEqualTo("Spring Launch")
         );
     }
 
@@ -214,8 +214,8 @@ class PaymentServiceTest {
         PaymentResponse response = paymentService.updatePaymentStatus(1L, PaymentStatus.PAID, 10L);
 
         assertAll(
-                () -> assertThat(response.getStatus()).isEqualTo(PaymentStatus.PAID),
-                () -> assertThat(response.getPaidDate()).isEqualTo(LocalDate.now())
+                () -> assertThat(response.getStatus()).as("status").isEqualTo(PaymentStatus.PAID),
+                () -> assertThat(response.getPaidDate()).as("paid date").isEqualTo(LocalDate.now())
         );
     }
 
@@ -229,8 +229,8 @@ class PaymentServiceTest {
         PaymentResponse response = paymentService.updatePaymentStatus(1L, PaymentStatus.PROCESSING, 10L);
 
         assertAll(
-                () -> assertThat(response.getStatus()).isEqualTo(PaymentStatus.PROCESSING),
-                () -> assertThat(response.getPaidDate()).isNull()
+                () -> assertThat(response.getStatus()).as("status").isEqualTo(PaymentStatus.PROCESSING),
+                () -> assertThat(response.getPaidDate()).as("paid date null for non-paid").isNull()
         );
     }
 
@@ -249,9 +249,9 @@ class PaymentServiceTest {
         List<PaymentResponse> responses = paymentService.getDelayedPayments(10L);
 
         assertAll(
-                () -> assertThat(overdueOwned.getStatus()).isEqualTo(PaymentStatus.DELAYED),
-                () -> assertThat(responses).hasSize(1),
-                () -> assertThat(responses.get(0).getStatus()).isEqualTo(PaymentStatus.DELAYED)
+                () -> assertThat(overdueOwned.getStatus()).as("overdue status updated").isEqualTo(PaymentStatus.DELAYED),
+                () -> assertThat(responses).as("result size").hasSize(1),
+                () -> assertThat(responses.get(0).getStatus()).as("response status").isEqualTo(PaymentStatus.DELAYED)
         );
         verify(paymentRepository).saveAll(anyList());
     }
@@ -285,9 +285,9 @@ class PaymentServiceTest {
         PaymentResponse brandResponse = paymentService.getInvoice(44L, 10L);
 
         assertAll(
-                () -> assertThat(influencerResponse.getId()).isEqualTo(44L),
-                () -> assertThat(brandResponse.getId()).isEqualTo(44L),
-                () -> assertThat(brandResponse.getCampaignName()).isEqualTo("Spring Launch")
+                () -> assertThat(influencerResponse.getId()).as("influencer access payment id").isEqualTo(44L),
+                () -> assertThat(brandResponse.getId()).as("brand access payment id").isEqualTo(44L),
+                () -> assertThat(brandResponse.getCampaignName()).as("campaign name").isEqualTo("Spring Launch")
         );
     }
 

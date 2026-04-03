@@ -69,12 +69,12 @@ class RegistrationServiceTest {
         verify(pendingSignupRepository).save(pendingCaptor.capture());
         PendingSignup saved = pendingCaptor.getValue();
         assertAll(
-                () -> assertThat(saved.getEmail()).isEqualTo("brand@test.com"),
-                () -> assertThat(saved.getEncodedPassword()).isEqualTo("encodedPass"),
-                () -> assertThat(saved.getRole()).isEqualTo(Role.BRAND),
-                () -> assertThat(saved.getToken()).isNotBlank(),
-                () -> assertThat(saved.getExpiresAt()).isAfter(Instant.now()),
-                () -> assertThat(response.getMessage()).contains("Check your email to confirm your account")
+                () -> assertThat(saved.getEmail()).as("email").isEqualTo("brand@test.com"),
+                () -> assertThat(saved.getEncodedPassword()).as("encoded password").isEqualTo("encodedPass"),
+                () -> assertThat(saved.getRole()).as("role").isEqualTo(Role.BRAND),
+                () -> assertThat(saved.getToken()).as("token not blank").isNotBlank(),
+                () -> assertThat(saved.getExpiresAt()).as("expiry in future").isAfter(Instant.now()),
+                () -> assertThat(response.getMessage()).as("response message").contains("Check your email to confirm your account")
         );
         verify(emailService).sendConfirmationEmail(anyString(), anyString());
     }
@@ -129,11 +129,11 @@ class RegistrationServiceTest {
         AuthResponse response = registrationService.confirmEmail("token-123");
 
         assertAll(
-                () -> assertThat(response.getToken()).isEqualTo("jwt-token"),
-                () -> assertThat(response.getEmail()).isEqualTo("brand@test.com"),
-                () -> assertThat(response.getId()).isEqualTo(77L),
-                () -> assertThat(response.getRole()).isEqualTo(Role.BRAND),
-                () -> assertThat(response.isVerified()).isTrue()
+                () -> assertThat(response.getToken()).as("jwt token").isEqualTo("jwt-token"),
+                () -> assertThat(response.getEmail()).as("email").isEqualTo("brand@test.com"),
+                () -> assertThat(response.getId()).as("user id").isEqualTo(77L),
+                () -> assertThat(response.getRole()).as("role").isEqualTo(Role.BRAND),
+                () -> assertThat(response.isVerified()).as("verified flag").isTrue()
         );
         verify(pendingSignupRepository).delete(pending);
     }

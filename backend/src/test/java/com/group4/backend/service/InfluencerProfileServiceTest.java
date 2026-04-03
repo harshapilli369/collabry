@@ -95,13 +95,13 @@ class InfluencerProfileServiceTest {
         List<InfluencerProfileResponse> result = influencerProfileService.search(new InfluencerSearchFilter(null, null, null, null, null, null));
 
         assertAll(
-                () -> assertThat(result).hasSize(1),
-                () -> assertThat(result.get(0).getName()).isEqualTo("Jane"),
-                () -> assertThat(result.get(0).getNiche()).isEqualTo("Fashion"),
-                () -> assertThat(result.get(0).getLocation()).isEqualTo("New York"),
-                () -> assertThat(result.get(0).getFollowerCount()).isEqualTo(50000L),
-                () -> assertThat(result.get(0).getEngagementRate()).isEqualByComparingTo("3.5"),
-                () -> assertThat(result.get(0).isComplete()).isTrue()
+                () -> assertThat(result).as("result size").hasSize(1),
+                () -> assertThat(result.get(0).getName()).as("name").isEqualTo("Jane"),
+                () -> assertThat(result.get(0).getNiche()).as("niche").isEqualTo("Fashion"),
+                () -> assertThat(result.get(0).getLocation()).as("location").isEqualTo("New York"),
+                () -> assertThat(result.get(0).getFollowerCount()).as("follower count").isEqualTo(50000L),
+                () -> assertThat(result.get(0).getEngagementRate()).as("engagement rate").isEqualByComparingTo("3.5"),
+                () -> assertThat(result.get(0).isComplete()).as("complete flag").isTrue()
         );
     }
 
@@ -113,10 +113,10 @@ class InfluencerProfileServiceTest {
         List<InfluencerProfileResponse> result = influencerProfileService.search(
                 new InfluencerSearchFilter("Fashion", "NYC", 1000L, 100000L, BigDecimal.valueOf(2.5), null));
 
-        assertThat(result).hasSize(1);
+        assertThat(result).as("result size").hasSize(1);
         ArgumentCaptor<Specification<InfluencerProfile>> specCaptor = ArgumentCaptor.forClass(Specification.class);
         verify(influencerProfileRepository).findAll(specCaptor.capture());
-        assertThat(specCaptor.getValue()).isNotNull();
+        assertThat(specCaptor.getValue()).as("specification not null").isNotNull();
     }
 
     @Test
@@ -143,8 +143,8 @@ class InfluencerProfileServiceTest {
 
         List<InfluencerProfileResponse> result = influencerProfileService.search(new InfluencerSearchFilter("Fash", null, null, null, null, null));
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getNiche()).isEqualTo("Fashion");
+        assertThat(result).as("result size").hasSize(1);
+        assertThat(result.get(0).getNiche()).as("niche").isEqualTo("Fashion");
     }
 
     @Test
@@ -177,9 +177,9 @@ class InfluencerProfileServiceTest {
         List<InfluencerProfileResponse> result = influencerProfileService.search(new InfluencerSearchFilter("gaming", null, null, null, null, null));
 
         assertAll(
-                () -> assertThat(result).hasSize(2),
-                () -> assertThat(result.get(0).getNiche()).isEqualTo("Gaming"),
-                () -> assertThat(result.get(1).getNiche()).isEqualTo("Retro Gaming")
+                () -> assertThat(result).as("result size").hasSize(2),
+                () -> assertThat(result.get(0).getNiche()).as("exact match first").isEqualTo("Gaming"),
+                () -> assertThat(result.get(1).getNiche()).as("substring match second").isEqualTo("Retro Gaming")
         );
     }
 
@@ -190,10 +190,10 @@ class InfluencerProfileServiceTest {
         Optional<InfluencerProfileResponse> opt = influencerProfileService.getByUserId(20L);
 
         assertAll(
-                () -> assertThat(opt).isPresent(),
-                () -> assertThat(opt.get().getUserId()).isEqualTo(20L),
-                () -> assertThat(opt.get().getName()).isEqualTo("Jane"),
-                () -> assertThat(opt.get().getFollowerCount()).isEqualTo(50000L)
+                () -> assertThat(opt).as("result present").isPresent(),
+                () -> assertThat(opt.get().getUserId()).as("user id").isEqualTo(20L),
+                () -> assertThat(opt.get().getName()).as("name").isEqualTo("Jane"),
+                () -> assertThat(opt.get().getFollowerCount()).as("follower count").isEqualTo(50000L)
         );
     }
 
@@ -222,12 +222,12 @@ class InfluencerProfileServiceTest {
         Optional<InfluencerProfileResponse> result = influencerProfileService.getByUserId(20L);
 
         assertAll(
-                () -> assertThat(result).isPresent(),
-                () -> assertThat(result.get().getAverageRating()).isEqualTo(4.5),
-                () -> assertThat(result.get().getTotalRatings()).isEqualTo(2),
-                () -> assertThat(result.get().getRecentReviews()).hasSize(2),
-                () -> assertThat(result.get().getRecentReviews().get(0).getRating()).isEqualTo(5),
-                () -> assertThat(result.get().getRecentReviews().get(0).getReview()).isEqualTo("Great!")
+                () -> assertThat(result).as("result present").isPresent(),
+                () -> assertThat(result.get().getAverageRating()).as("average rating").isEqualTo(4.5),
+                () -> assertThat(result.get().getTotalRatings()).as("total ratings").isEqualTo(2),
+                () -> assertThat(result.get().getRecentReviews()).as("recent reviews size").hasSize(2),
+                () -> assertThat(result.get().getRecentReviews().get(0).getRating()).as("first review rating").isEqualTo(5),
+                () -> assertThat(result.get().getRecentReviews().get(0).getReview()).as("first review text").isEqualTo("Great!")
         );
     }
 
@@ -238,8 +238,8 @@ class InfluencerProfileServiceTest {
 
         List<InfluencerProfileResponse> result = influencerProfileService.search(new InfluencerSearchFilter(null, null, null, null, null, true));
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).isOpenToCollaborations()).isTrue();
+        assertThat(result).as("result size").hasSize(1);
+        assertThat(result.get(0).isOpenToCollaborations()).as("open to collaborations").isTrue();
         verify(influencerProfileRepository).findAll(any(Specification.class));
     }
 
@@ -310,8 +310,8 @@ class InfluencerProfileServiceTest {
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
         assertAll(
-                () -> assertThat(response).isNotNull(),
-                () -> assertThat(response.isComplete()).isFalse()
+                () -> assertThat(response).as("response not null").isNotNull(),
+                () -> assertThat(response.isComplete()).as("draft is not complete").isFalse()
         );
         verify(influencerProfileRepository).save(any(InfluencerProfile.class));
     }
@@ -368,10 +368,10 @@ class InfluencerProfileServiceTest {
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
         assertAll(
-                () -> assertThat(response).isNotNull(),
-                () -> assertThat(response.isComplete()).isTrue(),
-                () -> assertThat(response.getInstagramHandle()).isEqualTo("jane_doe"),
-                () -> assertThat(response.getRate()).isEqualByComparingTo(BigDecimal.valueOf(500))
+                () -> assertThat(response).as("response not null").isNotNull(),
+                () -> assertThat(response.isComplete()).as("complete flag").isTrue(),
+                () -> assertThat(response.getInstagramHandle()).as("instagram handle").isEqualTo("jane_doe"),
+                () -> assertThat(response.getRate()).as("rate").isEqualByComparingTo(BigDecimal.valueOf(500))
         );
         verify(influencerProfileRepository).save(any(InfluencerProfile.class));
     }
@@ -390,8 +390,8 @@ class InfluencerProfileServiceTest {
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
         assertAll(
-                () -> assertThat(response).isNotNull(),
-                () -> assertThat(response.isComplete()).isTrue()
+                () -> assertThat(response).as("response not null").isNotNull(),
+                () -> assertThat(response.isComplete()).as("complete flag").isTrue()
         );
     }
 
@@ -407,8 +407,8 @@ class InfluencerProfileServiceTest {
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
         assertAll(
-                () -> assertThat(response).isNotNull(),
-                () -> assertThat(response.getName()).isEqualTo("Jane Updated")
+                () -> assertThat(response).as("response not null").isNotNull(),
+                () -> assertThat(response.getName()).as("updated name").isEqualTo("Jane Updated")
         );
         verify(influencerProfileRepository).save(any(InfluencerProfile.class));
     }
@@ -425,9 +425,9 @@ class InfluencerProfileServiceTest {
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
         assertAll(
-                () -> assertThat(response).isNotNull(),
-                () -> assertThat(response.isComplete()).isTrue(),
-                () -> assertThat(response.getRate()).isEqualByComparingTo(BigDecimal.ZERO)
+                () -> assertThat(response).as("response not null").isNotNull(),
+                () -> assertThat(response.isComplete()).as("complete flag").isTrue(),
+                () -> assertThat(response.getRate()).as("zero rate").isEqualByComparingTo(BigDecimal.ZERO)
         );
     }
 
@@ -446,9 +446,9 @@ class InfluencerProfileServiceTest {
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
         assertAll(
-                () -> assertThat(response.getBio()).isNull(),
-                () -> assertThat(response.getProfilePictureUrl()).isNull(),
-                () -> assertThat(response.getAudienceInfo()).isNull()
+                () -> assertThat(response.getBio()).as("bio null for empty string").isNull(),
+                () -> assertThat(response.getProfilePictureUrl()).as("picture url null for blank").isNull(),
+                () -> assertThat(response.getAudienceInfo()).as("audience info null for empty").isNull()
         );
     }
 
@@ -467,10 +467,10 @@ class InfluencerProfileServiceTest {
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
         assertAll(
-                () -> assertThat(response.getInstagramHandle()).isEqualTo("insta"),
-                () -> assertThat(response.getYoutubeHandle()).isEqualTo("yt"),
-                () -> assertThat(response.getTiktokHandle()).isEqualTo("tt"),
-                () -> assertThat(response.isComplete()).isTrue()
+                () -> assertThat(response.getInstagramHandle()).as("instagram handle").isEqualTo("insta"),
+                () -> assertThat(response.getYoutubeHandle()).as("youtube handle").isEqualTo("yt"),
+                () -> assertThat(response.getTiktokHandle()).as("tiktok handle").isEqualTo("tt"),
+                () -> assertThat(response.isComplete()).as("complete flag").isTrue()
         );
     }
 
@@ -570,9 +570,9 @@ class InfluencerProfileServiceTest {
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
         assertAll(
-                () -> assertThat(response.getName()).isEqualTo("Jane Doe"),
-                () -> assertThat(response.getLocation()).isEqualTo("NYC"),
-                () -> assertThat(response.getNiche()).isEqualTo("Fashion")
+                () -> assertThat(response.getName()).as("name preserved").isEqualTo("Jane Doe"),
+                () -> assertThat(response.getLocation()).as("location preserved").isEqualTo("NYC"),
+                () -> assertThat(response.getNiche()).as("niche preserved").isEqualTo("Fashion")
         );
     }
 
@@ -591,9 +591,9 @@ class InfluencerProfileServiceTest {
         InfluencerProfileResponse response = influencerProfileService.createOrUpdateForUser(20L, request);
 
         assertAll(
-                () -> assertThat(response.getName()).isEqualTo("Jane Doe"),
-                () -> assertThat(response.getLocation()).isEqualTo("NYC"),
-                () -> assertThat(response.getNiche()).isEqualTo("Fashion")
+                () -> assertThat(response.getName()).as("name preserved").isEqualTo("Jane Doe"),
+                () -> assertThat(response.getLocation()).as("location preserved").isEqualTo("NYC"),
+                () -> assertThat(response.getNiche()).as("niche preserved").isEqualTo("Fashion")
         );
     }
 

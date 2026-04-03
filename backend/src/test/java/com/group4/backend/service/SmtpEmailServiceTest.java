@@ -49,11 +49,11 @@ class SmtpEmailServiceTest {
         verify(mailSender).send(captor.capture());
         SimpleMailMessage msg = captor.getValue();
         assertAll(
-                () -> assertThat(msg.getFrom()).isEqualTo("noreply@collabry.test"),
-                () -> assertThat(msg.getTo()).containsExactly("user@test.com"),
-                () -> assertThat(msg.getSubject()).isEqualTo("Confirm your Collabry account"),
-                () -> assertThat(msg.getText()).contains("Welcome to Collabry"),
-                () -> assertThat(msg.getText()).contains(link)
+                () -> assertThat(msg.getFrom()).as("from address").isEqualTo("noreply@collabry.test"),
+                () -> assertThat(msg.getTo()).as("to address").containsExactly("user@test.com"),
+                () -> assertThat(msg.getSubject()).as("subject").isEqualTo("Confirm your Collabry account"),
+                () -> assertThat(msg.getText()).as("welcome text").contains("Welcome to Collabry"),
+                () -> assertThat(msg.getText()).as("confirmation link").contains(link)
         );
     }
 
@@ -87,11 +87,11 @@ class SmtpEmailServiceTest {
         verify(mailSender).send(captor.capture());
         SimpleMailMessage msg = captor.getValue();
         assertAll(
-                () -> assertThat(msg.getFrom()).isEqualTo("noreply@collabry.test"),
-                () -> assertThat(msg.getTo()).containsExactly("user@test.com"),
-                () -> assertThat(msg.getSubject()).isEqualTo("Reset your Collabry password"),
-                () -> assertThat(msg.getText()).contains("password reset"),
-                () -> assertThat(msg.getText()).contains(resetLink)
+                () -> assertThat(msg.getFrom()).as("from address").isEqualTo("noreply@collabry.test"),
+                () -> assertThat(msg.getTo()).as("to address").containsExactly("user@test.com"),
+                () -> assertThat(msg.getSubject()).as("subject").isEqualTo("Reset your Collabry password"),
+                () -> assertThat(msg.getText()).as("reset text").contains("password reset"),
+                () -> assertThat(msg.getText()).as("reset link").contains(resetLink)
         );
     }
 
@@ -123,12 +123,12 @@ class SmtpEmailServiceTest {
         verify(mailSender).send(captor.capture());
         SimpleMailMessage msg = captor.getValue();
         assertAll(
-                () -> assertThat(msg.getFrom()).isEqualTo("noreply@collabry.test"),
-                () -> assertThat(msg.getTo()).containsExactly("user@test.com"),
-                () -> assertThat(msg.getSubject()).isEqualTo("Collabry Verification Status: Approved"),
-                () -> assertThat(msg.getText()).contains("approved"),
-                () -> assertThat(msg.getText()).contains("Great profile"),
-                () -> assertThat(msg.getText()).contains("premium features")
+                () -> assertThat(msg.getFrom()).as("from address").isEqualTo("noreply@collabry.test"),
+                () -> assertThat(msg.getTo()).as("to address").containsExactly("user@test.com"),
+                () -> assertThat(msg.getSubject()).as("subject").isEqualTo("Collabry Verification Status: Approved"),
+                () -> assertThat(msg.getText()).as("approved text").contains("approved"),
+                () -> assertThat(msg.getText()).as("reason").contains("Great profile"),
+                () -> assertThat(msg.getText()).as("premium features text").contains("premium features")
         );
     }
 
@@ -140,10 +140,10 @@ class SmtpEmailServiceTest {
         verify(mailSender).send(captor.capture());
         SimpleMailMessage msg = captor.getValue();
         assertAll(
-                () -> assertThat(msg.getSubject()).isEqualTo("Collabry Verification Status: Rejected"),
-                () -> assertThat(msg.getText()).contains("rejected"),
-                () -> assertThat(msg.getText()).contains("Incomplete"),
-                () -> assertThat(msg.getText()).contains("try requesting verification again")
+                () -> assertThat(msg.getSubject()).as("subject").isEqualTo("Collabry Verification Status: Rejected"),
+                () -> assertThat(msg.getText()).as("rejected text").contains("rejected"),
+                () -> assertThat(msg.getText()).as("rejection reason").contains("Incomplete"),
+                () -> assertThat(msg.getText()).as("retry suggestion").contains("try requesting verification again")
         );
     }
 
