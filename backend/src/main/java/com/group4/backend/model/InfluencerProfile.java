@@ -235,7 +235,7 @@ public class InfluencerProfile {
     }
 
     public boolean isVerified() {
-        return verified;
+        return Boolean.TRUE.equals(verified);
     }
 
     public void setVerified(boolean verified) {

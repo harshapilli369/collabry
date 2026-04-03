@@ -10,7 +10,6 @@ import {
     Input,
     InputNumber,
     Select,
-    message,
     Drawer,
     Spin,
     Avatar,
@@ -18,6 +17,7 @@ import {
     Tag,
     Divider,
     Slider,
+    App,
 } from 'antd'
 import {
     PlusCircleOutlined,
@@ -50,6 +50,7 @@ const { Title, Text } = Typography
 
 export const BrandDashboard = () => {
     const navigate = useNavigate()
+    const { message } = App.useApp()
     const [profileCheckDone, setProfileCheckDone] = useState(false)
     const [brandProfile, setBrandProfile] = useState<any>(null)
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])

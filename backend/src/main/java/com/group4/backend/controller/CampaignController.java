@@ -65,6 +65,22 @@ public class CampaignController {
         }
         return ResponseEntity.ok(campaignService.findByUserId(user.getId()));
     }
+    
+    @PatchMapping("/{campaignId}/status")
+    public ResponseEntity<CampaignResponse> updateStatus(@PathVariable Long campaignId,
+                                                         @RequestBody Map<String, String> request) {
+        User user = currentUserProvider.getCurrentUser();
+        if (user.getRole() != Role.BRAND) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        String statusStr = request.get("status");
+        if (statusStr == null) {
+            throw new IllegalArgumentException("Status is required");
+        }
+        com.group4.backend.model.CampaignStatus newStatus = com.group4.backend.model.CampaignStatus.valueOf(statusStr.toUpperCase());
+        CampaignResponse response = campaignService.updateStatus(user.getId(), campaignId, newStatus);
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping("/{campaignId}/invitations")
     public ResponseEntity<InvitationResponse> createInvitation(@PathVariable Long campaignId,

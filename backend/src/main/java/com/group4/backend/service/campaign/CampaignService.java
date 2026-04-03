@@ -60,6 +60,35 @@ public class CampaignService {
     public Optional<CampaignResponse> findById(Long id) {
         return campaignRepository.findById(id).map(this::toResponse);
     }
+    
+    @Transactional
+    public CampaignResponse updateStatus(Long userId, Long campaignId, CampaignStatus newStatus) {
+        Campaign campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
+        if (!campaign.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("Only the campaign owner can change its status");
+        }
+        
+        CampaignStatus current = campaign.getStatus();
+        if (current == CampaignStatus.CANCELLED) {
+            throw new IllegalArgumentException("Cannot update a cancelled campaign");
+        }
+        if (current == CampaignStatus.COMPLETED) {
+            throw new IllegalArgumentException("Cannot update a completed campaign");
+        }
+        
+        // Basic transition rules
+        if (newStatus == CampaignStatus.ACTIVE && current != CampaignStatus.DRAFT) {
+            throw new IllegalArgumentException("Only DRAFT campaigns can be published (ACTIVE)");
+        }
+        if (newStatus == CampaignStatus.COMPLETED && current != CampaignStatus.ACTIVE) {
+            throw new IllegalArgumentException("Only ACTIVE campaigns can be marked as COMPLETED");
+        }
+        
+        campaign.setStatus(newStatus);
+        campaign = campaignRepository.save(campaign);
+        return toResponse(campaign);
+    }
 
     private static String emptyToNull(String value) {
         if (value == null) return null;
