@@ -2,7 +2,6 @@ package com.group4.backend.dto;
 
 import com.group4.backend.dto.auth.AuthResponse;
 import com.group4.backend.dto.auth.LoginRequest;
-import com.group4.backend.dto.auth.RegisterResponse;
 import com.group4.backend.dto.auth.ResetPasswordRequest;
 import com.group4.backend.dto.auth.SignupRequest;
 import com.group4.backend.dto.auth.SignupResponse;
@@ -129,13 +128,6 @@ class DtoBranchCoverageTest {
         }
 
         @Test
-        void registerResponse() {
-            RegisterResponse r = new RegisterResponse("msg", "e@e.com");
-            assertThat(r.getMessage()).isEqualTo("msg");
-            assertThat(r.getEmail()).isEqualTo("e@e.com");
-        }
-
-        @Test
         void signupResponse() {
             SignupResponse r = new SignupResponse("hello");
             assertThat(r.getMessage()).isEqualTo("hello");
@@ -213,7 +205,6 @@ class DtoBranchCoverageTest {
                 PaymentResponse.class,
                 RatingRequest.class,
                 RatingResponse.class,
-                RegisterResponse.class,
                 ResetPasswordRequest.class,
                 RespondRequest.class,
                 SignupRequest.class,
