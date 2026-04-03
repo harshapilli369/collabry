@@ -333,6 +333,15 @@ class CampaignControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "influencer@test.com")
+    void getRecommendations_asInfluencer_returns403() throws Exception {
+        when(currentUserProvider.getCurrentUser()).thenReturn(influencerUser);
+
+        mockMvc.perform(get("/api/campaigns/1/recommendations"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @WithMockUser(username = "unverified@test.com")
     void createCampaign_unverifiedBrand_returns201() throws Exception {
         User unverifiedBrand = new User("unverified@test.com", "pass", Role.BRAND);
