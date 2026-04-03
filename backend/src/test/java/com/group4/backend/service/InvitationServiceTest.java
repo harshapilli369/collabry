@@ -2,6 +2,7 @@ package com.group4.backend.service;
 import com.group4.backend.service.campaign.InvitationService;
 import com.group4.backend.service.campaign.CampaignService;
 
+import com.group4.backend.dto.DeliverableUpdateRequest;
 import com.group4.backend.dto.campaign.CampaignResponse;
 import com.group4.backend.dto.invitation.InvitationDetailResponse;
 import com.group4.backend.dto.invitation.InvitationRequest;
@@ -651,5 +652,383 @@ class InvitationServiceTest {
         InvitationResponse response = invitationService.updateInvitation(100L, 10L, request);
 
         assertThat(response.getBrandMessage()).isEqualTo("Only msg");
+    }
+
+    // --- updateDeliverableStatus tests ---
+
+    @Test
+    void updateDeliverableStatus_success_updatesAllFields() {
+        invitation.setStatus(InvitationStatus.ACCEPTED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> i.getArgument(0));
+
+        DeliverableUpdateRequest request = new DeliverableUpdateRequest();
+        request.setDeliverableStatus("SUBMITTED");
+        request.setContentLink("https://example.com/post");
+        request.setDeliverableNotes("Draft ready");
+
+        InvitationResponse response = invitationService.updateDeliverableStatus(100L, 20L, request);
+
+        assertAll(
+                () -> assertThat(response.getDeliverableStatus()).isEqualTo("SUBMITTED"),
+                () -> assertThat(response.getContentLink()).isEqualTo("https://example.com/post"),
+                () -> assertThat(response.getDeliverableNotes()).isEqualTo("Draft ready")
+        );
+    }
+
+    @Test
+    void updateDeliverableStatus_onConfirmedInvitation_succeeds() {
+        invitation.setStatus(InvitationStatus.CONFIRMED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> i.getArgument(0));
+
+        DeliverableUpdateRequest request = new DeliverableUpdateRequest();
+        request.setDeliverableStatus("IN_PROGRESS");
+
+        InvitationResponse response = invitationService.updateDeliverableStatus(100L, 20L, request);
+
+        assertThat(response.getDeliverableStatus()).isEqualTo("IN_PROGRESS");
+    }
+
+    @Test
+    void updateDeliverableStatus_whenInvitationNotFound_throws() {
+        when(invitationRepository.findById(100L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> invitationService.updateDeliverableStatus(100L, 20L, new DeliverableUpdateRequest()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invitation not found");
+    }
+
+    @Test
+    void updateDeliverableStatus_whenWrongInfluencer_throws() {
+        invitation.setStatus(InvitationStatus.ACCEPTED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+
+        assertThatThrownBy(() -> invitationService.updateDeliverableStatus(100L, 99L, new DeliverableUpdateRequest()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("not the assigned influencer");
+    }
+
+    @Test
+    void updateDeliverableStatus_whenStatusPending_throws() {
+        invitation.setStatus(InvitationStatus.PENDING);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+
+        assertThatThrownBy(() -> invitationService.updateDeliverableStatus(100L, 20L, new DeliverableUpdateRequest()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("accepted or confirmed");
+    }
+
+    @Test
+    void updateDeliverableStatus_withEmptyContentLink_setsNull() {
+        invitation.setStatus(InvitationStatus.ACCEPTED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> i.getArgument(0));
+
+        DeliverableUpdateRequest request = new DeliverableUpdateRequest();
+        request.setContentLink("   ");
+        request.setDeliverableNotes("   ");
+
+        InvitationResponse response = invitationService.updateDeliverableStatus(100L, 20L, request);
+
+        assertAll(
+                () -> assertThat(response.getContentLink()).isNull(),
+                () -> assertThat(response.getDeliverableNotes()).isNull()
+        );
+    }
+
+    @Test
+    void updateDeliverableStatus_withNullFields_doesNotOverwrite() {
+        invitation.setStatus(InvitationStatus.ACCEPTED);
+        invitation.setContentLink("existing-link");
+        invitation.setDeliverableNotes("existing-notes");
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> i.getArgument(0));
+
+        DeliverableUpdateRequest request = new DeliverableUpdateRequest();
+        // all fields null - should not overwrite
+
+        InvitationResponse response = invitationService.updateDeliverableStatus(100L, 20L, request);
+
+        assertAll(
+                () -> assertThat(response.getContentLink()).isEqualTo("existing-link"),
+                () -> assertThat(response.getDeliverableNotes()).isEqualTo("existing-notes")
+        );
+    }
+
+    // --- approveDeliverable tests ---
+
+    @Test
+    void approveDeliverable_success_setsApproved() {
+        invitation.setDeliverableStatus(DeliverableStatus.SUBMITTED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> i.getArgument(0));
+
+        InvitationResponse response = invitationService.approveDeliverable(100L, 10L);
+
+        assertThat(response.getDeliverableStatus()).isEqualTo("APPROVED");
+    }
+
+    @Test
+    void approveDeliverable_whenInvitationNotFound_throws() {
+        when(invitationRepository.findById(100L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> invitationService.approveDeliverable(100L, 10L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invitation not found");
+    }
+
+    @Test
+    void approveDeliverable_whenWrongBrand_throws() {
+        invitation.setDeliverableStatus(DeliverableStatus.SUBMITTED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+
+        assertThatThrownBy(() -> invitationService.approveDeliverable(100L, 99L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Only the brand can approve");
+    }
+
+    @Test
+    void approveDeliverable_whenNotSubmitted_throws() {
+        invitation.setDeliverableStatus(DeliverableStatus.IN_PROGRESS);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+
+        assertThatThrownBy(() -> invitationService.approveDeliverable(100L, 10L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Only submitted deliverables");
+    }
+
+    // --- enrichment tests ---
+
+    @Test
+    void getInvitationsForInfluencer_enrichesWithBrandAndCampaignProfiles() {
+        BrandProfile bp = new BrandProfile();
+        bp.setUserId(10L);
+        bp.setName("Test Brand");
+        bp.setLogoUrl("https://logo.test/brand.png");
+        bp.setIndustry("Tech");
+
+        InfluencerProfile ip = new InfluencerProfile();
+        ip.setUserId(20L);
+        ip.setName("Test Influencer");
+        ip.setProfilePictureUrl("https://pic.test/inf.png");
+        ip.setNiche("Gaming");
+        ip.setRate(new BigDecimal("500.00"));
+
+        Campaign c = new Campaign();
+        c.setId(1L);
+        c.setName("Test Campaign");
+
+        when(invitationRepository.findByInfluencerIdOrderByCreatedAtDesc(20L)).thenReturn(List.of(invitation));
+        when(brandProfileRepository.findByUserId(10L)).thenReturn(Optional.of(bp));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(ip));
+        when(campaignRepository.findById(1L)).thenReturn(Optional.of(c));
+
+        List<InvitationResponse> list = invitationService.getInvitationsForInfluencer(20L);
+
+        assertAll(
+                () -> assertThat(list.get(0).getBrandName()).isEqualTo("Test Brand"),
+                () -> assertThat(list.get(0).getBrandLogo()).isEqualTo("https://logo.test/brand.png"),
+                () -> assertThat(list.get(0).getBrandNiche()).isEqualTo("Tech"),
+                () -> assertThat(list.get(0).getInfluencerName()).isEqualTo("Test Influencer"),
+                () -> assertThat(list.get(0).getInfluencerProfilePicture()).isEqualTo("https://pic.test/inf.png"),
+                () -> assertThat(list.get(0).getInfluencerNiche()).isEqualTo("Gaming"),
+                () -> assertThat(list.get(0).getInfluencerRate()).isEqualTo("500.00"),
+                () -> assertThat(list.get(0).getCampaignName()).isEqualTo("Test Campaign")
+        );
+    }
+
+    @Test
+    void getInvitationWithCampaignDetails_enrichesWithProfiles() {
+        BrandProfile bp = new BrandProfile();
+        bp.setUserId(10L);
+        bp.setName("Brand X");
+        bp.setLogoUrl("https://logo.test/x.png");
+        bp.setIndustry("Fashion");
+
+        InfluencerProfile ip = new InfluencerProfile();
+        ip.setUserId(20L);
+        ip.setName("Inf Y");
+        ip.setProfilePictureUrl("https://pic.test/y.png");
+        ip.setNiche("Beauty");
+        ip.setRate(new BigDecimal("300.00"));
+
+        CampaignResponse campaignResponse = new CampaignResponse();
+        campaignResponse.setId(1L);
+        campaignResponse.setName("Test Campaign");
+
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        when(campaignService.findById(1L)).thenReturn(Optional.of(campaignResponse));
+        when(brandProfileRepository.findByUserId(10L)).thenReturn(Optional.of(bp));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(ip));
+
+        InvitationDetailResponse detail = invitationService.getInvitationWithCampaignDetails(100L, 20L);
+
+        assertAll(
+                () -> assertThat(detail.getBrandName()).isEqualTo("Brand X"),
+                () -> assertThat(detail.getInfluencerName()).isEqualTo("Inf Y"),
+                () -> assertThat(detail.getInfluencerRate()).isEqualTo("300.00")
+        );
+    }
+
+    @Test
+    void getInvitationsForInfluencer_withNullInfluencerRate_setsRateNull() {
+        InfluencerProfile ip = new InfluencerProfile();
+        ip.setUserId(20L);
+        ip.setName("No Rate Inf");
+        ip.setRate(null);
+
+        when(invitationRepository.findByInfluencerIdOrderByCreatedAtDesc(20L)).thenReturn(List.of(invitation));
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(ip));
+
+        List<InvitationResponse> list = invitationService.getInvitationsForInfluencer(20L);
+
+        assertThat(list.get(0).getInfluencerRate()).isNull();
+    }
+
+    @Test
+    void toResponse_whenDeliverableStatusNull_defaultsToNotStarted() {
+        invitation.setDeliverableStatus(null);
+        when(invitationRepository.findByInfluencerIdOrderByCreatedAtDesc(20L)).thenReturn(List.of(invitation));
+
+        List<InvitationResponse> list = invitationService.getInvitationsForInfluencer(20L);
+
+        assertThat(list.get(0).getDeliverableStatus()).isEqualTo("NOT_STARTED");
+    }
+
+    @Test
+    void createInvitation_whenDuplicateNegotiatingInvitation_throws() {
+        InvitationRequest request = new InvitationRequest();
+        request.setInfluencerId(20L);
+        CollaborationInvitation existing = new CollaborationInvitation();
+        existing.setStatus(InvitationStatus.NEGOTIATING);
+        when(campaignRepository.findById(1L)).thenReturn(Optional.of(campaign));
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(invitationRepository.findByCampaignIdAndInfluencerId(1L, 20L)).thenReturn(Optional.of(existing));
+
+        assertThatThrownBy(() -> invitationService.createInvitation(10L, 1L, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("already been invited");
+    }
+
+    @Test
+    void createInvitation_whenPreviousInvitationRejected_allowsNew() {
+        InvitationRequest request = new InvitationRequest();
+        request.setInfluencerId(20L);
+        request.setMessage("Try again");
+        CollaborationInvitation existing = new CollaborationInvitation();
+        existing.setStatus(InvitationStatus.REJECTED);
+        when(campaignRepository.findById(1L)).thenReturn(Optional.of(campaign));
+        when(userRepository.findById(20L)).thenReturn(Optional.of(influencerUser));
+        when(invitationRepository.findByCampaignIdAndInfluencerId(1L, 20L)).thenReturn(Optional.of(existing));
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> {
+            CollaborationInvitation inv = i.getArgument(0);
+            inv.setId(200L);
+            return inv;
+        });
+
+        InvitationResponse response = invitationService.createInvitation(10L, 1L, request);
+
+        assertThat(response.getId()).isEqualTo(200L);
+    }
+
+    @Test
+    void respond_onNegotiatingInvitation_succeeds() {
+        invitation.setStatus(InvitationStatus.NEGOTIATING);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> i.getArgument(0));
+        RespondRequest request = new RespondRequest();
+        request.setAction("ACCEPT");
+
+        InvitationResponse response = invitationService.respond(100L, 20L, request);
+
+        assertThat(response.getStatus()).isEqualTo(InvitationStatus.ACCEPTED);
+    }
+
+    @Test
+    void updateInvitation_onNegotiatingStatus_succeeds() {
+        invitation.setStatus(InvitationStatus.NEGOTIATING);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> i.getArgument(0));
+        UpdateInvitationRequest request = new UpdateInvitationRequest();
+        request.setProposedDeliverables("3 posts");
+
+        InvitationResponse response = invitationService.updateInvitation(100L, 10L, request);
+
+        assertThat(response.getProposedDeliverables()).isEqualTo("3 posts");
+    }
+
+    @Test
+    void updateInvitation_whenInvitationNotFound_throws() {
+        when(invitationRepository.findById(100L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> invitationService.updateInvitation(100L, 10L, new UpdateInvitationRequest()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invitation not found");
+    }
+
+    @Test
+    void getInvitationWithCampaignDetails_whenInvitationNotFound_throws() {
+        when(invitationRepository.findById(100L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> invitationService.getInvitationWithCampaignDetails(100L, 20L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invitation not found");
+    }
+
+    @Test
+    void negotiate_onNegotiatingStatus_succeeds() {
+        invitation.setStatus(InvitationStatus.NEGOTIATING);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+        when(invitationRepository.save(any(CollaborationInvitation.class))).thenAnswer(i -> i.getArgument(0));
+
+        NegotiationRequest request = new NegotiationRequest();
+        request.setProposedAmount(new BigDecimal("800.00"));
+
+        InvitationResponse response = invitationService.negotiate(100L, 20L, request);
+
+        assertThat(response.getStatus()).isEqualTo(InvitationStatus.NEGOTIATING);
+    }
+
+    @Test
+    void negotiate_whenInvitationNotFound_throws() {
+        when(invitationRepository.findById(100L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> invitationService.negotiate(100L, 20L, new NegotiationRequest()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invitation not found");
+    }
+
+    @Test
+    void getInvitationsForBrand_withNoProfiles_returnsResponsesWithNullProfileData() {
+        when(invitationRepository.findByBrandIdOrderByCreatedAtDesc(10L)).thenReturn(List.of(invitation));
+
+        List<InvitationResponse> list = invitationService.getInvitationsForBrand(10L);
+
+        assertAll(
+                () -> assertThat(list.get(0).getBrandName()).isNull(),
+                () -> assertThat(list.get(0).getInfluencerName()).isNull(),
+                () -> assertThat(list.get(0).getCampaignName()).isNull()
+        );
+    }
+
+    @Test
+    void updateDeliverableStatus_whenRejected_throws() {
+        invitation.setStatus(InvitationStatus.REJECTED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+
+        assertThatThrownBy(() -> invitationService.updateDeliverableStatus(100L, 20L, new DeliverableUpdateRequest()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("accepted or confirmed");
+    }
+
+    @Test
+    void approveDeliverable_whenNotStarted_throws() {
+        invitation.setDeliverableStatus(DeliverableStatus.NOT_STARTED);
+        when(invitationRepository.findById(100L)).thenReturn(Optional.of(invitation));
+
+        assertThatThrownBy(() -> invitationService.approveDeliverable(100L, 10L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Only submitted deliverables");
     }
 }
