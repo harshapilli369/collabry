@@ -87,8 +87,8 @@ class JwtAuthenticationFilterTest {
 
         assertAll(
                 () -> assertThat(SecurityContextHolder.getContext().getAuthentication())
-                        .isInstanceOf(UsernamePasswordAuthenticationToken.class),
-                () -> assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("user@test.com")
+                        .as("authentication type").isInstanceOf(UsernamePasswordAuthenticationToken.class),
+                () -> assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).as("authenticated username").isEqualTo("user@test.com")
         );
         verify(filterChain).doFilter(request, response);
     }

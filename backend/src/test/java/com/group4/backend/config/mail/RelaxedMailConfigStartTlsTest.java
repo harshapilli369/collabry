@@ -33,9 +33,9 @@ class RelaxedMailConfigStartTlsTest {
         JavaMailSenderImpl impl = (JavaMailSenderImpl) javaMailSender;
         Properties props = impl.getJavaMailProperties();
         assertAll(
-                () -> assertThat(impl.getPort()).isEqualTo(587),
-                () -> assertThat(props.getProperty("mail.smtp.starttls.enable")).isEqualTo("true"),
-                () -> assertThat(props.getProperty("mail.smtp.ssl.enable")).isNull()
+                () -> assertThat(impl.getPort()).as("mail port").isEqualTo(587),
+                () -> assertThat(props.getProperty("mail.smtp.starttls.enable")).as("STARTTLS enabled").isEqualTo("true"),
+                () -> assertThat(props.getProperty("mail.smtp.ssl.enable")).as("SSL not enabled").isNull()
         );
     }
 }

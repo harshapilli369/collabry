@@ -54,7 +54,7 @@ class SpaWebConfigTest {
         verify(resourceHandlerRegistry).setOrder(Ordered.LOWEST_PRECEDENCE);
         ArgumentCaptor<String[]> pathsCaptor = ArgumentCaptor.forClass(String[].class);
         verify(resourceHandlerRegistry, atLeastOnce()).addResourceHandler(pathsCaptor.capture());
-        assertThat(pathsCaptor.getAllValues()).anySatisfy(args -> assertThat(args).contains("/assets/**"));
+        assertThat(pathsCaptor.getAllValues()).as("resource handler paths").anySatisfy(args -> assertThat(args).contains("/assets/**"));
         verify(resourceHandlerRegistration, atLeastOnce()).addResourceLocations(any(String[].class));
     }
 }

@@ -69,8 +69,8 @@ class DatabaseSeederTest {
         ArgumentCaptor<BrandProfile> brandCap = ArgumentCaptor.forClass(BrandProfile.class);
         verify(brandProfileRepository).save(brandCap.capture());
         assertAll(
-                () -> assertThat(brandCap.getValue().getUserId()).isEqualTo(100L),
-                () -> assertThat(brandCap.getValue().getName()).contains("Tech Haven")
+                () -> assertThat(brandCap.getValue().getUserId()).as("seeded brand userId").isEqualTo(100L),
+                () -> assertThat(brandCap.getValue().getName()).as("seeded brand name").contains("Tech Haven")
         );
     }
 

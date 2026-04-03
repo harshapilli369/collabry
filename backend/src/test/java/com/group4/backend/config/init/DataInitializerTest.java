@@ -157,9 +157,9 @@ class DataInitializerTest {
         verify(influencerProfileRepository).save(cap.capture());
         InfluencerProfile saved = cap.getValue();
         assertAll(
-                () -> assertThat(saved.getName()).isEqualTo("Keep Name"),
-                () -> assertThat(saved.getAge()).isEqualTo(30),
-                () -> assertThat(saved.isComplete()).isTrue()
+                () -> assertThat(saved.getName()).as("preserved name").isEqualTo("Keep Name"),
+                () -> assertThat(saved.getAge()).as("preserved age").isEqualTo(30),
+                () -> assertThat(saved.isComplete()).as("profile marked complete").isTrue()
         );
     }
 }

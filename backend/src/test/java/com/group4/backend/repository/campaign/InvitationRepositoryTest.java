@@ -31,13 +31,13 @@ class InvitationRepositoryTest {
         invitationRepository.flush();
 
         assertAll(
-                () -> assertThat(saved.getId()).isNotNull(),
-                () -> assertThat(saved.getCampaignId()).isEqualTo(1L),
-                () -> assertThat(saved.getInfluencerId()).isEqualTo(2L),
-                () -> assertThat(saved.getBrandId()).isEqualTo(3L),
-                () -> assertThat(saved.getStatus()).isEqualTo(InvitationStatus.PENDING),
-                () -> assertThat(saved.getBrandMessage()).isEqualTo("Join our campaign"),
-                () -> assertThat(saved.getCreatedAt()).isNotNull()
+                () -> assertThat(saved.getId()).as("saved id").isNotNull(),
+                () -> assertThat(saved.getCampaignId()).as("campaign id").isEqualTo(1L),
+                () -> assertThat(saved.getInfluencerId()).as("influencer id").isEqualTo(2L),
+                () -> assertThat(saved.getBrandId()).as("brand id").isEqualTo(3L),
+                () -> assertThat(saved.getStatus()).as("status").isEqualTo(InvitationStatus.PENDING),
+                () -> assertThat(saved.getBrandMessage()).as("brand message").isEqualTo("Join our campaign"),
+                () -> assertThat(saved.getCreatedAt()).as("created at").isNotNull()
         );
 
         CollaborationInvitation found = invitationRepository.findById(saved.getId()).orElseThrow();
@@ -58,9 +58,9 @@ class InvitationRepositoryTest {
 
         List<CollaborationInvitation> list = invitationRepository.findByInfluencerIdOrderByCreatedAtDesc(influencerId);
         assertAll(
-                () -> assertThat(list).hasSize(2),
-                () -> assertThat(list.get(0).getId()).isEqualTo(second.getId()),
-                () -> assertThat(list.get(1).getId()).isEqualTo(first.getId())
+                () -> assertThat(list).as("result size").hasSize(2),
+                () -> assertThat(list.get(0).getId()).as("first is newest").isEqualTo(second.getId()),
+                () -> assertThat(list.get(1).getId()).as("second is oldest").isEqualTo(first.getId())
         );
     }
 
@@ -77,9 +77,9 @@ class InvitationRepositoryTest {
 
         Optional<CollaborationInvitation> found = invitationRepository.findByCampaignIdAndInfluencerId(campaignId, influencerId);
         assertAll(
-                () -> assertThat(found).isPresent(),
-                () -> assertThat(found.get().getInfluencerId()).isEqualTo(influencerId),
-                () -> assertThat(found.get().getCampaignId()).isEqualTo(campaignId)
+                () -> assertThat(found).as("found result").isPresent(),
+                () -> assertThat(found.get().getInfluencerId()).as("influencer id").isEqualTo(influencerId),
+                () -> assertThat(found.get().getCampaignId()).as("campaign id").isEqualTo(campaignId)
         );
     }
 
@@ -99,8 +99,8 @@ class InvitationRepositoryTest {
                 List.of(InvitationStatus.ACCEPTED, InvitationStatus.CONFIRMED)
         );
         assertAll(
-                () -> assertThat(acceptedOrConfirmed).hasSize(2),
-                () -> assertThat(acceptedOrConfirmed).extracting(CollaborationInvitation::getStatus)
+                () -> assertThat(acceptedOrConfirmed).as("matched count").hasSize(2),
+                () -> assertThat(acceptedOrConfirmed).as("matched statuses").extracting(CollaborationInvitation::getStatus)
                         .containsExactlyInAnyOrder(InvitationStatus.ACCEPTED, InvitationStatus.CONFIRMED)
         );
     }
