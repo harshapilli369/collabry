@@ -1,6 +1,14 @@
 import { useState } from 'react'
-import { Form, Input, Button, Typography, Select, message, InputNumber, Card, Alert, Table, Modal } from 'antd'
-import { ArrowLeftOutlined, MailOutlined, FundProjectionScreenOutlined, CheckCircleFilled, ThunderboltOutlined } from '@ant-design/icons'
+import { Form, Input, Button, Typography, Select, message, InputNumber, Card, Alert, Row, Col, Avatar, Rate } from 'antd'
+import {
+    ArrowLeftOutlined,
+    MailOutlined,
+    FundProjectionScreenOutlined,
+    CheckCircleFilled,
+    ThunderboltOutlined,
+    SearchOutlined,
+    UserOutlined,
+} from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
 import {
@@ -13,7 +21,7 @@ import {
     CAMPAIGNS_URL,
 } from '../services/campaignService'
 import { createInvitation } from '../services/invitationService'
-import { userService, type InfluencerSearchResult } from '../services/userService'
+import { searchInfluencers, type InfluencerProfileResponse, type InfluencerSearchParams } from '../services/influencerProfileService'
 
 const { Title, Text } = Typography
 const { TextArea } = Input
@@ -22,14 +30,16 @@ const PRIMARY = BRAND_PORTAL_PRIMARY
 
 export const CreateCampaign = () => {
     const [form] = Form.useForm<CampaignRequest & { preferredContentTypesList?: string[] }>()
-    const [inviteForm] = Form.useForm<{ influencerId: number; message?: string }>()
+    const [inviteForm] = Form.useForm<{ message?: string }>()
+    const [searchForm] = Form.useForm<InfluencerSearchParams>()
     const [loading, setLoading] = useState(false)
     const [createdCampaign, setCreatedCampaign] = useState<CampaignResponse | null>(null)
     const [inviteSubmitting, setInviteSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState<string | null>(null)
-    const [findIdModalOpen, setFindIdModalOpen] = useState(false)
-    const [influencerList, setInfluencerList] = useState<InfluencerSearchResult[]>([])
-    const [influencerListLoading, setInfluencerListLoading] = useState(false)
+    const [searchLoading, setSearchLoading] = useState(false)
+    const [searchResults, setSearchResults] = useState<InfluencerProfileResponse[]>([])
+    const [inviteSearchDone, setInviteSearchDone] = useState(false)
+    const [selectedInfluencer, setSelectedInfluencer] = useState<InfluencerProfileResponse | null>(null)
     const [aiDescLoading, setAiDescLoading] = useState(false)
     const navigate = useNavigate()
 
@@ -67,17 +77,27 @@ export const CreateCampaign = () => {
         }
     }
 
-    const openFindIdModal = () => {
-        setFindIdModalOpen(true)
-        setInfluencerListLoading(true)
-        userService
-            .listInfluencers()
-            .then(setInfluencerList)
-            .catch(() => {
-                message.error('Failed to load influencers')
-                setInfluencerList([])
+    const onSearchInfluencers = async () => {
+        const values = searchForm.getFieldsValue()
+        setSearchLoading(true)
+        try {
+            const list = await searchInfluencers({
+                niche: values.niche,
+                location: values.location,
+                minFollowers: values.minFollowers,
+                maxFollowers: values.maxFollowers,
+                minEngagementRate: values.minEngagementRate,
             })
-            .finally(() => setInfluencerListLoading(false))
+            setInviteSearchDone(true)
+            setSearchResults(list)
+            if (list.length === 0) message.info('No influencers match your filters.')
+        } catch (e) {
+            message.error(e instanceof Error ? e.message : 'Search failed')
+            setSearchResults([])
+            setInviteSearchDone(true)
+        } finally {
+            setSearchLoading(false)
+        }
     }
 
     const onFinish = async (values: CampaignRequest & { preferredContentTypesList?: string[] }) => {
@@ -101,6 +121,10 @@ export const CreateCampaign = () => {
                 setCreatedCampaign(campaign)
                 message.success('Campaign created successfully')
                 inviteForm.resetFields()
+                searchForm.resetFields()
+                setSearchResults([])
+                setInviteSearchDone(false)
+                setSelectedInfluencer(null)
             } else {
                 const err = 'Invalid response from server. Please try again.'
                 setSubmitError(err)
@@ -115,16 +139,21 @@ export const CreateCampaign = () => {
         }
     }
 
-    const onInviteSubmit = async (values: { influencerId: number; message?: string }) => {
+    const onInviteSubmit = async (values: { message?: string }) => {
         if (!createdCampaign) return
+        if (!selectedInfluencer) {
+            message.warning('Search for influencers, then select one to invite.')
+            return
+        }
         setInviteSubmitting(true)
         try {
             await createInvitation(createdCampaign.id, {
-                influencerId: values.influencerId,
+                influencerId: selectedInfluencer.userId,
                 message: values.message?.trim() || undefined,
             })
             message.success('Invitation sent to influencer')
             inviteForm.resetFields()
+            setSelectedInfluencer(null)
             navigate('/brand/collaborations', { replace: true })
         } catch (e) {
             message.error(e instanceof Error ? e.message : 'Failed to send invitation')
@@ -144,7 +173,7 @@ export const CreateCampaign = () => {
                 Back to Dashboard
             </Button>
 
-            <div style={{ maxWidth: 600, margin: '0 auto' }}>
+            <div style={{ maxWidth: createdCampaign ? 820 : 600, margin: '0 auto' }}>
                 {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: 36 }}>
                     <div
@@ -273,26 +302,204 @@ export const CreateCampaign = () => {
                             </Text>
                         </div>
 
-                        <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit} size="large">
-                            <Form.Item
-                                name="influencerId"
-                                label={
-                                    <span>
-                                        Influencer user ID{' '}
-                                        <Button type="link" size="small" onClick={openFindIdModal} style={{ paddingLeft: 8 }}>
-                                            Find user ID
-                                        </Button>
+                        <Text style={{ color: '#aaa', display: 'block', marginBottom: 16 }}>
+                            Search for influencers below, select one, then send the invitation for this campaign.
+                        </Text>
+
+                        <div
+                            style={{
+                                padding: '16px 20px',
+                                background: '#141414',
+                                borderRadius: 12,
+                                border: '1px solid #1a1a1a',
+                                marginBottom: 20,
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                                <SearchOutlined style={{ color: PRIMARY }} />
+                                <Text style={{ color: '#fff', fontWeight: 600, fontSize: 14 }}>Find influencer</Text>
+                            </div>
+                            <Form form={searchForm} layout="vertical" onFinish={onSearchInfluencers}>
+                                <Row gutter={[12, 0]}>
+                                    <Col xs={24} sm={12}>
+                                        <Form.Item name="niche" label="Niche" style={{ marginBottom: 12 }}>
+                                            <Input placeholder="e.g. Fashion" />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col xs={24} sm={12}>
+                                        <Form.Item name="location" label="Location" style={{ marginBottom: 12 }}>
+                                            <Input placeholder="e.g. New York" />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col xs={24} sm={8}>
+                                        <Form.Item name="minFollowers" label="Min followers" style={{ marginBottom: 12 }}>
+                                            <InputNumber min={0} placeholder="0" style={{ width: '100%' }} />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col xs={24} sm={8}>
+                                        <Form.Item name="maxFollowers" label="Max followers" style={{ marginBottom: 12 }}>
+                                            <InputNumber min={0} placeholder="Any" style={{ width: '100%' }} />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col xs={24} sm={8}>
+                                        <Form.Item name="minEngagementRate" label="Min engagement %" style={{ marginBottom: 12 }}>
+                                            <InputNumber min={0} max={100} step={0.1} placeholder="0" style={{ width: '100%' }} />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+                                <Form.Item style={{ marginBottom: 0 }}>
+                                    <Button
+                                        type="default"
+                                        htmlType="submit"
+                                        icon={<SearchOutlined />}
+                                        loading={searchLoading}
+                                        style={{ borderRadius: 10, borderColor: PRIMARY, color: PRIMARY }}
+                                    >
+                                        Search
+                                    </Button>
+                                </Form.Item>
+                            </Form>
+                        </div>
+
+                        {searchResults.length > 0 && (
+                            <>
+                                <Text style={{ color: '#888', fontWeight: 600, fontSize: 13, display: 'block', marginBottom: 12 }}>
+                                    {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} — select an influencer
+                                </Text>
+                                <Row gutter={[12, 12]} style={{ marginBottom: 20 }}>
+                                    {searchResults.map((inf) => {
+                                        const engColor =
+                                            inf.engagementRate != null
+                                                ? Number(inf.engagementRate) >= 5
+                                                    ? '#52c41a'
+                                                    : Number(inf.engagementRate) >= 2
+                                                      ? '#faad14'
+                                                      : '#ff4d4f'
+                                                : '#888'
+                                        const isSelected = selectedInfluencer?.userId === inf.userId
+                                        return (
+                                            <Col key={inf.id} xs={24} sm={12}>
+                                                <Card
+                                                    size="small"
+                                                    style={{
+                                                        background: '#141414',
+                                                        borderRadius: 12,
+                                                        borderColor: isSelected ? PRIMARY : '#1a1a1a',
+                                                        boxShadow: isSelected ? `0 0 0 1px ${PRIMARY}60` : undefined,
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                                        <Avatar
+                                                            size={44}
+                                                            icon={<UserOutlined />}
+                                                            src={inf.profilePictureUrl}
+                                                            style={{ backgroundColor: PRIMARY, color: '#000', flexShrink: 0 }}
+                                                        />
+                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                            <Text strong style={{ color: '#fff', fontSize: 14 }}>
+                                                                {inf.name}
+                                                            </Text>
+                                                            <div style={{ marginTop: 4 }}>
+                                                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                                                    {inf.niche} · {inf.location}
+                                                                </Text>
+                                                            </div>
+                                                            <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                                {inf.followerCount != null && (
+                                                                    <span
+                                                                        style={{
+                                                                            fontSize: 11,
+                                                                            color: '#aaa',
+                                                                            background: '#1a1a1a',
+                                                                            padding: '2px 8px',
+                                                                            borderRadius: 6,
+                                                                        }}
+                                                                    >
+                                                                        {inf.followerCount >= 1000
+                                                                            ? `${(inf.followerCount / 1000).toFixed(1)}K`
+                                                                            : inf.followerCount}{' '}
+                                                                        followers
+                                                                    </span>
+                                                                )}
+                                                                {inf.engagementRate != null && (
+                                                                    <span
+                                                                        style={{
+                                                                            fontSize: 11,
+                                                                            color: engColor,
+                                                                            background: '#1a1a1a',
+                                                                            padding: '2px 8px',
+                                                                            borderRadius: 6,
+                                                                        }}
+                                                                    >
+                                                                        {Number(inf.engagementRate).toFixed(1)}% eng.
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            {inf.totalRatings != null && inf.totalRatings > 0 && (
+                                                                <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                    <Rate disabled allowHalf value={inf.averageRating ?? 0} style={{ fontSize: 11, color: '#FFFD82' }} />
+                                                                    <span style={{ fontSize: 11, color: '#888' }}>({inf.totalRatings})</span>
+                                                                </div>
+                                                            )}
+                                                            <Button
+                                                                type={isSelected ? 'default' : 'primary'}
+                                                                size="small"
+                                                                style={{ marginTop: 10, borderRadius: 8, ...(isSelected ? { borderColor: PRIMARY, color: PRIMARY } : { color: '#000' }) }}
+                                                                onClick={() => setSelectedInfluencer(isSelected ? null : inf)}
+                                                            >
+                                                                {isSelected ? 'Deselect' : 'Select'}
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </Card>
+                                            </Col>
+                                        )
+                                    })}
+                                </Row>
+                            </>
+                        )}
+
+                        {searchResults.length === 0 && !searchLoading && !inviteSearchDone && (
+                            <div style={{ textAlign: 'center', padding: '16px 0 8px' }}>
+                                <Text type="secondary" style={{ fontSize: 13 }}>
+                                    Set filters and click Search to see influencers.
+                                </Text>
+                            </div>
+                        )}
+                        {inviteSearchDone && searchResults.length === 0 && !searchLoading && (
+                            <div style={{ textAlign: 'center', padding: '16px 0 8px' }}>
+                                <Text type="secondary" style={{ fontSize: 13 }}>
+                                    No influencers match these filters. Try broadening your search.
+                                </Text>
+                            </div>
+                        )}
+
+                        {selectedInfluencer && (
+                            <Alert
+                                type="info"
+                                showIcon
+                                message={
+                                    <span style={{ color: '#fff' }}>
+                                        Inviting <strong style={{ color: PRIMARY }}>{selectedInfluencer.name}</strong> to &quot;{createdCampaign.name}&quot;
                                     </span>
                                 }
-                                rules={[{ required: true, message: 'Enter the influencer user ID' }]}
-                            >
-                                <InputNumber min={1} step={1} placeholder="e.g. 2" style={{ width: '100%' }} />
-                            </Form.Item>
+                                style={{ marginBottom: 16, borderRadius: 10, background: '#1a1a1a', borderColor: '#333' }}
+                            />
+                        )}
+
+                        <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit} size="large">
                             <Form.Item name="message" label="Message (optional)">
                                 <TextArea rows={3} placeholder="Personal message to the influencer" />
                             </Form.Item>
-                            <div style={{ display: 'flex', gap: 12 }}>
-                                <Button type="primary" htmlType="submit" loading={inviteSubmitting} icon={<MailOutlined />} style={{ color: '#000', fontWeight: 600, borderRadius: 10, flex: 1 }}>
+                            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    loading={inviteSubmitting}
+                                    disabled={!selectedInfluencer}
+                                    icon={<MailOutlined />}
+                                    style={{ color: '#000', fontWeight: 600, borderRadius: 10, flex: 1, minWidth: 200 }}
+                                >
                                     Send Invitation
                                 </Button>
                                 <Button onClick={() => navigate('/brand/dashboard', { replace: true })} style={{ borderRadius: 10 }}>
@@ -303,28 +510,6 @@ export const CreateCampaign = () => {
                     </Card>
                 )}
             </div>
-
-            <Modal
-                title="Influencer user IDs"
-                open={findIdModalOpen}
-                onCancel={() => setFindIdModalOpen(false)}
-                footer={<Button onClick={() => setFindIdModalOpen(false)}>Close</Button>}
-                width={560}
-            >
-                <p style={{ color: '#666', marginBottom: 12 }}>Copy the ID and paste it into the invite form.</p>
-                <Table
-                    size="small"
-                    loading={influencerListLoading}
-                    dataSource={influencerList}
-                    rowKey="id"
-                    columns={[
-                        { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
-                        { title: 'Email', dataIndex: 'email', key: 'email' },
-                        { title: 'Name', dataIndex: 'displayName', key: 'displayName' },
-                    ]}
-                    pagination={influencerList.length <= 10 ? false : { pageSize: 10 }}
-                />
-            </Modal>
         </BrandPortalLayout>
     )
 }
