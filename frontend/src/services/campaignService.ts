@@ -125,3 +125,16 @@ export async function downloadCampaignReport(campaignId: number): Promise<void> 
     a.click();
     URL.revokeObjectURL(url);
 }
+
+export async function updateCampaignStatus(campaignId: number, status: CampaignStatus): Promise<CampaignResponse> {
+    const response = await fetch(`${CAMPAIGNS_URL}/${campaignId}/status`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(data.message || 'Failed to update campaign status');
+    }
+    return data as CampaignResponse;
+}

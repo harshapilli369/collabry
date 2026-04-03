@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, Card, Tabs, Modal, Form, Input, InputNumber, Select, Table, message } from 'antd'
+import { Typography, Button, Card, Tabs, Modal, Form, Input, InputNumber, Select, Table, App } from 'antd'
 import { PlusCircleOutlined, FundProjectionScreenOutlined, MailOutlined, ArrowLeftOutlined, EditOutlined, CheckCircleOutlined, RocketOutlined, StopOutlined, DownloadOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
@@ -7,6 +7,7 @@ import { getMyBrandProfile, type BrandProfileResponse } from '../services/brandS
 import {
     getMyCampaigns,
     downloadCampaignReport,
+    updateCampaignStatus,
     CAMPAIGN_STATUS_LABELS,
     BUDGET_RANGE_OPTIONS,
     PREFERRED_CONTENT_OPTIONS,
@@ -21,6 +22,7 @@ const STATUS_ORDER: CampaignStatus[] = ['DRAFT', 'ACTIVE', 'COMPLETED', 'CANCELL
 
 export const BrandMyCampaigns = () => {
     const navigate = useNavigate()
+    const { modal, message: messageApi } = App.useApp()
     const [profileCheckDone, setProfileCheckDone] = useState(false)
     const [brandProfile, setBrandProfile] = useState<BrandProfileResponse | null>(null)
     const [campaigns, setCampaigns] = useState<CampaignResponse[]>([])
@@ -52,13 +54,17 @@ export const BrandMyCampaigns = () => {
             .catch(() => setProfileCheckDone(true))
     }, [user?.role, navigate])
 
-    useEffect(() => {
+    const fetchCampaigns = () => {
         if (!profileCheckDone || user?.role !== 'BRAND') return
         setCampaignsLoading(true)
         getMyCampaigns()
             .then(setCampaigns)
             .catch(() => setCampaigns([]))
             .finally(() => setCampaignsLoading(false))
+    }
+
+    useEffect(() => {
+        fetchCampaigns()
     }, [profileCheckDone, user?.role])
 
     const campaignsByStatus = STATUS_ORDER.map((status) => ({
@@ -80,7 +86,7 @@ export const BrandMyCampaigns = () => {
             .listInfluencers()
             .then(setInfluencerList)
             .catch(() => {
-                message.error('Failed to load influencers')
+                messageApi.error('Failed to load influencers')
                 setInfluencerList([])
             })
             .finally(() => setInfluencerListLoading(false))
@@ -104,10 +110,10 @@ export const BrandMyCampaigns = () => {
                 platform: values.platform || undefined,
                 expiresInDays: values.expiresInDays ?? 14,
             })
-            message.success('Invitation sent')
+            messageApi.success('Invitation sent')
             closeInviteModal()
         } catch (e) {
-            message.error(e instanceof Error ? e.message : 'Failed to send invitation')
+            messageApi.error(e instanceof Error ? e.message : 'Failed to send invitation')
         } finally {
             setInviteSubmitting(false)
         }
@@ -116,10 +122,33 @@ export const BrandMyCampaigns = () => {
     const onDownloadReport = async (campaignId: number) => {
         try {
             await downloadCampaignReport(campaignId)
-            message.success('Campaign report downloaded')
+            messageApi.success('Campaign report downloaded')
         } catch (e) {
-            message.error(e instanceof Error ? e.message : 'Failed to download report')
+            messageApi.error(e instanceof Error ? e.message : 'Failed to download report')
         }
+    }
+
+    const onStatusUpdate = (campaignId: number, newStatus: CampaignStatus) => {
+        let actionLabel = ''
+        if (newStatus === 'ACTIVE') actionLabel = 'publish'
+        else if (newStatus === 'CANCELLED') actionLabel = 'cancel'
+        else if (newStatus === 'COMPLETED') actionLabel = 'complete'
+
+        modal.confirm({
+            title: `Confirm ${actionLabel}`,
+            content: `Are you sure you want to ${actionLabel} this campaign?`,
+            okText: 'Yes',
+            cancelText: 'No',
+            onOk: async () => {
+                try {
+                    await updateCampaignStatus(campaignId, newStatus)
+                    messageApi.success(`Campaign ${actionLabel}ed successfully`)
+                    fetchCampaigns()
+                } catch (e) {
+                    messageApi.error(e instanceof Error ? e.message : `Failed to ${actionLabel} campaign`)
+                }
+            },
+        })
     }
 
     const primaryColor = BRAND_PORTAL_PRIMARY
@@ -232,6 +261,40 @@ export const BrandMyCampaigns = () => {
                                                         <Button type="default" size="small" icon={<MailOutlined />} onClick={() => openInviteModal(campaign.id)} style={{ borderRadius: 8 }}>
                                                             Invite
                                                         </Button>
+                                                        {campaign.status === 'DRAFT' && (
+                                                            <Button
+                                                                type="primary"
+                                                                size="small"
+                                                                icon={<RocketOutlined />}
+                                                                onClick={() => onStatusUpdate(campaign.id, 'ACTIVE')}
+                                                                style={{ borderRadius: 8, background: statusColors.ACTIVE, borderColor: statusColors.ACTIVE, color: '#000' }}
+                                                            >
+                                                                Publish
+                                                            </Button>
+                                                        )}
+                                                        {campaign.status === 'ACTIVE' && (
+                                                            <Button
+                                                                type="primary"
+                                                                size="small"
+                                                                icon={<CheckCircleOutlined />}
+                                                                onClick={() => onStatusUpdate(campaign.id, 'COMPLETED')}
+                                                                style={{ borderRadius: 8, background: statusColors.COMPLETED, borderColor: statusColors.COMPLETED, color: '#fff' }}
+                                                            >
+                                                                Complete
+                                                            </Button>
+                                                        )}
+                                                        {(campaign.status === 'DRAFT' || campaign.status === 'ACTIVE') && (
+                                                            <Button
+                                                                type="default"
+                                                                danger
+                                                                size="small"
+                                                                icon={<StopOutlined />}
+                                                                onClick={() => onStatusUpdate(campaign.id, 'CANCELLED')}
+                                                                style={{ borderRadius: 8 }}
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                        )}
                                                         <Button type="default" size="small" icon={<DownloadOutlined />} onClick={() => onDownloadReport(campaign.id)} style={{ borderRadius: 8 }}>
                                                             Download report
                                                         </Button>
