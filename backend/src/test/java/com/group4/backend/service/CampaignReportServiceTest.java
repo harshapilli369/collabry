@@ -21,6 +21,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.group4.backend.model.InfluencerProfile;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -112,5 +114,150 @@ class CampaignReportServiceTest {
 
         assertThat(bytes).isNotEmpty();
         assertThat(new String(bytes)).startsWith("%PDF-");
+    }
+
+    @Test
+    void generateCampaignReportPdf_withoutInvitations_containsNoneLabel() {
+        when(invitationRepository.findByCampaignIdOrderByCreatedAtDesc(11L)).thenReturn(List.of());
+
+        byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
+
+        String pdf = new String(bytes);
+        assertThat(pdf).contains("None");
+    }
+
+    @Test
+    void generateCampaignReportPdf_influencerLabelWithProfileAndUser() {
+        InfluencerProfile profile = new InfluencerProfile();
+        profile.setUserId(20L);
+        profile.setName("Jane Doe");
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(profile));
+
+        byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
+
+        String pdf = new String(bytes);
+        assertThat(pdf).contains("Jane Doe");
+        assertThat(pdf).contains("influencer@test.com");
+    }
+
+    @Test
+    void generateCampaignReportPdf_influencerLabelWithNameOnly() {
+        InfluencerProfile profile = new InfluencerProfile();
+        profile.setUserId(20L);
+        profile.setName("Solo Name");
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.of(profile));
+        when(userRepository.findById(20L)).thenReturn(Optional.empty());
+
+        byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
+
+        String pdf = new String(bytes);
+        assertThat(pdf).contains("Solo Name");
+    }
+
+    @Test
+    void generateCampaignReportPdf_influencerLabelWithEmailOnly() {
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.empty());
+
+        byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
+
+        String pdf = new String(bytes);
+        assertThat(pdf).contains("influencer@test.com");
+    }
+
+    @Test
+    void generateCampaignReportPdf_influencerLabelFallsBackToUserId() {
+        when(influencerProfileRepository.findByUserId(20L)).thenReturn(Optional.empty());
+        when(userRepository.findById(20L)).thenReturn(Optional.empty());
+
+        byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
+
+        String pdf = new String(bytes);
+        assertThat(pdf).contains("User #20");
+    }
+
+    @Test
+    void generateCampaignReportPdf_withNullPaymentAmount_treatsAsZero() {
+        Payment paymentWithNullAmount = new Payment();
+        paymentWithNullAmount.setCampaignId(11L);
+        paymentWithNullAmount.setAmount(null);
+        paymentWithNullAmount.setStatus(PaymentStatus.PENDING);
+        paymentWithNullAmount.setMilestoneName("Milestone 1");
+        when(paymentRepository.findByCampaignIdOrderByDueDateAsc(11L)).thenReturn(List.of(paymentWithNullAmount));
+
+        byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
+
+        String pdf = new String(bytes);
+        assertThat(pdf).contains("Total scheduled: $0");
+    }
+
+    @Test
+    void generateCampaignReportPdf_withMixedPaidAndPendingPayments_calculatesCorrectly() {
+        Payment paid = new Payment();
+        paid.setCampaignId(11L);
+        paid.setAmount(BigDecimal.valueOf(500));
+        paid.setStatus(PaymentStatus.PAID);
+        paid.setMilestoneName("Phase 1");
+
+        Payment pending = new Payment();
+        pending.setCampaignId(11L);
+        pending.setAmount(BigDecimal.valueOf(300));
+        pending.setStatus(PaymentStatus.PENDING);
+        pending.setMilestoneName("Phase 2");
+
+        when(paymentRepository.findByCampaignIdOrderByDueDateAsc(11L)).thenReturn(List.of(paid, pending));
+
+        byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
+
+        String pdf = new String(bytes);
+        assertThat(pdf).contains("Total scheduled: $800");
+        assertThat(pdf).contains("Total paid: $500");
+        assertThat(pdf).contains("Outstanding: $300");
+    }
+
+    @Test
+    void generateCampaignReportPdf_withNullCampaignFields_showsDashes() {
+        campaign.setDescription(null);
+        campaign.setCampaignGoal(null);
+        campaign.setBudgetRange(null);
+        campaign.setPreferredContentTypes(null);
+        campaign.setStartDate(null);
+        campaign.setEndDate(null);
+        campaign.setNumberOfInfluencers(null);
+        when(invitationRepository.findByCampaignIdOrderByCreatedAtDesc(11L)).thenReturn(List.of());
+        when(paymentRepository.findByCampaignIdOrderByDueDateAsc(11L)).thenReturn(List.of());
+
+        byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
+
+        String pdf = new String(bytes);
+        assertThat(pdf).contains("Goal: -");
+        assertThat(pdf).contains("Budget range: -");
+    }
+
+    @Test
+    void generateCampaignReportPdf_escapesSpecialPdfCharacters() {
+        campaign.setName("Campaign (with) \\backslash");
+        when(invitationRepository.findByCampaignIdOrderByCreatedAtDesc(11L)).thenReturn(List.of());
+        when(paymentRepository.findByCampaignIdOrderByDueDateAsc(11L)).thenReturn(List.of());
+
+        byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
+
+        String pdf = new String(bytes);
+        assertThat(pdf).contains("\\(with\\)");
+        assertThat(pdf).contains("\\\\backslash");
+    }
+
+    @Test
+    void generateCampaignReportPdf_withNullMilestoneName_showsDash() {
+        Payment payment = new Payment();
+        payment.setCampaignId(11L);
+        payment.setAmount(BigDecimal.valueOf(100));
+        payment.setStatus(PaymentStatus.PENDING);
+        payment.setMilestoneName(null);
+        when(paymentRepository.findByCampaignIdOrderByDueDateAsc(11L)).thenReturn(List.of(payment));
+
+        byte[] bytes = campaignReportService.generateCampaignReportPdf(10L, 11L);
+
+        String pdf = new String(bytes);
+        assertThat(pdf).contains("- -");
     }
 }
