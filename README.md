@@ -495,7 +495,6 @@ group04/
 ├── .env.example                    # Root environment template
 ├── .gitlab-ci.yml                  # CI/CD pipeline configuration
 ├── DEPLOYMENT.md                   # Deployment guide
-├── DESIGN_PRINCIPLES.md            # Architecture & design patterns
 └── SETUP.md                        # Quick developer setup checklist
 ```
 
@@ -645,4 +644,4 @@ For questions or issues related to this project:
 
 - Open an issue in the GitLab repository
 - Reach out to Group 4 team members via the course communication channels
-- Check existing documentation: [`SETUP.md`](SETUP.md), [`DEPLOYMENT.md`](DEPLOYMENT.md), [`DESIGN_PRINCIPLES.md`](DESIGN_PRINCIPLES.md)
+- Check existing documentation: [`SETUP.md`](SETUP.md), [`DEPLOYMENT.md`](DEPLOYMENT.md), [`Design Principles`](quality/Design_Principals.md)
