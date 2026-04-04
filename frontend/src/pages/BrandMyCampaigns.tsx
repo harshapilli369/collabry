@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Typography, Button, Card, Tabs, Modal, Form, Input, InputNumber, Select, Table, App } from 'antd'
+import { Typography, Button, Card, Tabs, Modal, Form, Input, InputNumber, Select, App } from 'antd'
 import { PlusCircleOutlined, FundProjectionScreenOutlined, MailOutlined, ArrowLeftOutlined, EditOutlined, CheckCircleOutlined, RocketOutlined, StopOutlined, DownloadOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { BrandPortalLayout, BRAND_PORTAL_PRIMARY } from '../components/BrandPortalLayout'
@@ -15,7 +15,6 @@ import {
     type CampaignStatus,
 } from '../services/campaignService'
 import { createInvitation, type InvitationRequest } from '../services/invitationService'
-import { userService, type InfluencerSearchResult } from '../services/userService'
 
 const { Title, Text } = Typography
 const STATUS_ORDER: CampaignStatus[] = ['DRAFT', 'ACTIVE', 'COMPLETED', 'CANCELLED']
@@ -31,9 +30,6 @@ export const BrandMyCampaigns = () => {
     const [inviteCampaignId, setInviteCampaignId] = useState<number | null>(null)
     const [inviteSubmitting, setInviteSubmitting] = useState(false)
     const [inviteForm] = Form.useForm()
-    const [findIdModalOpen, setFindIdModalOpen] = useState(false)
-    const [influencerList, setInfluencerList] = useState<InfluencerSearchResult[]>([])
-    const [influencerListLoading, setInfluencerListLoading] = useState(false)
     const userStr = localStorage.getItem('user')
     const user = userStr ? JSON.parse(userStr) : null
 
@@ -77,19 +73,6 @@ export const BrandMyCampaigns = () => {
         setInviteCampaignId(campaignId)
         inviteForm.resetFields()
         setInviteModalOpen(true)
-    }
-
-    const openFindIdModal = () => {
-        setFindIdModalOpen(true)
-        setInfluencerListLoading(true)
-        userService
-            .listInfluencers()
-            .then(setInfluencerList)
-            .catch(() => {
-                messageApi.error('Failed to load influencers')
-                setInfluencerList([])
-            })
-            .finally(() => setInfluencerListLoading(false))
     }
 
     const closeInviteModal = () => {
@@ -317,9 +300,6 @@ export const BrandMyCampaigns = () => {
                         label={
                             <span>
                                 Influencer user ID
-                                <Button type="link" size="small" onClick={openFindIdModal} style={{ paddingLeft: 8 }}>
-                                    Find user ID
-                                </Button>
                             </span>
                         }
                         rules={[{ required: true, message: 'Enter the influencer’s user ID' }]}
@@ -355,27 +335,6 @@ export const BrandMyCampaigns = () => {
                 </Form>
             </Modal>
 
-            <Modal
-                title="Influencer user IDs"
-                open={findIdModalOpen}
-                onCancel={() => setFindIdModalOpen(false)}
-                footer={<Button onClick={() => setFindIdModalOpen(false)}>Close</Button>}
-                width={560}
-            >
-                <p style={{ color: '#666', marginBottom: 12 }}>Copy the ID and paste it into the invite form.</p>
-                <Table
-                    size="small"
-                    loading={influencerListLoading}
-                    dataSource={influencerList}
-                    rowKey="id"
-                    columns={[
-                        { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
-                        { title: 'Email', dataIndex: 'email', key: 'email' },
-                        { title: 'Name', dataIndex: 'displayName', key: 'displayName' },
-                    ]}
-                    pagination={influencerList.length <= 10 ? false : { pageSize: 10 }}
-                />
-            </Modal>
         </BrandPortalLayout>
     )
 }
