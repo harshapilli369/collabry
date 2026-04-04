@@ -462,7 +462,7 @@ if (!userRepository.existsByEmail("admin@brand.com")) {
 
 ---
 
-## 7. Clean Code Practices (4-Mark Rubric)
+## 7. Clean Code Practices
 
 ### 7.1 Method Atomicity (Small Methods)
 Methods are kept small and focused. Private helpers extracted for readability:
