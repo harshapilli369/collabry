@@ -332,8 +332,8 @@ export const BrandMyCampaigns = () => {
 
             <Modal title="Invite influencer" open={inviteModalOpen} onCancel={closeInviteModal} footer={null} destroyOnClose width={640}>
                 {/* Search section */}
-                <div style={{ padding: ‘12px 0 16px’ }}>
-                    <div style={{ display: ‘flex’, alignItems: ‘center’, gap: 8, marginBottom: 12 }}>
+                <div style={{ padding: '12px 0 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                         <SearchOutlined style={{ color: BRAND_PORTAL_PRIMARY }} />
                         <Text style={{ fontWeight: 600, fontSize: 14 }}>Find influencer</Text>
                     </div>
@@ -351,17 +351,17 @@ export const BrandMyCampaigns = () => {
                             </Col>
                             <Col xs={24} sm={8}>
                                 <Form.Item name="minFollowers" label="Min followers" style={{ marginBottom: 10 }}>
-                                    <InputNumber min={0} placeholder="0" style={{ width: ‘100%’ }} />
+                                    <InputNumber min={0} placeholder="0" style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={8}>
                                 <Form.Item name="maxFollowers" label="Max followers" style={{ marginBottom: 10 }}>
-                                    <InputNumber min={0} placeholder="Any" style={{ width: ‘100%’ }} />
+                                    <InputNumber min={0} placeholder="Any" style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={8}>
                                 <Form.Item name="minEngagementRate" label="Min eng. %" style={{ marginBottom: 10 }}>
-                                    <InputNumber min={0} max={100} step={0.1} placeholder="0" style={{ width: ‘100%’ }} />
+                                    <InputNumber min={0} max={100} step={0.1} placeholder="0" style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -374,15 +374,15 @@ export const BrandMyCampaigns = () => {
                 {/* Search results */}
                 {searchResults.length > 0 && (
                     <>
-                        <Text type="secondary" style={{ fontSize: 13, display: ‘block’, marginBottom: 10 }}>
-                            {searchResults.length} result{searchResults.length !== 1 ? ‘s’ : ‘’} — select an influencer
+                        <Text type="secondary" style={{ fontSize: 13, display: 'block', marginBottom: 10 }}>
+                            {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} — select an influencer
                         </Text>
-                        <div style={{ maxHeight: 260, overflowY: ‘auto’, marginBottom: 16 }}>
+                        <div style={{ maxHeight: 260, overflowY: 'auto', marginBottom: 16 }}>
                             <Row gutter={[10, 10]}>
                                 {searchResults.map((inf) => {
                                     const engColor = inf.engagementRate != null
-                                        ? Number(inf.engagementRate) >= 5 ? ‘#52c41a’ : Number(inf.engagementRate) >= 2 ? ‘#faad14’ : ‘#ff4d4f’
-                                        : ‘#888’
+                                        ? Number(inf.engagementRate) >= 5 ? '#52c41a' : Number(inf.engagementRate) >= 2 ? '#faad14' : '#ff4d4f'
+                                        : '#888'
                                     const isSelected = selectedInfluencer?.userId === inf.userId
                                     return (
                                         <Col key={inf.id} xs={24} sm={12}>
@@ -392,14 +392,14 @@ export const BrandMyCampaigns = () => {
                                                 hoverable
                                                 onClick={() => setSelectedInfluencer(isSelected ? null : inf)}
                                             >
-                                                <div style={{ display: ‘flex’, alignItems: ‘center’, gap: 10 }}>
-                                                    <Avatar size={36} icon={<UserOutlined />} src={inf.profilePictureUrl} style={{ backgroundColor: BRAND_PORTAL_PRIMARY, color: ‘#000’, flexShrink: 0 }} />
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                    <Avatar size={36} icon={<UserOutlined />} src={inf.profilePictureUrl} style={{ backgroundColor: BRAND_PORTAL_PRIMARY, color: '#000', flexShrink: 0 }} />
                                                     <div style={{ flex: 1, minWidth: 0 }}>
                                                         <Text strong style={{ fontSize: 13 }}>{inf.name}</Text>
                                                         <div><Text type="secondary" style={{ fontSize: 11 }}>{inf.niche} · {inf.location}</Text></div>
-                                                        <div style={{ display: ‘flex’, gap: 6, marginTop: 4, flexWrap: ‘wrap’ }}>
+                                                        <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                                                             {inf.followerCount != null && (
-                                                                <span style={{ fontSize: 11, color: ‘#888’ }}>
+                                                                <span style={{ fontSize: 11, color: '#888' }}>
                                                                     {inf.followerCount >= 1000 ? `${(inf.followerCount / 1000).toFixed(1)}K` : inf.followerCount} followers
                                                                 </span>
                                                             )}
@@ -422,13 +422,13 @@ export const BrandMyCampaigns = () => {
                     </>
                 )}
                 {searchDone && searchResults.length === 0 && !searchLoading && (
-                    <Text type="secondary" style={{ display: ‘block’, textAlign: ‘center’, padding: ‘12px 0’ }}>No influencers match these filters.</Text>
+                    <Text type="secondary" style={{ display: 'block', textAlign: 'center', padding: '12px 0' }}>No influencers match these filters.</Text>
                 )}
 
                 {/* Invitation form */}
                 {selectedInfluencer && (
                     <>
-                        <div style={{ padding: ‘8px 12px’, borderRadius: 8, background: ‘#f6ffed’, border: ‘1px solid #b7eb8f’, marginBottom: 12 }}>
+                        <div style={{ padding: '8px 12px', borderRadius: 8, background: '#f6ffed', border: '1px solid #b7eb8f', marginBottom: 12 }}>
                             <Text>Inviting <strong>{selectedInfluencer.name}</strong> (ID: {selectedInfluencer.userId})</Text>
                         </div>
                         <Form form={inviteForm} layout="vertical" onFinish={onInviteSubmit}>
@@ -442,16 +442,16 @@ export const BrandMyCampaigns = () => {
                                 <Input placeholder="e.g. 2 weeks from acceptance" />
                             </Form.Item>
                             <Form.Item name="proposedAmount" label="Budget / proposed amount">
-                                <InputNumber min={0} step={100} style={{ width: ‘100%’ }} placeholder="Amount" addonBefore="$" />
+                                <InputNumber min={0} step={100} style={{ width: '100%' }} placeholder="Amount" addonBefore="$" />
                             </Form.Item>
                             <Form.Item name="platform" label="Platform">
                                 <Select placeholder="Select platform" allowClear options={PREFERRED_CONTENT_OPTIONS} />
                             </Form.Item>
                             <Form.Item name="expiresInDays" label="Invitation valid for (days)" initialValue={14}>
-                                <InputNumber min={1} max={90} style={{ width: ‘100%’ }} />
+                                <InputNumber min={1} max={90} style={{ width: '100%' }} />
                             </Form.Item>
                             <Form.Item>
-                                <Button type="primary" htmlType="submit" loading={inviteSubmitting} style={{ color: ‘#000000’ }}>
+                                <Button type="primary" htmlType="submit" loading={inviteSubmitting} style={{ color: '#000000' }}>
                                     Send invitation
                                 </Button>
                                 <Button style={{ marginLeft: 8 }} onClick={closeInviteModal}>
