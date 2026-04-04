@@ -8,33 +8,14 @@ The backend is Spring Boot (Java 17) and the frontend is React with TypeScript. 
 
 ## Table of Contents
 
-- [What's in this repo](#whats-in-this-repo)
 - [Dependencies](#dependencies)
 - [How to run it](#how-to-run-it)
 - [Running tests](#running-tests)
-- [Features and usage](#features-and-usage)
+- [Usage scenarios](#usage-scenarios)
 - [Design principles](#design-principles)
 - [TDD](#tdd)
 - [Code smells](#code-smells)
-
----
-
-## What's in this repo
-
-```
-group04/
-├── backend/              # Spring Boot API
-├── frontend/             # React + Vite frontend
-├── CodeSmells_Designite/ # DesigniteJava smell reports
-├── docs/
-│   ├── USAGE_SCENARIOS.md
-│   └── INTEGRATION_TESTS.md
-├── DESIGN_PRINCIPLES.md
-├── DEPLOYMENT.md
-├── quality/README.md
-├── docker-compose.yml
-└── README.md
-```
+- [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -258,47 +239,177 @@ npm test
 
 ---
 
-## Features and usage
+## Usage scenarios
 
-For detailed step-by-step walkthroughs of every feature, see [docs/USAGE_SCENARIOS.md](docs/USAGE_SCENARIOS.md).
+### Phase 1 – Onboarding (common flow)
 
-Quick summary of what's implemented:
+#### 1.1 New user registration and profile setup
 
-**Brand side:**
-- Sign up / log in (email with confirmation link, or Google OAuth)
-- Set up brand company profile
-- Create campaigns with goal, budget range, niche, and dates
-- Manage campaign lifecycle (draft → active → complete / cancel)
-- Search influencers by niche, location, follower range, availability
-- AI-powered influencer recommendations with match scores via Groq
-- Send collaboration invitations, withdraw or edit pending ones
-- Negotiate terms (counter-offer flow back and forth)
-- Approve submitted deliverables
-- Download PDF campaign report
-- Record and track milestone payments with invoice download
-- Rate and review influencers after a collaboration
+1. Click **Sign Up** on the landing page.
+2. Enter name, email, password, and pick a role — **Brand** or **Influencer**.
+3. A confirmation email is sent. Click the link to activate the account. (In local dev without SMTP, the link prints to the backend console.)
+4. On first login, role-based routing redirects to the right profile setup:
+   - **Brand** → fills in Company Name, Industry, Website, Email
+   - **Influencer** → fills in Name, Niche, Bio, Location, Social Media handles, Follower Count, Rate
 
-**Influencer side:**
-- Sign up / log in
-- Multi-step profile setup (bio, niche, location, social handles, rate, follower count)
-- Upload profile photo (stored on Cloudinary)
-- Request verified badge (Blue Checkmark)
-- Toggle availability for collaborations
-- View and respond to invitations (accept / reject / counter-offer)
-- Submit deliverables with a content URL and notes
-- Track active collaborations and progress
-- View incoming payments and escrow releases
+#### 1.2 Account recovery / password reset
 
-**Admin:**
-- View all users and manage accounts (enable/disable/flag)
-- Process influencer verification requests (approve/reject with reason)
-- Dashboard with summary stats
+1. Click **Forgot Password** on the login page.
+2. Enter your email and click **Send Reset Link**.
+3. Click the link in the email, enter a new password, and submit.
+4. Tokens expire after 24 hours and can only be used once.
+
+#### 1.3 Google OAuth login
+
+1. Click **Sign in with Google** on the login page.
+2. Pick your Google account and approve.
+3. The backend verifies the token and issues a JWT — no email confirmation needed.
+
+#### 1.4 Requesting a verified badge
+
+1. From the influencer profile, click **Request Verification**.
+2. The request goes to the admin queue with status **PENDING**.
+3. Once approved by admin, a Blue Checkmark appears on the public profile.
+4. If rejected, a reason is provided and the influencer can re-apply after fixing the issue.
+
+---
+
+### Phase 2 – Brand flows
+
+#### 2.1 Creating a campaign
+
+1. From the brand dashboard, click **Create Campaign**.
+2. Fill in campaign title, description, budget range, target niche, and start/end dates.
+3. On submission the campaign is saved as **DRAFT** and appears in My Campaigns.
+
+#### 2.2 Campaign lifecycle management
+
+From the My Campaigns dashboard:
+
+| Action | When available | Result |
+|--------|---------------|--------|
+| **Publish** | Campaign is DRAFT | Status → ACTIVE |
+| **Complete** | Campaign is ACTIVE | Status → COMPLETED |
+| **Cancel** | DRAFT or ACTIVE | Status → CANCELLED |
+
+Once COMPLETED or CANCELLED the campaign is frozen and no more changes can be made.
+
+#### 2.3 Searching for influencers (manual and AI)
+
+**Manual search:**
+1. Go to **Find Influencers**.
+2. Filter by Niche, Location, Min/Max Followers, Engagement rate.
+3. Results come back as a grid of influencer cards. Click **View Profile** to see the full portfolio.
+
+**AI Matchmaker:**
+1. Click **AI Match** on the Find Influencers page.
+2. Select one of your campaigns. The system reads the campaign's niche, budget, and goals.
+3. Top-matched influencers are returned with a numerical Match Score (e.g. 95%, 82%) and a plain-English reason for each match.
+4. Click **Invite** directly from the results.
+
+#### 2.4 Sending and withdrawing invitations
+
+1. Click **Invite** on an influencer's profile or from AI match results.
+2. A modal opens — select the campaign, write a message, set the proposed budget, timeline, and required deliverables.
+3. The invite lands in Sent Invitations with status **PENDING**.
+4. To cancel before the influencer responds, click **Withdraw**.
+
+#### 2.5 Negotiating terms
+
+If the influencer sends a counter-offer, the invitation moves to **NEGOTIATING**:
+1. View their proposed amount and timeline in the Invitations panel.
+2. Click **Accept Terms** → status becomes **CONFIRMED** and collaboration begins.
+3. Or click **Counter Offer** → enter new terms and send back.
+
+#### 2.6 Approving deliverables
+
+1. When the influencer submits content, the collaboration shows status **SUBMITTED**.
+2. Click **View Deliverable** to see the content URL and notes.
+3. Click **Approve** → status becomes **APPROVED**.
+4. Download a **PDF campaign report** from the campaign detail page.
+
+#### 2.7 Processing payments
+
+1. Go to **Payments** → click **Create Payment**.
+2. Enter the campaign, influencer, milestone name (e.g. "Content Delivery"), amount, and due date.
+3. Mark as **PAID** once the influencer delivers. An invoice can be downloaded from the Actions column.
+
+#### 2.8 Rating an influencer
+
+After a collaboration, go to the influencer's profile and click **Leave a Review**. Give a rating out of 5 and write feedback. It shows up on their public profile immediately.
+
+---
+
+### Phase 3 – Influencer flows
+
+#### 3.1 Influencer dashboard
+
+Right after login, the dashboard shows:
+- Count of **Pending Invitations** needing a response
+- Count of **Active Collaborations** in progress
+- Charts showing monthly collaboration activity
+
+#### 3.2 Profile setup
+
+Multi-step form after first login:
+- **Step 1** – Display name, bio, niche, location
+- **Step 2** – Social media handles (Instagram, TikTok, YouTube, etc.)
+- **Step 3** – Follower count, engagement rate, collaboration rate per post
+
+#### 3.3 Profile photo upload
+
+Click the photo area on the profile page, pick an image, and it uploads to Cloudinary and updates immediately.
+
+#### 3.4 Toggling availability
+
+The **Available for collaborations** toggle on the dashboard controls whether the influencer appears in brands' availability-filtered searches.
+
+#### 3.5 Responding to invitations
+
+1. Go to **My Invitations**.
+2. Click an invite to open the detail view — campaign info, brand details, proposed budget, timeline, deliverables.
+3. Options: **Accept** (→ CONFIRMED), **Reject**, or **Counter Offer**.
+
+**Counter-offer:**
+1. Click **Counter Offer**, enter a revised amount and timeline.
+2. Status moves to **NEGOTIATING**. The brand can accept or counter again.
+
+#### 3.6 Submitting a deliverable
+
+1. Go to **My Collaborations**, find the active collaboration.
+2. Click **Submit Deliverable**, paste the content URL and add notes.
+3. Status changes to **SUBMITTED** — the brand reviews it.
+
+#### 3.7 Receiving payouts
+
+Once a deliverable is approved, escrow funds are released. Go to **My Payments** to see the full ledger of earned funds and any amounts still pending.
+
+---
+
+### Phase 4 – Admin flows
+
+#### 4.1 Platform dashboard
+
+Log in as admin (admin@collabry.com / password123). The dashboard shows total users, active campaigns, pending verification requests, and a recent signups table.
+
+#### 4.2 Verification review
+
+1. Go to **Verification Requests**.
+2. Review the influencer's profile details — bio, social handles, website.
+3. **Approve** → Blue Checkmark appears on their profile immediately.
+4. **Reject** → supply a reason (e.g. "Link to social media is broken"). The influencer can re-apply after fixing the issue.
+
+#### 4.3 User management and platform safety
+
+1. Go to **User Management**. The table lists all users with email, role, active status, and flagged indicator.
+2. **Flag** a user to mark them for investigation while keeping them active.
+3. **Deactivate** for confirmed violations — immediately invalidates their session token and removes access.
 
 ---
 
 ## Design principles
 
-For the full breakdown with code examples and metrics, see [DESIGN_PRINCIPLES.md](DESIGN_PRINCIPLES.md) and [quality/README.md](quality/README.md).
+For the full breakdown with code examples, see [DESIGN_PRINCIPLES.md](DESIGN_PRINCIPLES.md) and [quality/README.md](quality/README.md).
 
 ### Architecture
 
@@ -384,10 +495,6 @@ We used DesigniteJava to scan the codebase and exported reports for architecture
 
 ---
 
-## Useful links
+## Live deployment
 
-- Live dev deployment: `http://csci5308-vm2.research.cs.dal.ca:8073`
-- Detailed usage walkthroughs: [docs/USAGE_SCENARIOS.md](docs/USAGE_SCENARIOS.md)
-- Integration test runbook: [docs/INTEGRATION_TESTS.md](docs/INTEGRATION_TESTS.md)
-- Design principles with examples: [DESIGN_PRINCIPLES.md](DESIGN_PRINCIPLES.md)
-- CI/CD and deployment: [DEPLOYMENT.md](DEPLOYMENT.md)
+`http://csci5308-vm2.research.cs.dal.ca:8073`
