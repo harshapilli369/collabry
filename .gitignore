@@ -144,3 +144,14 @@ credentials/
 # Uncomment if you don't want to track these:
 # .gitlab-ci-local/
 # .github/
+############################
+# Designite tool state / binary (licensed third-party tool - do not distribute)
+############################
+.config
+CodeSmells_Designite/.config
+CodeSmells_Designite/DesigniteJava.jar
+
+############################
+# Captured build/run logs
+############################
+backend/backend_log*.txt
