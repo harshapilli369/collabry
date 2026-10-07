@@ -4,7 +4,7 @@
 # Required repository secrets (Settings -> Secrets and variables -> Actions):
 #   DCODE_PROJECT_ID, DCODE_API_KEY
 # Optional secrets: COVERAGE_MIN_LINE, COVERAGE_MIN_BRANCH
-# DesigniteJava runs with -g so DependencyGraph.graphml is produced and uploaded to DCode.
+# Note: DesigniteJava runs with -g so DependencyGraph.graphml is produced and uploaded to DCode.
 name: CI/CD
 
 on:
