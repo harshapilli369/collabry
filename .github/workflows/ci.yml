@@ -79,7 +79,7 @@ jobs:
         run: |
           curl -fsSL https://designite-tools.com/assets/DesigniteJava.jar -o DesigniteJava.jar
           mkdir smells/
-          java -jar DesigniteJava.jar -i "$GITHUB_WORKSPACE" -o "$GITHUB_WORKSPACE/smells/" -d
+          java -jar DesigniteJava.jar -i "$GITHUB_WORKSPACE" -o "$GITHUB_WORKSPACE/smells/" -d -g
       - uses: actions/upload-artifact@v4
         with:
           name: designite-smells-${{ github.sha }}
