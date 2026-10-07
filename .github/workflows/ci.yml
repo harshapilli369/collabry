@@ -1,0 +1,114 @@
+# GitHub Actions CI - Collabry
+# Stages: build, test, Designite + DCode. Publish and deploy are stubs (no-ops) for now.
+#
+# Required repository secrets (Settings -> Secrets and variables -> Actions):
+#   DCODE_PROJECT_ID, DCODE_API_KEY
+# Optional secrets: COVERAGE_MIN_LINE, COVERAGE_MIN_BRANCH
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - run: chmod +x mvnw && ./mvnw compile -B -q
+        working-directory: backend
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci && npm run build
+        working-directory: frontend
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: mvn verify (tests + JaCoCo)
+        working-directory: backend
+        env:
+          COVERAGE_MIN_LINE: ${{ secrets.COVERAGE_MIN_LINE }}
+          COVERAGE_MIN_BRANCH: ${{ secrets.COVERAGE_MIN_BRANCH }}
+        run: |
+          chmod +x mvnw
+          if [ -n "${COVERAGE_MIN_LINE:-}" ] || [ -n "${COVERAGE_MIN_BRANCH:-}" ]; then
+            ./mvnw verify -B -q -Djacoco.line.minimum="${COVERAGE_MIN_LINE:-0}" -Djacoco.branch.minimum="${COVERAGE_MIN_BRANCH:-0}"
+          else
+            ./mvnw verify -B -q
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-report
+          path: backend/target/site/jacoco/
+
+  designite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Run DesigniteJava
+        run: |
+          curl -fsSL https://designite-tools.com/assets/DesigniteJava.jar -o DesigniteJava.jar
+          mkdir smells/
+          java -jar DesigniteJava.jar -i "$GITHUB_WORKSPACE" -o "$GITHUB_WORKSPACE/smells/" -d
+      - uses: actions/upload-artifact@v4
+        with:
+          name: designite-smells-${{ github.sha }}
+          path: smells/
+          retention-days: 28
+      - name: Submit to DCode
+        env:
+          DCODE_PROJECT_ID: ${{ secrets.DCODE_PROJECT_ID }}
+          DCODE_API_KEY: ${{ secrets.DCODE_API_KEY }}
+        run: |
+          if [ -z "${DCODE_PROJECT_ID:-}" ] || [ -z "${DCODE_API_KEY:-}" ]; then
+            echo "ERROR: DCODE_PROJECT_ID and DCODE_API_KEY secrets must be set."
+            echo "Note: secrets are not available to workflow runs from forked PRs."
+            exit 1
+          fi
+          pip3 install -r .quality/requirements.txt
+          python3 .quality/push_to_dcode.py "$DCODE_PROJECT_ID" "$DCODE_API_KEY" "$GITHUB_WORKSPACE/smells/" "$GITHUB_SHA"
+
+  # --- Stubs: real publish (Docker Hub) and deploy (SSH) are intentionally not enabled yet ---
+  publish:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    needs: [build-backend, build-frontend, test, designite]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "STUB - publish skipped (no image is built or pushed)"
+
+  deploy:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "STUB - deploy skipped for $GITHUB_REF_NAME"
